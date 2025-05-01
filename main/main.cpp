@@ -1,5 +1,3 @@
-#include "esp_mac.h"
-#include "esp_system.h"
 #include "Arduino.h"
 
 extern "C" void app_main()
