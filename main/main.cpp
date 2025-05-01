@@ -2,8 +2,18 @@
 
 extern "C" void app_main()
 {
-    initArduino();
-    pinMode(4, OUTPUT);
-    digitalWrite(4, HIGH);
-    // Do your own thing
+  initArduino();
+
+  // Arduino-like setup()
+  Serial.begin(115200);
+  while(!Serial){
+    ; // wait for serial port to connect
+  }
+
+  // Arduino-like loop()
+  while(true){
+    Serial.println("loop");
+  }
+
+  // WARNING: if program reaches end of function app_main() the MCU will restart.
 }
