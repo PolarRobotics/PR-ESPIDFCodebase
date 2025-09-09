@@ -6,12 +6,14 @@ extern "C" void app_main()
 
   // Arduino-like setup()
   Serial.begin(115200);
-  while(!Serial){
+  while (!Serial)
+  {
     ; // wait for serial port to connect
   }
 
   // Arduino-like loop()
-  while(true){
+  while (true)
+  {
     Serial.println("loop");
   }
 

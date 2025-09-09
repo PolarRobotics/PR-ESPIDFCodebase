@@ -16,14 +16,101 @@
 				"idf.espIdfPath": "/opt/esp/idf",
 				"idf.toolsPath": "/opt/esp",
 				"idf.gitPath": "/usr/bin/git",
-                "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
+				"C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+
+				// ESP-IDF Configuration
+				"idf.enableIdfComponentManager": true,
+				"idf.showOnboardingOnInit": true,
+				"idf.enableUpdateSrcsToCMakeListsFile": true,
+				"idf.flashBaudRate": "460800",
+				"idf.monitorBaudRate": "115200",
+				"idf.flashType": "UART",
+				"idf.openOcdConfigs": [],
+				"idf.saveBeforeBuild": true,
+				"idf.enableCodeCoverage": false,
+
+				// Enhanced file associations
+				"files.associations": {
+					"*.h": "c",
+					"*.hpp": "cpp",
+					"*.ino": "cpp",
+					"arduino.h": "c",
+					"nvs_flash.h": "c",
+					"gpio.h": "c",
+					"freertos.h": "c",
+					"esp_*.h": "c",
+					"driver/*.h": "c",
+					"CMakeLists.txt": "cmake",
+					"*.cmake": "cmake",
+					"Kconfig*": "kconfig",
+					"sdkconfig": "kconfig"
+				},
+
+				// Git configuration
+				"git.enableSmartCommit": true,
+				"git.confirmSync": false,
+				"git.autofetch": true,
+
+				// Editor improvements
+				"editor.formatOnSave": true,
+				"editor.codeActionsOnSave": {
+					"source.organizeImports": "explicit"
+				},
+				"editor.rulers": [80, 120],
+				"editor.renderWhitespace": "boundary",
+				"editor.bracketPairColorization.enabled": true,
+				"editor.guides.bracketPairs": true,
+
+				// C/C++ specific settings
+				"C_Cpp.intelliSenseEngine": "default",
+				"C_Cpp.errorSquiggles": "enabled",
+				"C_Cpp.autocompleteAddParentheses": true,
+				"C_Cpp.formatting": "clangFormat",
+
+				// CMake settings
+				"cmake.configureOnOpen": false,
+				"cmake.showOptionsMovedNotification": false,
+
+				// Search exclusions for better performance
+				"search.exclude": {
+					"**/build": true,
+					"**/managed_components": true,
+					"**/.git": true,
+					"**/node_modules": true
+				},
+				"files.exclude": {
+					"**/build": true,
+					"**/managed_components": true
+				}
 			},
 			"extensions": [
+				// Core ESP-IDF extensions
 				"espressif.esp-idf-extension",
 				"espressif.esp-idf-web",
-				"ms-vscode.cpptools-extension-pack"
+
+				// C/C++ development
+				"ms-vscode.cpptools-extension-pack",
+
+				// Git and version control
+				"github.vscode-pull-request-github",
+				"mhutchie.git-graph",
+
+				// Code quality and formatting
+				"streetsidesoftware.code-spell-checker",
+
+				// Productivity extensions
+			    "wayou.vscode-todo-highlight",
+				"gruntfuggly.todo-tree",
+				"aaron-bond.better-comments",
+
+				// Documentation
+				"yzhang.markdown-all-in-one",
+				"shd101wyy.markdown-preview-enhanced"
 			]
 		}
 	},
-	"runArgs": ["--privileged"]
+	"runArgs": ["--privileged"],
+
+	// Port forwarding for web servers or debugging
+	"forwardPorts": [3000, 8080, 8888]
 }
