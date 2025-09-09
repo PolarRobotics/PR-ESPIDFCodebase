@@ -1,4 +1,6 @@
-ARG DOCKER_TAG=latest
+# THIS IS WHERE YOU UPDATE ESP-IDF!!!
+# Ensure version v5.5 to work with Arduino-ESP32 core (for now....)
+ARG DOCKER_TAG=release-v5.5
 FROM espressif/idf:${DOCKER_TAG}
 
 ENV LC_ALL=C.UTF-8
