@@ -21,8 +21,7 @@
 			"extensions": [
 				"espressif.esp-idf-extension",
 				"espressif.esp-idf-web",
-				"ms-vscode.cpptools-extension-pack",
-				"vsciot-vscode.vscode-arduino"
+				"ms-vscode.cpptools-extension-pack"
 			]
 		}
 	},
