@@ -6,7 +6,13 @@
 	"customizations": {
 		"vscode": {
 			"settings": {
-				"terminal.integrated.defaultProfile.linux": "bash",
+				"terminal.integrated.defaultProfile.linux": "zsh",
+				"terminal.integrated.profiles.linux": {
+					"zsh": {
+						"path": "/bin/zsh",
+						"args": ["-l"]
+					}
+				},
 				"idf.espIdfPath": "/opt/esp/idf",
 				"idf.toolsPath": "/opt/esp",
 				"idf.gitPath": "/usr/bin/git",
@@ -15,7 +21,7 @@
 			"extensions": [
 				"espressif.esp-idf-extension",
 				"espressif.esp-idf-web",
-				"ms-vscode.cpptools-extension-pack",s
+				"ms-vscode.cpptools-extension-pack",
 				"vsciot-vscode.vscode-arduino"
 			]
 		}
