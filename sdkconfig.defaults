@@ -1,0 +1,2 @@
+# Required by esp32-arduino
+CONFIG_FREERTOS_HZ=1000
