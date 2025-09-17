@@ -86,17 +86,13 @@
 			"extensions": [
 				// Core ESP-IDF extensions
 				"espressif.esp-idf-extension",
-				"espressif.esp-idf-web",
 
 				// C/C++ development
-				"ms-vscode.cpptools-extension-pack",
+				"ms-vscode.cpptools",
 
 				// Git and version control
 				"github.vscode-pull-request-github",
 				"mhutchie.git-graph",
-
-				// Code quality and formatting
-				"streetsidesoftware.code-spell-checker",
 
 				// Productivity extensions
 			    "wayou.vscode-todo-highlight",
