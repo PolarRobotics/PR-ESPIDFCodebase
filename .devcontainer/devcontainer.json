@@ -95,7 +95,7 @@
 				"mhutchie.git-graph",
 
 				// Productivity extensions
-			    "wayou.vscode-todo-highlight",
+				"wayou.vscode-todo-highlight",
 				"gruntfuggly.todo-tree",
 				"aaron-bond.better-comments",
 
@@ -105,8 +105,17 @@
 			]
 		}
 	},
-	"runArgs": ["--privileged"],
-
+	"runArgs": [
+		"--privileged",
+		"--device-cgroup-rule=c 188:* rmw",
+		"--device-cgroup-rule=c 166:* rmw",
+		"-v",
+		"/dev:/dev"
+	],
 	// Port forwarding for web servers or debugging
-	"forwardPorts": [3000, 8080, 8888]
+	"forwardPorts": [
+		3000,
+		8080,
+		8888
+	]
 }
