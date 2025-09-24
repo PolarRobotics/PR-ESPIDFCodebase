@@ -10,14 +10,15 @@
 				"terminal.integrated.profiles.linux": {
 					"zsh": {
 						"path": "/bin/zsh",
-						"args": ["-l"]
+						"args": [
+							"-l"
+						]
 					}
 				},
 				"idf.espIdfPath": "/opt/esp/idf",
 				"idf.toolsPath": "/opt/esp",
 				"idf.gitPath": "/usr/bin/git",
 				"C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-
 				// ESP-IDF Configuration
 				"idf.enableIdfComponentManager": true,
 				"idf.showOnboardingOnInit": true,
@@ -25,10 +26,11 @@
 				"idf.flashBaudRate": "460800",
 				"idf.monitorBaudRate": "115200",
 				"idf.flashType": "UART",
-				"idf.openOcdConfigs": [],
+				"idf.openOcdConfigs": [
+					"board/esp32-wrover-kit-3.3v.cfg"
+				],
 				"idf.saveBeforeBuild": true,
 				"idf.enableCodeCoverage": false,
-
 				// Enhanced file associations
 				"files.associations": {
 					"*.h": "c",
@@ -45,32 +47,30 @@
 					"Kconfig*": "kconfig",
 					"sdkconfig": "kconfig"
 				},
-
 				// Git configuration
 				"git.enableSmartCommit": true,
 				"git.confirmSync": false,
 				"git.autofetch": true,
-
 				// Editor improvements
 				"editor.formatOnSave": true,
 				"editor.codeActionsOnSave": {
 					"source.organizeImports": "explicit"
 				},
-				"editor.rulers": [80, 120],
+				"editor.rulers": [
+					80,
+					120
+				],
 				"editor.renderWhitespace": "boundary",
 				"editor.bracketPairColorization.enabled": true,
 				"editor.guides.bracketPairs": true,
-
 				// C/C++ specific settings
 				"C_Cpp.intelliSenseEngine": "default",
 				"C_Cpp.errorSquiggles": "enabled",
 				"C_Cpp.autocompleteAddParentheses": true,
 				"C_Cpp.formatting": "clangFormat",
-
 				// CMake settings
 				"cmake.configureOnOpen": false,
 				"cmake.showOptionsMovedNotification": false,
-
 				// Search exclusions for better performance
 				"search.exclude": {
 					"**/build": true,
@@ -86,19 +86,15 @@
 			"extensions": [
 				// Core ESP-IDF extensions
 				"espressif.esp-idf-extension",
-
 				// C/C++ development
 				"ms-vscode.cpptools",
-
 				// Git and version control
 				"github.vscode-pull-request-github",
 				"mhutchie.git-graph",
-
 				// Productivity extensions
 				"wayou.vscode-todo-highlight",
 				"gruntfuggly.todo-tree",
 				"aaron-bond.better-comments",
-
 				// Documentation
 				"yzhang.markdown-all-in-one",
 				"shd101wyy.markdown-preview-enhanced"

@@ -28,6 +28,9 @@ RUN echo 'source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh' >> ~/.zshrc
 RUN echo "source /opt/esp/idf/export.sh > /dev/null 2>&1" >> ~/.zshrc
 RUN echo "source /opt/esp/idf/export.sh > /dev/null 2>&1" >> ~/.bashrc
 
+# OpenOCD udev rules
+RUN curl https://raw.githubusercontent.com/espressif/openocd-esp32/refs/heads/master/contrib/60-openocd.rules > /etc/udev/rules.d/60-openocd.rules
+
 # Set zsh as default shell
 RUN chsh -s $(which zsh)
 
