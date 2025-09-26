@@ -1,3 +1,4 @@
-idf_component_register(SRCS "BotTypes.cpp" "ConfigManager.cpp" "Debouncer.cpp" "MotorTypes.cpp" "ReadBotInfo.cpp" "WriteBotInfo.cpp"
+file(GLOB_RECURSE ROBOT_SOURCES "*.cpp" "*.c")
+idf_component_register(SRCS ${ROBOT_SOURCES}
                        INCLUDE_DIRS "."
                        REQUIRES Robot Drive Pairing)
