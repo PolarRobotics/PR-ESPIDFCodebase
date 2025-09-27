@@ -1,4 +1,4 @@
-file(GLOB_RECURSE ROBOT_SOURCES "*.cpp" "*.c")
-idf_component_register(SRCS ${ROBOT_SOURCES}
+file(GLOB_RECURSE UTILITIES_SOURCES "*.cpp" "*.c" "*.h")
+idf_component_register(SRCS ${UTILITIES_SOURCES}
                        INCLUDE_DIRS "."
-                       REQUIRES Robot Drive Pairing)
+                       REQUIRES Robot Drive Pairing espressif__arduino-esp32)

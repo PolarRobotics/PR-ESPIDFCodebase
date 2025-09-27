@@ -1,6 +1,7 @@
 idf_component_register(SRCS "main.cpp"
                        INCLUDE_DIRS "."
                        REQUIRES  Drive
-                                 Pairing
+                                 Pairing  
                                  Robot
-                                 Utilities)
+                                 Utilities
+                                 espressif__arduino-esp32)
