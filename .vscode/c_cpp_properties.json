@@ -2,21 +2,36 @@
   "configurations": [
     {
       "name": "ESP-IDF",
-      "compilerPath": "${config:idf.toolsPath}/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32-elf-gcc",
-      "compileCommands": "${config:idf.buildPath}/compile_commands.json",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "c17",
+      "cppStandard": "gnu++23",
       "includePath": [
-        "${config:idf.espIdfPath}/components/**",
-        "${config:idf.espIdfPathWin}/components/**",
-        "${workspaceFolder}/**"
+        "${workspaceFolder}/main",
+        "${workspaceFolder}/components/**",
+        "${workspaceFolder}/managed_components/**",
+        "/opt/esp/idf/components/**",
+        "${workspaceFolder}/managed_components/espressif__arduino-esp32/cores/esp32",
+        "${workspaceFolder}/managed_components/espressif__arduino-esp32/libraries/**",
+        "${workspaceFolder}/managed_components/espressif__arduino-esp32/variants/esp32",
+        "${workspaceFolder}/build/config"
       ],
       "browse": {
         "path": [
-          "${config:idf.espIdfPath}/components",
-          "${config:idf.espIdfPathWin}/components",
-          "${workspaceFolder}"
+          "${workspaceFolder}",
+          "/opt/esp/idf/components",
+          "${workspaceFolder}/managed_components"
         ],
-        "limitSymbolsToIncludedHeaders": true
-      }
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "defines": [
+        "ESP32",
+        "ESP_PLATFORM",
+        "ARDUINO_ARCH_ESP32",
+        "CONFIG_IDF_TARGET_ESP32=1"
+      ],
+      "compilerArgs": [
+        "-mlongcalls"
+      ]
     }
   ],
   "version": 4
