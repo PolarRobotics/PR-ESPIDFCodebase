@@ -16,4 +16,8 @@ dependencies:
   #   public: true
   espressif/arduino-esp32: ^3.3.0
 
+  # PR-Lib 
+  polarrobotics/pr-lib:
+    version: "*"
+    git: "https://github.com/PolarRobotics/PR-Lib.git"
 
