@@ -171,7 +171,7 @@ bool ConfigManager::write(bot_config_t* cfg) {
  */
 bool ConfigManager::setConfig(uint8_t botIndex) {
     // validate bot index
-    if (botIndex < 0 || botIndex > (NUM_BOTS - 1) || !this->writable) return false;
+    if (botIndex > (NUM_BOTS - 1) || !this->writable) return false;
     
     this->config->index = botConfigArray[botIndex].index;
     this->config->bot_name = botConfigArray[botIndex].bot_name;
