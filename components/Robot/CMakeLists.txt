@@ -5,5 +5,6 @@ idf_component_register(SRCS ${ROBOT_SOURCES}
                        REQUIRES Utilities Drive
                                espressif__arduino-esp32 
                                polarrobotics__pr-lib 
+                               fastled__fastled
                                bt
                                esp_system)

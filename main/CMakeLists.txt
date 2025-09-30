@@ -6,4 +6,5 @@ idf_component_register(SRCS "main.cpp"
                                  Utilities
                                  espressif__arduino-esp32 
                                  polarrobotics__pr-lib
+                                 fastled__fastled
                                  bt)
