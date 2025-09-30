@@ -2,7 +2,7 @@
   "configurations": [
     {
       "name": "ESP-IDF",
-      "compilerPath": "/usr/bin/gcc",
+      "compilerPath": "/opt/esp/tools/xtensa-esp-elf/esp-14.2.0_20250730/xtensa-esp-elf/bin/xtensa-esp-elf-gcc",
       "cStandard": "c17",
       "cppStandard": "gnu++23",
       "includePath": [
@@ -13,13 +13,32 @@
         "${workspaceFolder}/managed_components/espressif__arduino-esp32/cores/esp32",
         "${workspaceFolder}/managed_components/espressif__arduino-esp32/libraries/**",
         "${workspaceFolder}/managed_components/espressif__arduino-esp32/variants/esp32",
+        "/opt/esp/tools/xtensa-esp-elf/esp-14.2.0_20250730/xtensa-esp-elf/xtensa-esp-elf/include",
+        "/opt/esp/tools/xtensa-esp-elf/esp-14.2.0_20250730/xtensa-esp-elf/lib/gcc/xtensa-esp-elf/14.2.0/include",
+        "/opt/esp/idf/components/freertos/FreeRTOS-Kernel/include",
+        "/opt/esp/idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include",
+        "/opt/esp/idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos",
+        "/opt/esp/idf/components/freertos/esp_additions/include",
+        "/opt/esp/idf/components/freertos/esp_additions/include/freertos",
+        "/opt/esp/idf/components/soc/esp32/register/soc",
+        "/opt/esp/idf/components/soc/esp32/include",
+        "/opt/esp/idf/components/soc/include",
+        "/opt/esp/idf/components/hal/esp32/include",
+        "/opt/esp/idf/components/hal/include",
+        "/opt/esp/idf/components/esp_hw_support/include",
+        "/opt/esp/idf/components/esp_common/include",
+        "/opt/esp/idf/components/esp_system/include",
+        "/opt/esp/idf/components/newlib/platform_include",
+        "/opt/esp/idf/components/esp_driver_gpio/include",
+        "/opt/esp/idf/components/log/include",
         "${workspaceFolder}/build/config"
       ],
       "browse": {
         "path": [
           "${workspaceFolder}",
           "/opt/esp/idf/components",
-          "${workspaceFolder}/managed_components"
+          "${workspaceFolder}/managed_components",
+          "/opt/esp/tools/xtensa-esp-elf/esp-14.2.0_20250730/xtensa-esp-elf/xtensa-esp-elf/include"
         ],
         "limitSymbolsToIncludedHeaders": false
       },
@@ -27,11 +46,19 @@
         "ESP32",
         "ESP_PLATFORM",
         "ARDUINO_ARCH_ESP32",
-        "CONFIG_IDF_TARGET_ESP32=1"
+        "CONFIG_IDF_TARGET_ESP32=1",
+        "FREERTOS",
+        "IDF_VER=\"v5.5.1\"",
+        "__XTENSA__",
+        "ARDUINO_VARIANT=\"esp32\"",
+        "CONFIG_ARDUHAL_ESP_LOG"
       ],
       "compilerArgs": [
-        "-mlongcalls"
-      ]
+        "-mlongcalls",
+        "-Wno-frame-address",
+        "-fno-rtti"
+      ],
+      "intelliSenseMode": "gcc-x64"
     }
   ],
   "version": 4
