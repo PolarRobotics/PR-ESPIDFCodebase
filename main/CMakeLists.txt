@@ -4,4 +4,6 @@ idf_component_register(SRCS "main.cpp"
                                  Pairing  
                                  Robot
                                  Utilities
-                                 espressif__arduino-esp32)
+                                 espressif__arduino-esp32 
+                                 polarrobotics__pr-lib
+                                 bt)
