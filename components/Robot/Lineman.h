@@ -1,7 +1,7 @@
 #ifndef LINEMAN_H
 #define LINEMAN_H
 
-#include <Robot/Robot.h>
+#include <Robot.h>
 
 /**
  * @brief Lineman Subclass Header

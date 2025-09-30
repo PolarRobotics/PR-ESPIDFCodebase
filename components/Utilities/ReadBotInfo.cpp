@@ -1,7 +1,7 @@
 #include <Arduino.h>
 // #include <Preferences.h>
 // #include <PolarRobotics.h>
-#include <Utilities/ConfigManager.h>
+#include "ConfigManager.h"
 
 //! Follow (!) for instructions on how to read and utilize EEPROM bot config in other files
 

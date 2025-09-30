@@ -1,8 +1,7 @@
 #include <Arduino.h>
 
 // #include <PolarRobotics.h>
-#include <Utilities/ConfigManager.h>
-#include <Pairing/pairing.h>
+#include "ConfigManager.h"
 
 // Preferences preferences;
 ConfigManager config;
