@@ -10,7 +10,7 @@ dependencies:
       type: service
     version: 1.0.3
   espressif/arduino-esp32:
-    component_hash: 12ddb10a6cc6b5bc3c700334627f2a1a7a3736bfad9f63a8115199142104ef6d
+    component_hash: 5b9aac526ad1107952b6249e89755340529b5c1699f5ba7509cd8984674e9528
     dependencies:
     - name: chmorgan/esp-libhelix-mp3
       registry_url: https://components.espressif.com
@@ -36,8 +36,8 @@ dependencies:
       registry_url: https://components.espressif.com
       require: private
       rules:
-      - if: target in [esp32s3]
-      version: ^1.4.2
+      - if: target in [esp32s3, esp32p4]
+      version: ^2.1.5
     - name: espressif/esp-zboss-lib
       registry_url: https://components.espressif.com
       require: private
@@ -49,7 +49,7 @@ dependencies:
       require: private
       rules:
       - if: target not in [esp32c2, esp32p4]
-      version: ==1.6.5
+      version: ==1.6.7
     - name: espressif/esp_diag_data_store
       registry_url: https://components.espressif.com
       require: private
@@ -90,6 +90,12 @@ dependencies:
       rules:
       - if: target == esp32p4
       version: ^0.13.0
+    - name: espressif/lan867x
+      registry_url: https://components.espressif.com
+      require: private
+      rules:
+      - if: target in [esp32, esp32p4]
+      version: ^2.0.0
     - name: espressif/libsodium
       registry_url: https://components.espressif.com
       require: private
@@ -136,7 +142,7 @@ dependencies:
     - esp32h2
     - esp32p4
     - esp32c5
-    version: 3.3.0~1
+    version: 3.3.1
   espressif/cbor:
     component_hash: 440f4ee4504841cc9b4f3a8ef755776a612ac9dace355514c68b999868f990ff
     dependencies:
@@ -185,7 +191,7 @@ dependencies:
       type: service
     version: 1.6.4
   espressif/esp-zigbee-lib:
-    component_hash: 947ea40aa95a89b9da238e941bd2950952e7cd422074d0c02d6896e2ff07bad5
+    component_hash: 4b73d7dc7d018114f24712a5af1bb7a53dca95f979fe646461f066f344dd9120
     dependencies:
     - name: idf
       require: private
@@ -193,7 +199,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.6.5
+    version: 1.6.7
   espressif/esp_diag_data_store:
     component_hash: c1e5cf62f545d2b136db299f4df1b228b9840be5bc3410c9ad2d2a882b5c0d64
     dependencies:
@@ -329,7 +335,7 @@ dependencies:
       type: service
     version: 1.2.0
   espressif/esp_secure_cert_mgr:
-    component_hash: 705e1c045905668c4ec78e6e9570ca3275a03a80746805709e3c1a3a1e31a006
+    component_hash: 47589860736b456608035b06d88e6a5dab566419fa8737a76a4f33c611ec539b
     dependencies:
     - name: idf
       require: private
@@ -337,7 +343,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 2.6.0
+    version: 2.7.0
   espressif/jsmn:
     component_hash: d80350c41bbaa827c98a25b6072df00884e72f54885996fab4a4f0aebce6b6c3
     dependencies:
@@ -368,6 +374,33 @@ dependencies:
       registry_url: https://components.espressif.com
       type: service
     version: 1.0.3
+  espressif/lan867x:
+    component_hash: 651c9d6e3d96acb08bd5066144b12a12e94df0a6241127a0538d8680689de2c4
+    dependencies:
+    - name: espressif/lan86xx_common
+      registry_url: https://components.espressif.com
+      require: private
+      version: '*'
+    - name: idf
+      require: private
+      version: '>=5.3'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    targets:
+    - esp32
+    - esp32p4
+    version: 2.0.0
+  espressif/lan86xx_common:
+    component_hash: 6dcb1be9f43ae940979bd628fa5bee278949b66c545e1fe2321e486102e81026
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.2'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 1.0.0
   espressif/libsodium:
     component_hash: 25b968723c584a2742ca36cebe5a7ef049c6767e059f7b1e1eec69946019025d
     dependencies:
@@ -426,9 +459,29 @@ dependencies:
       registry_url: https://components.espressif.com
       type: service
     version: 1.20.1
+  polarrobotics/pr-lib:
+    component_hash: d4ac927fe52d383eaa1119f175ceab3b19347936777253564bb7b3bb3706ebcb
+    dependencies:
+    - name: idf
+      version: '>=4.4.0'
+    - name: espressif/arduino-esp32
+      version: ^3.0.0
+    source:
+      git: https://github.com/PolarRobotics/PR-Lib.git
+      path: .
+      type: git
+    targets:
+    - esp32
+    - esp32s2
+    - esp32s3
+    - esp32c3
+    - esp32c6
+    - esp32h2
+    version: 0b55c9386367310da6a4174e79663e093928d0e3
 direct_dependencies:
 - espressif/arduino-esp32
 - idf
-manifest_hash: 66f0a9bec3b36ae1f3573b7170f942d46cfb870a01a1c197668b98e2db17d5dd
+- polarrobotics/pr-lib
+manifest_hash: d20622b09fae4a97fa70a9614034ec23f9bd758337d6ad341caddc33193ff5d1
 target: esp32
 version: 2.0.0
