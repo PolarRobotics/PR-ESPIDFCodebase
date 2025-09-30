@@ -11,11 +11,11 @@
 #ifndef QUARTERBACK_TURRET_H
 #define QUARTERBACK_TURRET_H
 
-#include <Robot/Robot.h>
-#include <Robot/MotorControl.h>
+#include <Robot.h>
+#include <MotorControl.h>
 #include <ps5Controller.h>        // ESP PS5 library, access using global instance `ps5`
-#include <Utilities/Debouncer.h>
 #include <Adafruit_LIS3MDL.h>     // Magnetometer
+#include <Debouncer.h>
 #include <HardwareSerial.h>       // For ESP-to-ESP UART
 
 enum TurretMode {
