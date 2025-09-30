@@ -12,23 +12,23 @@
 
 // Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>
-#include <Pairing/pairing.h>
-#include <Utilities/ConfigManager.h>
+#include <pairing.h>
+#include <ConfigManager.h>
 
 // Robot Includes
-#include <Robot/Lights.h>
-#include <Robot/Robot.h>
-#include <Robot/Lineman.h>
-#include <Robot/Center.h>
-#include <Robot/MecanumCenter.h>
-#include <Robot/Kicker.h>
-#include <Robot/Quarterback.h>
-#include <Robot/QuarterbackBase.h>
-#include <Robot/QuarterbackTurret.h>
+#include <Lights.h>
+#include <Robot.h>
+#include <Lineman.h>
+#include <Center.h>
+#include <MecanumCenter.h>
+#include <Kicker.h>
+#include <Quarterback.h>
+#include <QuarterbackBase.h>
+#include <QuarterbackTurret.h>
 
 // Drive Includes
-#include <Drive/Drive.h>
-#include <Drive/DriveMecanum.h>
+#include <Drive.h>
+#include <DriveMecanum.h>
 
 // Primary Parent Component Pointers
 Robot *robot = nullptr; // subclassed if needed

@@ -3,10 +3,10 @@
 #ifndef MECANUM_CENTER_H
 #define MECANUM_CENTER_H
 
-#include <Robot/Robot.h>
-#include <Robot/MotorControl.h>
+#include <Robot.h>
+#include <MotorControl.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
-#include <Utilities/Debouncer.h>
+#include <Debouncer.h>
 
 // TODO: we should seriously reconsider the use of defines, since the names are duplicated between QB and MC
 // Flywheel defines 

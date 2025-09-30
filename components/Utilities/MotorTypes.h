@@ -3,7 +3,7 @@
 #ifndef MOTOR_TYPES_H
 #define MOTOR_TYPES_H
 
-#include <Utilities/Pair.h>
+#include "Pair.h"
 
 #define NUM_MOTOR_TYPES 6
 

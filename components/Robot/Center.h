@@ -3,8 +3,8 @@
 #ifndef OLD_CENTER_H
 #define OLD_CENTER_H
 
-#include <Robot/Robot.h>
-#include <Robot/MotorControl.h>
+#include <Robot.h>
+#include <MotorControl.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 
 enum ArmStatus {

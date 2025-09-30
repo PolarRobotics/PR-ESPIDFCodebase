@@ -4,9 +4,9 @@
 #define KICKER_H
 
 #include <MotorInterface.h>
-#include <Robot/Robot.h>
+#include "Robot.h"
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
-#include <Utilities/Debouncer.h>
+#include <Debouncer.h>
 
 // Encoder Information
 #define KICKER_COUNTS_PER_ENCODER_REV 11  // Number of encoder counts per revolution of base shaft

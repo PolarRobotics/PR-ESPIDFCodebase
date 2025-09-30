@@ -4,7 +4,7 @@
 #define DRIVE_MECANUM_H
 
 #include <Arduino.h>
-#include <Drive/Drive.h>
+#include <Drive.h>
 
 #define MC_NUM_MOTORS 4
 #define MC_ACCELERATION_RATE .0375

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include <Robot/MotorControl.h>
+#include "MotorControl.h"
 #include "PolarRobotics.h"
 
 #ifndef NUM_MOTORS

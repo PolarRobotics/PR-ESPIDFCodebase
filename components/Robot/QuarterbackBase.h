@@ -3,9 +3,9 @@
 #ifndef QUARTERBACK_BASE_H
 #define QUARTERBACK_BASE_H
 
-#include <Robot/Robot.h>
-#include <Robot/MotorControl.h>
-#include <Drive/Drive.h>
+#include <Robot.h>
+#include <MotorControl.h>
+#include <Drive.h>
 
 // Wifi Connectivity Pin
 #define WIFI_PIN 18

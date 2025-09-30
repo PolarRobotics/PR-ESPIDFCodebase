@@ -13,8 +13,8 @@
 
 // Custom Polar Robotics Libraries:
 #include "PolarRobotics.h"
-#include "Pairing/pairing.h"
-#include <Robot/builtInLED.h>
+#include "pairing.h"
+#include <builtInLED.h>
 
 /**
  * @brief onConnection: Function to be called on controller connect
