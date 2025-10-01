@@ -6,5 +6,6 @@ idf_component_register(SRCS ${ROBOT_SOURCES}
                                espressif__arduino-esp32 
                                polarrobotics__pr-lib 
                                fastled__fastled
+                               adafruit__adafruit-lis3mdl
                                bt
                                esp_system)
