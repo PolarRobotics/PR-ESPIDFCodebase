@@ -1,0 +1,33 @@
+name: adafruit-busio
+version: "*"
+description: "Adafruit Bus I/O Library"
+url: https://github.com/adafruit/Adafruit_BusIO
+repository: https://github.com/adafruit/Adafruit_BusIO.git
+documentation: https://github.com/adafruit/Adafruit_BusIO#readme
+
+dependencies:
+  idf:
+    version: ">=4.4.0"
+  # If your component depends on Arduino
+  espressif/arduino-esp32: "^3.0.0"
+
+targets:
+  - esp32
+  - esp32s2
+  - esp32s3
+  - esp32c3
+  - esp32c6
+  - esp32h2
+
+# examples:
+#   - path: examples/basic_motor_control
+    
+files:
+  exclude:
+    - "*.md"
+    - "examples/**"
+    - "test/**"
+    - "libs/*/examples/**"
+    - "libs/*/.git/**"
+    - "libs/*/test/**"
+    - "libs/*/tests/**"
