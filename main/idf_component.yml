@@ -24,4 +24,8 @@ dependencies:
   fastled/fastled:
     version: "*"
     git: "https://github.com/FastLED/FastLED.git"
+  
+  # adafruit/adafruit-lis3mdl:
+  #   version: "*"
+  #   git: "https://github.com/adafruit/Adafruit_LIS3MDL.git"
 
