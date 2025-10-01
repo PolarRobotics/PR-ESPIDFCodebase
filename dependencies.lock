@@ -445,6 +445,14 @@ dependencies:
       registry_url: https://components.espressif.com
       type: service
     version: 1.4.6
+  fastled/fastled:
+    component_hash: 843eb746f643b64ebc060c82c68e09cbb20a921f422a874554a266f1caef3277
+    dependencies: []
+    source:
+      git: https://github.com/FastLED/FastLED.git
+      path: .
+      type: git
+    version: af989d991fda5402a6a94f71656fa83e9d65b85b
   idf:
     source:
       type: idf
@@ -460,7 +468,7 @@ dependencies:
       type: service
     version: 1.20.1
   polarrobotics/pr-lib:
-    component_hash: d4ac927fe52d383eaa1119f175ceab3b19347936777253564bb7b3bb3706ebcb
+    component_hash: 47aa869a1dd6aae95deb781340cd422029249a7ba229a09ebcd3b9b675dd0012
     dependencies:
     - name: idf
       version: '>=4.4.0'
@@ -477,11 +485,12 @@ dependencies:
     - esp32c3
     - esp32c6
     - esp32h2
-    version: 0b55c9386367310da6a4174e79663e093928d0e3
+    version: 3fc1da5f14ef366a9548e247c5c781c90500f8f9
 direct_dependencies:
 - espressif/arduino-esp32
+- fastled/fastled
 - idf
 - polarrobotics/pr-lib
-manifest_hash: d20622b09fae4a97fa70a9614034ec23f9bd758337d6ad341caddc33193ff5d1
+manifest_hash: 43c3d9f39baa08a4588b06b6084c3ae455dfead4b0dd8861d543118d2d5d3f52
 target: esp32
 version: 2.0.0
