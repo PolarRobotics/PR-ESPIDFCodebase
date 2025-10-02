@@ -7,4 +7,5 @@ idf_component_register(SRCS "main.cpp"
                                  espressif__arduino-esp32 
                                  polarrobotics__pr-lib
                                  fastled__fastled
+                                 ricardoquesada__bluepad32
                                  bt)
