@@ -1,4 +1,12 @@
 dependencies:
+  bluekitchen/btstack:
+    component_hash: f4d642f39285d520b3d1466d77064bdd30ce99313327ec0072fce029483e378d
+    dependencies: []
+    source:
+      git: https://github.com/bluekitchen/btstack.git
+      path: port/esp32/components/btstack
+      type: git
+    version: 1054d54b91f6851a62447d75c30ff04e63b31d88
   chmorgan/esp-libhelix-mp3:
     component_hash: cbb76089dc2c5749f7b470e2e70aedc44c9da519e04eb9a67d4c7ec275229e53
     dependencies:
@@ -9,6 +17,22 @@ dependencies:
       registry_url: https://components.espressif.com
       type: service
     version: 1.0.3
+  cmd_nvs:
+    component_hash: e19a176d9ec6e10a6974a7c0b94e46c2b1bba90338dd0071669a60c391dacb7f
+    dependencies: []
+    source:
+      git: https://github.com/ricardoquesada/bluepad32.git
+      path: src/components/cmd_nvs
+      type: git
+    version: 8bf5360b53361186169910304291a6d7e6bd4912
+  cmd_system:
+    component_hash: db315e8458012f9f47b4d1a937992776abe07abe2cf60598134a6080d9ebc54c
+    dependencies: []
+    source:
+      git: https://github.com/ricardoquesada/bluepad32.git
+      path: src/components/cmd_system
+      type: git
+    version: 8bf5360b53361186169910304291a6d7e6bd4912
   espressif/arduino-esp32:
     component_hash: 5b9aac526ad1107952b6249e89755340529b5c1699f5ba7509cd8984674e9528
     dependencies:
@@ -446,13 +470,13 @@ dependencies:
       type: service
     version: 1.4.6
   fastled/fastled:
-    component_hash: 843eb746f643b64ebc060c82c68e09cbb20a921f422a874554a266f1caef3277
+    component_hash: 78227375789ab5b3df7d5a692eebc0c72626ce60206bd977cb894e59be3f1f80
     dependencies: []
     source:
       git: https://github.com/FastLED/FastLED.git
       path: .
       type: git
-    version: af989d991fda5402a6a94f71656fa83e9d65b85b
+    version: a94cbc92819695c17e49a15f20771210a0d6420e
   idf:
     source:
       type: idf
@@ -486,11 +510,25 @@ dependencies:
     - esp32c6
     - esp32h2
     version: 3fc1da5f14ef366a9548e247c5c781c90500f8f9
+  ricardoquesada/bluepad32:
+    component_hash: 65277e91bdea3090931e0c568843408050bf8bd698f062871ecfd41f9cd34696
+    dependencies:
+    - name: idf
+      version: '>=4.1.0'
+    source:
+      git: https://github.com/ricardoquesada/bluepad32.git
+      path: src/components/bluepad32
+      type: git
+    version: 8bf5360b53361186169910304291a6d7e6bd4912
 direct_dependencies:
+- bluekitchen/btstack
+- cmd_nvs
+- cmd_system
 - espressif/arduino-esp32
 - fastled/fastled
 - idf
 - polarrobotics/pr-lib
-manifest_hash: 43c3d9f39baa08a4588b06b6084c3ae455dfead4b0dd8861d543118d2d5d3f52
+- ricardoquesada/bluepad32
+manifest_hash: c336cf23bb887ff09910664b20a3d6f2be417eea51021a0dff5437fad81fcf92
 target: esp32
 version: 2.0.0
