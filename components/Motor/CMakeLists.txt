@@ -1,9 +1,8 @@
-file(GLOB_RECURSE DRIVE_SOURCES "*.cpp" "*.c")
-idf_component_register(SRCS ${DRIVE_SOURCES}
+file(GLOB_RECURSE MOTOR_SOURCES "*.cpp" "*.c")
+idf_component_register(SRCS ${MOTOR_SOURCES}
                        INCLUDE_DIRS "."
                                     "../../main"
-                       REQUIRES Utilities Motor
-                               espressif__arduino-esp32 
+                       REQUIRES espressif__arduino-esp32 
                                polarrobotics__pr-lib 
                                fastled__fastled
                                bt
