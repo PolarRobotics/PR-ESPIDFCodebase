@@ -27,5 +27,6 @@ jobs:
 
     - name: Set target and build the project
       run: |
+        . /opt/esp/idf/export.sh
         idf.py set-target esp32
         idf.py build
