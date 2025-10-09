@@ -1,20 +1,11 @@
-name: ESP-IDF Build
+name: ESP-IDF Build (PR)
 
 on:
-  push:
-    branches: [ "production" ]
   pull_request:
     branches: [ "production" ]
 
-env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
-
 jobs:
   build:
-    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
-    # You can convert this to a matrix build if you need cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
 
     container:
@@ -38,14 +29,3 @@ jobs:
         . /opt/esp/idf/export.sh
         idf.py set-target esp32
         idf.py build
-
-    - name: Upload build artifacts
-      # Important: If it is a push to production, we will upload our build artifacts
-      if: github.ref == 'refs/heads/production'
-      uses: actions/upload-artifact@v4
-      with:
-        name: firmware-binaries
-        path: |
-          build/bootloader/bootloader.bin
-          build/partition_table/partition-table.bin
-          build/${{ github.event.repository.name }}.bin
