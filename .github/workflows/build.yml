@@ -1,4 +1,4 @@
-name: ESP-IDF Build (Pull Request)
+name: ESP-IDF Build
 
 on:
   push:
@@ -48,5 +48,4 @@ jobs:
         path: |
           build/bootloader/bootloader.bin
           build/partition_table/partition-table.bin
-          build/PR-ESPIDFCodebase.bin
-
+          build/${{ github.event.repository.name }}.bin
