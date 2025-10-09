@@ -2,7 +2,7 @@ name: ESP-IDF Build (PR)
 
 on:
   pull_request:
-    branches: [ "production" ]
+    branches: [ "production", "dev/main" ]
 
 jobs:
   build:
@@ -13,16 +13,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
-    - name: Cache IDF build
-      uses: actions/cache@v4.3.0
-      with:
-        path: |
-          ~/.espressif
-          build
-        key: ${{ runner.os }}-idf-${{ hashFiles('**/CMakeLists.txt', '**/sdkconfig') }}
-        restore-keys: |
-          ${{ runner.os }}-idf-
 
     - name: Set target and build the project
       run: |
