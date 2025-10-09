@@ -24,11 +24,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Set up Python environment
-      run: |
-        python --version
-        pip install --upgrade pip
 
     - name: Set target and build the project
       run: |
