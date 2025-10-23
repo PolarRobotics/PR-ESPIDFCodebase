@@ -3,7 +3,4 @@ idf_component_register(SRCS ${MOTOR_SOURCES}
                        INCLUDE_DIRS "."
                                     "../../main"
                        REQUIRES espressif__arduino-esp32 
-                               polarrobotics__pr-lib 
-                               fastled__fastled
-                               bt
-                               esp_system)
+                               pr-lib-motor)

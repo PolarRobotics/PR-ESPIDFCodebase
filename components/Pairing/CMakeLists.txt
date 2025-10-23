@@ -3,10 +3,8 @@ idf_component_register(SRCS ${PAIRING_SOURCES}
                        INCLUDE_DIRS "."
                                     "../../main"  # For PolarRobotics.h
                        REQUIRES Utilities 
-                                Drive 
                                 Robot 
                                 espressif__arduino-esp32 
-                                polarrobotics__pr-lib 
-                                fastled__fastled 
-                                ricardoquesada__bluepad32
+                                fastled 
+                                bluepad32
                                 bt)
