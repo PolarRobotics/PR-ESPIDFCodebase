@@ -1,12 +1,39 @@
 dependencies:
-  bluekitchen/btstack:
+  adafruit-lis3mdl:
+    component_hash: e2392104ca6e0cbe6707b546c07cc68c4b65a73ea5b2f9a1c7b0fc5821c4a9ba
+    dependencies:
+    - name: idf
+      version: '>=4.4.0'
+    source:
+      git: https://github.com/PolarRobotics/PR-Lib.git
+      path: components/adafruit__adafruit-lis3mdl
+      type: git
+    targets:
+    - esp32
+    - esp32s2
+    - esp32s3
+    - esp32c3
+    - esp32c6
+    - esp32h2
+    version: 7f20e419415ae28077929415df4c5e0c5d6877fb
+  bluepad32:
+    component_hash: 65277e91bdea3090931e0c568843408050bf8bd698f062871ecfd41f9cd34696
+    dependencies:
+    - name: idf
+      version: '>=4.1.0'
+    source:
+      git: https://github.com/PolarRobotics/PR-Lib.git
+      path: components/bluepad32/src/components/bluepad32
+      type: git
+    version: 7f20e419415ae28077929415df4c5e0c5d6877fb
+  btstack:
     component_hash: f4d642f39285d520b3d1466d77064bdd30ce99313327ec0072fce029483e378d
     dependencies: []
     source:
-      git: https://github.com/bluekitchen/btstack.git
-      path: port/esp32/components/btstack
+      git: https://github.com/PolarRobotics/PR-Lib.git
+      path: components/bluepad32/external/btstack/port/esp32/components/btstack
       type: git
-    version: 1054d54b91f6851a62447d75c30ff04e63b31d88
+    version: 7f20e419415ae28077929415df4c5e0c5d6877fb
   chmorgan/esp-libhelix-mp3:
     component_hash: cbb76089dc2c5749f7b470e2e70aedc44c9da519e04eb9a67d4c7ec275229e53
     dependencies:
@@ -21,20 +48,20 @@ dependencies:
     component_hash: e19a176d9ec6e10a6974a7c0b94e46c2b1bba90338dd0071669a60c391dacb7f
     dependencies: []
     source:
-      git: https://github.com/ricardoquesada/bluepad32.git
-      path: src/components/cmd_nvs
+      git: https://github.com/PolarRobotics/PR-Lib.git
+      path: components/bluepad32/src/components/cmd_nvs
       type: git
-    version: 8bf5360b53361186169910304291a6d7e6bd4912
+    version: 7f20e419415ae28077929415df4c5e0c5d6877fb
   cmd_system:
-    component_hash: db315e8458012f9f47b4d1a937992776abe07abe2cf60598134a6080d9ebc54c
+    component_hash: ae2fed722afa96a9aca71a7657181d642c052e2fb3bb6aa3b2c6b9e32b112fe6
     dependencies: []
     source:
-      git: https://github.com/ricardoquesada/bluepad32.git
-      path: src/components/cmd_system
+      git: https://github.com/PolarRobotics/PR-Lib.git
+      path: components/bluepad32/src/components/cmd_system
       type: git
-    version: 8bf5360b53361186169910304291a6d7e6bd4912
+    version: 7f20e419415ae28077929415df4c5e0c5d6877fb
   espressif/arduino-esp32:
-    component_hash: 5b9aac526ad1107952b6249e89755340529b5c1699f5ba7509cd8984674e9528
+    component_hash: 61db028af7b50fa58e31e28b8601f0bd8382f3dafebde3cb341651aa32f7614c
     dependencies:
     - name: chmorgan/esp-libhelix-mp3
       registry_url: https://components.espressif.com
@@ -166,7 +193,7 @@ dependencies:
     - esp32h2
     - esp32p4
     - esp32c5
-    version: 3.3.1
+    version: 3.3.2
   espressif/cbor:
     component_hash: 440f4ee4504841cc9b4f3a8ef755776a612ac9dace355514c68b999868f990ff
     dependencies:
@@ -277,7 +304,7 @@ dependencies:
       type: service
     version: 1.2.2
   espressif/esp_modem:
-    component_hash: b541c3f5765d3ba062c0d004b9ca6da6d0af908293421c2dbe046c537fb2a011
+    component_hash: dca5a8d8cf80dd88dc91bb22cbea52956950f1e80488996c5b41168d3cdefbb6
     dependencies:
     - name: idf
       require: private
@@ -285,7 +312,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.4.0
+    version: 1.4.1
   espressif/esp_rainmaker:
     component_hash: f6fe458fc7a0102ee2879f0247da4b41419e6c07de12031f66e5e9454d25baaa
     dependencies:
@@ -469,14 +496,14 @@ dependencies:
       registry_url: https://components.espressif.com
       type: service
     version: 1.4.6
-  fastled/fastled:
-    component_hash: 78227375789ab5b3df7d5a692eebc0c72626ce60206bd977cb894e59be3f1f80
+  fastled:
+    component_hash: 0a2ca721751c53546d9aafb03ac036eb797f15b0d874e28c375fb6bcbb6ff0fc
     dependencies: []
     source:
       git: https://github.com/FastLED/FastLED.git
       path: .
       type: git
-    version: a94cbc92819695c17e49a15f20771210a0d6420e
+    version: 335235b99051d137ee824c173f9bb1c46aeeeb57
   idf:
     source:
       type: idf
@@ -491,16 +518,14 @@ dependencies:
       registry_url: https://components.espressif.com
       type: service
     version: 1.20.1
-  polarrobotics/pr-lib:
-    component_hash: 47aa869a1dd6aae95deb781340cd422029249a7ba229a09ebcd3b9b675dd0012
+  pr-lib-motor:
+    component_hash: ed95a8a3dbcbc9a0cbadb8da2efee92c1a858daca5c2ffdcb5caa0be773218c7
     dependencies:
     - name: idf
       version: '>=4.4.0'
-    - name: espressif/arduino-esp32
-      version: ^3.0.0
     source:
       git: https://github.com/PolarRobotics/PR-Lib.git
-      path: .
+      path: components/motor
       type: git
     targets:
     - esp32
@@ -509,26 +534,17 @@ dependencies:
     - esp32c3
     - esp32c6
     - esp32h2
-    version: 3fc1da5f14ef366a9548e247c5c781c90500f8f9
-  ricardoquesada/bluepad32:
-    component_hash: 65277e91bdea3090931e0c568843408050bf8bd698f062871ecfd41f9cd34696
-    dependencies:
-    - name: idf
-      version: '>=4.1.0'
-    source:
-      git: https://github.com/ricardoquesada/bluepad32.git
-      path: src/components/bluepad32
-      type: git
-    version: 8bf5360b53361186169910304291a6d7e6bd4912
+    version: 7f20e419415ae28077929415df4c5e0c5d6877fb
 direct_dependencies:
-- bluekitchen/btstack
+- adafruit-lis3mdl
+- bluepad32
+- btstack
 - cmd_nvs
 - cmd_system
 - espressif/arduino-esp32
-- fastled/fastled
+- fastled
 - idf
-- polarrobotics/pr-lib
-- ricardoquesada/bluepad32
-manifest_hash: c336cf23bb887ff09910664b20a3d6f2be417eea51021a0dff5437fad81fcf92
+- pr-lib-motor
+manifest_hash: 72b6ef07047cd42daca9e0007268f16fb1d82826e4bc44140b2b31b4a804aaa6
 target: esp32
 version: 2.0.0

@@ -5,7 +5,7 @@ idf_component_register(SRCS "main.cpp"
                                  Robot
                                  Utilities
                                  espressif__arduino-esp32 
-                                 polarrobotics__pr-lib
-                                 fastled__fastled
-                                 ricardoquesada__bluepad32
+                                 pr-lib-motor
+                                 fastled
+                                 bluepad32
                                  bt)
