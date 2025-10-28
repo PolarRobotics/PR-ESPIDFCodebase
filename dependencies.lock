@@ -518,6 +518,6 @@ direct_dependencies:
 - fastled
 - idf
 - pr-lib-motor
-manifest_hash: 1554a794d8eef95870ad2c44451d8be42785e49583b509c653ae4d2e496ef8e8
+manifest_hash: ca5eabf6f36fed19f1e2b89a0bf095ef19daca518f23e5b8e92b7ccc66ab0349
 target: esp32
 version: 2.0.0
