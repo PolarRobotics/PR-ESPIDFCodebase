@@ -6,5 +6,6 @@ idf_component_register(SRCS ${PAIRING_SOURCES}
                                 Robot 
                                 espressif__arduino-esp32 
                                 fastled 
-                                bluepad32
-                                bt)
+                                #bluepad32
+                                #bt)
+                                       )

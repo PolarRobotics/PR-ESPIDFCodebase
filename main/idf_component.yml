@@ -16,44 +16,51 @@ dependencies:
   #   public: true
   espressif/arduino-esp32: ^3.3.0
 
+
+  # FastLED - THE ONLY WORKING LIBRARY FOR ESP32
+  fastled:
+    version: '*'
+    git: https://github.com/FastLED/FastLED.git
+
+
   # PR-Lib Motor Library
   pr-lib-motor:
     version: '*'
     git: https://github.com/PolarRobotics/PR-Lib.git
     path: components/motor
 
+#   # IGNORE THIS - OLD VERSION
   # PR-Lib version of Bluepad32
-  bluepad32:
-    version: '*'
-    git: https://github.com/PolarRobotics/PR-Lib.git
-    path: components/bluepad32/src/components/bluepad32
+  # bluepad32:
+  #   version: '*'
+  #   git: https://github.com/PolarRobotics/PR-Lib.git
+  #   path: components/bluepad32/src/components/bluepad32
 
-  # PR-Lib version of Adafruit LIS3MDL
-  adafruit-lis3mdl:
-    version: '*'
-    git: https://github.com/PolarRobotics/PR-Lib.git
-    path: components/adafruit__adafruit-lis3mdl
+#   # PR-Lib version of Adafruit LIS3MDL
+#   adafruit-lis3mdl:
+#     version: '*'
+#     git: https://github.com/PolarRobotics/PR-Lib.git
+#     path: components/adafruit__adafruit-lis3mdl
 
-  # FastLED
-  fastled:
-    version: '*'
-    git: https://github.com/FastLED/FastLED.git
 
-  # bluekitchen/btstack:
-  #   git: https://github.com/bluekitchen/btstack.git
-  #   path: port/esp32/components/btstack
-  #   version: v1.6.2
 
-  # cmd_nvs:
-  #   git: https://github.com/ricardoquesada/bluepad32.git
-  #   path: src/components/cmd_nvs
-  #   version: 4.2.0
-  # cmd_system:
-  #   git: https://github.com/ricardoquesada/bluepad32.git
-  #   path: src/components/cmd_system
-  #   version: 4.2.0
-  # ricardoquesada/bluepad32:
-  #   git: https://github.com/ricardoquesada/bluepad32.git
-  #   path: src/components/bluepad32
-  #   version: 4.2.0
+# # Bluestack and Bluepad32 original repos
+#   bluekitchen/btstack:
+#     git: https://github.com/bluekitchen/btstack.git
+#     path: port/esp32/components/btstack
+#     version: v1.6.2
+
+# Ricardo Quesada Bluepad32 components
+  #  cmd_nvs:
+  #    git: https://github.com/ricardoquesada/bluepad32.git
+  #    path: src/components/cmd_nvs
+  #    version: 4.2.0
+  #  cmd_system:
+  #    git: https://github.com/ricardoquesada/bluepad32.git
+  #    path: src/components/cmd_system
+  #    version: 4.2.0
+  #  ricardoquesada/bluepad32:
+  #    git: https://github.com/ricardoquesada/bluepad32.git
+  #    path: src/components/bluepad32
+  #    version: 4.2.0
 
