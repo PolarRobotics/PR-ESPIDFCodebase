@@ -9,3 +9,6 @@
 [submodule "components/adafruit_sensor/upstream"]
 	path = components/adafruit_sensor/upstream
 	url = https://github.com/adafruit/Adafruit_Sensor
+[submodule "components/adafruit_busio/upstream"]
+	path = components/adafruit_busio/upstream
+	url = https://github.com/adafruit/Adafruit_BusIO
