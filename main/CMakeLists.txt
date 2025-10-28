@@ -7,6 +7,7 @@ idf_component_register(SRCS "main.cpp"
                                  espressif__arduino-esp32 
                                  pr-lib-motor
                                  fastled
-                                 bluepad32
-                                 bt)
+                                 #bluepad32
+                                 #bt)
+                                        )
 # froijn

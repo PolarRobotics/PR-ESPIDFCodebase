@@ -1,3 +1,8 @@
 [submodule "components/ps5-esp32/upstream"]
 	path = components/ps5-esp32/upstream
 	url = https://github.com/rodneybakiskan/ps5-esp32
+[submodule "components/Adafruit_LIS3MDL/upstream"]
+	path = components/Adafruit_LIS3MDL/upstream
+	url = https://github.com/adafruit/Adafruit_LIS3MDL
+[submodule "components/ps5_esp32"]
+	path = components/ps5_esp32
