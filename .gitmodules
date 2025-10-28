@@ -10,3 +10,6 @@
 [submodule "components/adafruit_busio/upstream"]
 	path = components/adafruit_busio/upstream
 	url = https://github.com/adafruit/Adafruit_BusIO
+[submodule "components/ps5_esp32/upstream"]
+	path = components/ps5_esp32/upstream
+	url = https://github.com/rodneybakiskan/ps5-esp32
