@@ -1,7 +1,9 @@
 
 #include "ConfigManager.h"
 
+#include <string>
 using namespace std;
+using std::string;
 
 ConfigManager::ConfigManager()
 {
