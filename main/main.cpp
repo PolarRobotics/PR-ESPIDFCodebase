@@ -53,8 +53,40 @@ ConfigManager config;
 
 // Prototypes for Controller Callbacks
 // Implementations located at the bottom of this file
-void onConnection();
-void onDisconnect();
+void onConnection()
+{
+  if (ps5.isConnected())
+  {
+    Serial.println(F("Controller Connected."));
+    // ps5.setLed(0, 255, 0);   // set LED green
+    lights.setLEDStatus(Lights::PAIRED);
+  }
+
+  // TODO: perm sln
+  if (robotType != quarterback_turret)
+  {
+    drive->emergencyStop();
+  }
+  else
+  {
+    ((QuarterbackTurret *)robot)->emergencyStop();
+  }
+}
+
+void onDisconnect()
+{
+  Serial.println(F("Controller Disconnected."));
+
+  // TODO: perm sln
+  if (robotType != quarterback_turret)
+  {
+    drive->emergencyStop();
+  }
+  else
+  {
+    ((QuarterbackTurret *)robot)->emergencyStop();
+  }
+}
 
 extern "C" void app_main()
 {
@@ -297,44 +329,11 @@ extern "C" void app_main()
   /**
    * @brief onConnection: Function to be called on controller connect
    */
-  void onConnection()
-  {
-    if (ps5.isConnected())
-    {
-      Serial.println(F("Controller Connected."));
-      // ps5.setLed(0, 255, 0);   // set LED green
-      lights.setLEDStatus(Lights::PAIRED);
-    }
-
-    // TODO: perm sln
-    if (robotType != quarterback_turret)
-    {
-      drive->emergencyStop();
-    }
-    else
-    {
-      ((QuarterbackTurret *)robot)->emergencyStop();
-    }
-  }
 
   /**
    * @brief onDisconnect: Function to be called on controller disconnect
    * Stops bots from driving off and ramming into a wall or someone's foot if they disconnect
    */
-  void onDisconnect()
-  {
-    Serial.println(F("Controller Disconnected."));
-
-    // TODO: perm sln
-    if (robotType != quarterback_turret)
-    {
-      drive->emergencyStop();
-    }
-    else
-    {
-      ((QuarterbackTurret *)robot)->emergencyStop();
-    }
-  }
 
   // WARNING: if program reaches end of function app_main() the MCU will restart.
 }
