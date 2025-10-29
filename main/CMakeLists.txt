@@ -4,7 +4,7 @@ idf_component_register(SRCS "main.cpp"
                                  Pairing  
                                  Robot
                                  Utilities
-                                 espressif__arduino-esp32 
+                                 espressif__arduino-esp32 bt
                                  pr-lib-motor
                                  fastled
                                  #bluepad32
