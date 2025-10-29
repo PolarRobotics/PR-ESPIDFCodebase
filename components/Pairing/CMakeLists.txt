@@ -4,7 +4,7 @@ idf_component_register(SRCS ${PAIRING_SOURCES}
                                     "../../main"  # For PolarRobotics.h
                        REQUIRES Utilities 
                                 Robot 
-                                espressif__arduino-esp32 
+                                espressif__arduino-esp32 bt
                                 fastled 
                                 #bluepad32
                                 #bt)

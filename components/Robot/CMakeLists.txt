@@ -8,4 +8,7 @@ idf_component_register(SRCS ${ROBOT_SOURCES}
                                 espressif__arduino-esp32 
                                 ps5_esp32
                                 pr-lib-motor
+                                adafruit_busio
+                                adafruit_sensor
+                                adafruit_lis3mdl
                                 fastled)

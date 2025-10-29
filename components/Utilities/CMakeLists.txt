@@ -3,5 +3,8 @@ idf_component_register(SRCS ${UTILITIES_SOURCES}
                        INCLUDE_DIRS "."
                                     "../../main"
                        REQUIRES espressif__arduino-esp32 
-                               fastled
+                                fastled
+                                adafruit_lis3mdl
+                                adafruit_busio
+                                adafruit_sensor
                                )
