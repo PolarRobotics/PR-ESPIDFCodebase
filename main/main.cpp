@@ -10,6 +10,12 @@
 #include <Arduino.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 
+// my dumb code
+
+#ifndef LED_BUILTIN
+#define LED_BUILTIN 2
+#endif
+
 // Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>
 #include <pairing.h>
