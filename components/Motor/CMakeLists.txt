@@ -5,7 +5,4 @@ idf_component_register(SRCS ${MOTOR_SOURCES}
                        REQUIRES espressif__arduino-esp32 
                                 pr-lib-motor
                                 Utilities
-                                adafruit_busio
-                                adafruit_sensor
-                                adafruit_lis3mdl
                                )
