@@ -1,3 +1,0 @@
-[submodule "components/ps5-esp32/upstream"]
-	path = components/ps5-esp32/upstream
-	url = https://github.com/rodneybakiskan/ps5-esp32
