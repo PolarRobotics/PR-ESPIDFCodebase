@@ -6,7 +6,7 @@ idf_component_register(SRCS ${PAIRING_SOURCES}
                                 Robot 
                                 espressif__arduino-esp32
                                 fastled 
-                                ps5_esp32
+                                ps5-esp32
                                 bt
                                 nvs_flash
                                 esp_system
