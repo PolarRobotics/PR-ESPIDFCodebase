@@ -1,6 +1,7 @@
 #include "ps5.h"
 
 #include <esp_system.h>
+#include <esp_mac.h>
 #include <string.h>
 
 #include "ps5_int.h"
@@ -17,11 +18,11 @@ static const uint8_t hid_cmd_payload_ps5_enable[] = {0x43, 0x02};
 
 static ps5_connection_callback_t ps5_connection_cb = NULL;
 static ps5_connection_object_callback_t ps5_connection_object_cb = NULL;
-static void* ps5_connection_object = NULL;
+static void *ps5_connection_object = NULL;
 
 static ps5_event_callback_t ps5_event_cb = NULL;
 static ps5_event_object_callback_t ps5_event_object_cb = NULL;
-static void* ps5_event_object = NULL;
+static void *ps5_event_object = NULL;
 
 static bool is_active = false;
 
@@ -40,7 +41,8 @@ static bool is_active = false;
 ** Returns          void
 **
 *******************************************************************************/
-void ps5Init() {
+void ps5Init()
+{
   sppInit();
   ps5_l2cap_init_services();
 }
@@ -69,7 +71,8 @@ bool ps5IsConnected() { return is_active; }
 ** Returns          void
 **
 *******************************************************************************/
-void ps5Enable() {
+void ps5Enable()
+{
   uint16_t length = sizeof(hid_cmd_payload_ps5_enable);
   hid_cmd_t hidCommand;
 
@@ -92,19 +95,20 @@ void ps5Enable() {
 ** Returns          void
 **
 *******************************************************************************/
-void ps5Cmd(ps5_cmd_t cmd) {
+void ps5Cmd(ps5_cmd_t cmd)
+{
   hid_cmd_t hidCommand = {.data = {0x80, 0x00, 0xFF}};
   uint16_t length = sizeof(hidCommand.data);
 
   hidCommand.code = hid_cmd_code_set_report | hid_cmd_code_type_output;
   hidCommand.identifier = hid_cmd_identifier_ps5_control;
 
-  hidCommand.data[ps5_control_packet_index_small_rumble] = cmd.smallRumble;  // Small Rumble
-  hidCommand.data[ps5_control_packet_index_large_rumble] = cmd.largeRumble;  // Big rumble
+  hidCommand.data[ps5_control_packet_index_small_rumble] = cmd.smallRumble; // Small Rumble
+  hidCommand.data[ps5_control_packet_index_large_rumble] = cmd.largeRumble; // Big rumble
 
-  hidCommand.data[ps5_control_packet_index_red] = cmd.r;    // Red
-  hidCommand.data[ps5_control_packet_index_green] = cmd.g;  // Green
-  hidCommand.data[ps5_control_packet_index_blue] = cmd.b;   // Blue
+  hidCommand.data[ps5_control_packet_index_red] = cmd.r;   // Red
+  hidCommand.data[ps5_control_packet_index_green] = cmd.g; // Green
+  hidCommand.data[ps5_control_packet_index_blue] = cmd.b;  // Blue
 
   // Time to flash bright (255 = 2.5 seconds)
   hidCommand.data[ps5_control_packet_index_flash_on_time] = cmd.flashOn;
@@ -124,7 +128,8 @@ void ps5Cmd(ps5_cmd_t cmd) {
 ** Returns          void
 **
 *******************************************************************************/
-void ps5SetLed(uint8_t r, uint8_t g, uint8_t b) {
+void ps5SetLed(uint8_t r, uint8_t g, uint8_t b)
+{
   ps5_cmd_t cmd = {0};
 
   cmd.r = r;
@@ -157,7 +162,8 @@ void ps5SetOutput(ps5_cmd_t prevCommand) { ps5Cmd(prevCommand); }
 ** Returns          void
 **
 *******************************************************************************/
-void ps5SetConnectionCallback(ps5_connection_callback_t cb) {
+void ps5SetConnectionCallback(ps5_connection_callback_t cb)
+{
   ps5_connection_cb = cb;
 }
 
@@ -172,7 +178,8 @@ void ps5SetConnectionCallback(ps5_connection_callback_t cb) {
 ** Returns          void
 **
 *******************************************************************************/
-void ps5SetConnectionObjectCallback(void* object, ps5_connection_object_callback_t cb) {
+void ps5SetConnectionObjectCallback(void *object, ps5_connection_object_callback_t cb)
+{
   ps5_connection_object_cb = cb;
   ps5_connection_object = object;
 }
@@ -199,7 +206,8 @@ void ps5SetEventCallback(ps5_event_callback_t cb) { ps5_event_cb = cb; }
 ** Returns          void
 **
 *******************************************************************************/
-void ps5SetEventObjectCallback(void* object, ps5_event_object_callback_t cb) {
+void ps5SetEventObjectCallback(void *object, ps5_event_object_callback_t cb)
+{
   ps5_event_object_cb = cb;
   ps5_event_object = object;
 }
@@ -215,7 +223,8 @@ void ps5SetEventObjectCallback(void* object, ps5_event_object_callback_t cb) {
 ** Returns          void
 **
 *******************************************************************************/
-void ps5SetBluetoothMacAddress(const uint8_t* mac) {
+void ps5SetBluetoothMacAddress(const uint8_t *mac)
+{
   // The bluetooth MAC address is derived from the base MAC address
   // https://docs.espressif.com/projects/esp-idf/en/stable/api-reference/system/system.html#mac-address
   uint8_t baseMac[6];
@@ -228,35 +237,46 @@ void ps5SetBluetoothMacAddress(const uint8_t* mac) {
 /*                      L O C A L    F U N C T I O N S */
 /********************************************************************************/
 
-void ps5ConnectEvent(uint8_t is_connected) {
-    if (is_connected) {
-        ps5Enable();
-    } else {
-        is_active = false;
-    }
+void ps5ConnectEvent(uint8_t is_connected)
+{
+  if (is_connected)
+  {
+    ps5Enable();
+  }
+  else
+  {
+    is_active = false;
+  }
 }
 
-
-void ps5PacketEvent(ps5_t ps5, ps5_event_t event) {
-    // Trigger packet event, but if this is the very first packet
-    // after connecting, trigger a connection event instead
-    if (is_active) {
-        if(ps5_event_cb != NULL) {
-            ps5_event_cb(ps5, event);
-        }
-
-        if (ps5_event_object_cb != NULL && ps5_event_object != NULL) {
-            ps5_event_object_cb(ps5_event_object, ps5, event);
-        }
-    } else {
-        is_active = true;
-
-        if(ps5_connection_cb != NULL) {
-            ps5_connection_cb(is_active);
-        }
-
-        if (ps5_connection_object_cb != NULL && ps5_connection_object != NULL) {
-            ps5_connection_object_cb(ps5_connection_object, is_active);
-        }
+void ps5PacketEvent(ps5_t ps5, ps5_event_t event)
+{
+  // Trigger packet event, but if this is the very first packet
+  // after connecting, trigger a connection event instead
+  if (is_active)
+  {
+    if (ps5_event_cb != NULL)
+    {
+      ps5_event_cb(ps5, event);
     }
+
+    if (ps5_event_object_cb != NULL && ps5_event_object != NULL)
+    {
+      ps5_event_object_cb(ps5_event_object, ps5, event);
+    }
+  }
+  else
+  {
+    is_active = true;
+
+    if (ps5_connection_cb != NULL)
+    {
+      ps5_connection_cb(is_active);
+    }
+
+    if (ps5_connection_object_cb != NULL && ps5_connection_object != NULL)
+    {
+      ps5_connection_object_cb(ps5_connection_object, is_active);
+    }
+  }
 }
