@@ -1,15 +1,3 @@
 [submodule "components/ps5-esp32/upstream"]
 	path = components/ps5-esp32/upstream
 	url = https://github.com/rodneybakiskan/ps5-esp32
-[submodule "components/adafruit_lis3mdl/upstream"]
-	path = components/adafruit_lis3mdl/upstream
-	url = https://github.com/adafruit/Adafruit_LIS3MDL
-[submodule "components/adafruit_sensor/upstream"]
-	path = components/adafruit_sensor/upstream
-	url = https://github.com/adafruit/Adafruit_Sensor
-[submodule "components/adafruit_busio/upstream"]
-	path = components/adafruit_busio/upstream
-	url = https://github.com/adafruit/Adafruit_BusIO
-[submodule "components/ps5_esp32/upstream"]
-	path = components/ps5_esp32/upstream
-	url = https://github.com/rodneybakiskan/ps5-esp32
