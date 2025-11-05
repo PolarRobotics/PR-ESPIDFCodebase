@@ -8,4 +8,6 @@ idf_component_register(SRCS ${PAIRING_SOURCES}
                                 fastled 
                                 ps5_esp32
                                 bt
+                                nvs_flash
+                                esp_system
                                        )
