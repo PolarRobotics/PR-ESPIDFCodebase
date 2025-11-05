@@ -52,26 +52,3 @@ dependencies:
     version: '*'
     git: https://github.com/PolarRobotics/PR-Lib.git
     path: components/ps5_esp32
-
-
-
-# # Bluestack and Bluepad32 original repos
-#   bluekitchen/btstack:
-#     git: https://github.com/bluekitchen/btstack.git
-#     path: port/esp32/components/btstack
-#     version: v1.6.2
-
-# Ricardo Quesada Bluepad32 components
-  #  cmd_nvs:
-  #    git: https://github.com/ricardoquesada/bluepad32.git
-  #    path: src/components/cmd_nvs
-  #    version: 4.2.0
-  #  cmd_system:
-  #    git: https://github.com/ricardoquesada/bluepad32.git
-  #    path: src/components/cmd_system
-  #    version: 4.2.0
-  #  ricardoquesada/bluepad32:
-  #    git: https://github.com/ricardoquesada/bluepad32.git
-  #    path: src/components/bluepad32
-  #    version: 4.2.0
-
