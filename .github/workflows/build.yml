@@ -1,0 +1,21 @@
+name: ESP-IDF Build (PR)
+
+on:
+  pull_request:
+    branches: [ "production", "dev/main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    container:
+      image: espressif/idf:release-v5.5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set target and build the project
+      run: |
+        . /opt/esp/idf/export.sh
+        idf.py set-target esp32
+        idf.py build
