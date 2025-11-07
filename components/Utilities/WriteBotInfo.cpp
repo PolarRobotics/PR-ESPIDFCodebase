@@ -8,75 +8,59 @@ ConfigManager config;
 
 bool validConfig = false;
 
-void setup() {
+extern "C" void app_main()
+{
+  initArduino();
+
   Serial.begin(115200);
   Serial.println(F("Writing Bot Type\n"));
 
-  //* STANDARD BOT CONFIGURATION
-  //! If you want to use a predefined robot from BotTypes.h, declare the index here:
-  // based on https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
-  //! Please reset to zero when you are done uploading to avoid merge conflicts.
-  //* BOT_INDEX define configured using GUI via environment variable, do not define
-  #ifndef BOT_INDEX
-    #define BOT_INDEX 0  // Default to 0 if not defined
-  #endif
+//* STANDARD BOT CONFIGURATION
+#ifndef BOT_INDEX
+#define BOT_INDEX 0 // Default to 0 if not defined
+#endif
   uint8_t index = BOT_INDEX;
 
   //* CUSTOM BOT CONFIGURATION
-  //! If you want to set custom bot and motor type, assign index appropriately, then assign these:
-  BotType bot_type = lineman; 
+  BotType bot_type = lineman;
   MotorType motor_type = small_12v;
   float gear_ratio = 1;
   float wheel_base = 10;
   float r_min = 9.00f;
   float r_max = 36.00f;
 
-  //! Do not use custom config except for TEMPORARY testing, OR:
-  //! DO NOT USE WITHOUT DOCUMENTING YOUR CHANGES BY:
-  //! - sending a message in the programming chat in Discord, AND:
-  //! - making a comment in the bot types spreadsheet (see link above), AND:
-  //! - mirroring your changes into botConfigArray in BotTypes.h and pushing your changes to a new branch as appropriate
   constexpr bool useCustomConfig = false;
 
-  if (useCustomConfig) {
+  if (useCustomConfig)
+  {
     //* Write custom bot configuration
     validConfig = config.setConfig(index, bot_type, motor_type, gear_ratio, wheel_base, r_min, r_max);
-  } else {
+  }
+  else
+  {
     //* Write standard bot configuration from BotTypes.botConfigArray
     validConfig = config.setConfig(index);
   }
 
-  if (validConfig) {
+  if (validConfig)
+  {
     Serial.println(F("Config write successful"));
-  } else {
+  }
+  else
+  {
     Serial.println(F("Error writing bot config"));
   }
 
   //* Read back for verification
   Serial.println(F("Readback:"));
-  config.read(); // read the configuration from eeprom
+  config.read();                      // read the configuration from eeprom
   Serial.print(F(config.toString())); // print the configuration to the serial monitor
 
-  // const char* retrievedAddr;
-  // getAddress(retrievedAddr);
-  // Serial.print(F("Retrieved Mac Address from Config: "));
-  // Serial.print(retrievedAddr);
-  // Serial.println();
-
-  // delay(100);
-
-  // Serial.print(F("Storing Mac Address"));
-  // storeAddress("10:18:49:57:49:ef", true);
-  // Serial.println();
-
-  // delay(100);
-
-  // getAddress(retrievedAddr);
-  // Serial.print(F("Retrieved Mac Address from Config: "));
-  // Serial.print(retrievedAddr);
-  // Serial.println();
-
   Serial.println(F("Done"));
-}
 
-void loop() {}
+  // Keep the app alive rather than returning from app_main (which would reboot)
+  while (true)
+  {
+    delay(1000);
+  }
+}

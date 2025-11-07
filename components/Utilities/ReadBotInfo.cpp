@@ -8,22 +8,28 @@
 //! Instantiate ConfigManager
 ConfigManager config;
 
-void setup() {
+extern "C" void app_main()
+{
+  initArduino();
+
   Serial.begin(115200);
   Serial.println(F("Reading:"));
 
-  config.read(); //! In setup(), read config
+  config.read(); //! In app_main(), read config
 
   //! Use getBotType() and getMotorType() to retrieve the appropriate BotType and MotorType
   //! Then decide in your code (ex. main.cpp) how to handle this (ex. instantiating Robot subclass))
   // config.getBotType();
   // config.getMotorType();
-  
+
   // Prints all properties of the config object retrieved from EEPROM, including bot and motor type
   // However this isn't accessible in code, so use the two methods above when not debugging
   Serial.print(F(config.toString()));
 
   Serial.println(F("Done"));
-}
 
-void loop() {}
+  while (true)
+  {
+    delay(1000);
+  }
+}
