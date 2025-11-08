@@ -1,0 +1,54 @@
+{
+  "robot": {
+    "build": {
+      "compileArgs": [],
+      "ninjaArgs": [],
+      "buildDirectoryPath": "/workspaces/PR-ESPIDFCodebase/build/robot",
+      "sdkconfigDefaults": [
+        "/workspaces/PR-ESPIDFCodebase/sdkconfig.defaults"
+      ],
+      "sdkconfigFilePath": "/workspaces/PR-ESPIDFCodebase/build/robot/sdkconfig"
+    },
+    "env": {},
+    "flashBaudRate": "",
+    "idfTarget": "",
+    "monitorBaudRate": "",
+    "openOCD": {
+      "debugLevel": -1,
+      "configs": [],
+      "args": []
+    },
+    "tasks": {
+      "preBuild": "",
+      "preFlash": "",
+      "postBuild": "",
+      "postFlash": ""
+    }
+  },
+  "write-bot-info": {
+    "build": {
+      "compileArgs": [],
+      "ninjaArgs": [],
+      "buildDirectoryPath": "/workspaces/PR-ESPIDFCodebase/build/write-bot-info",
+      "sdkconfigDefaults": [
+        "/workspaces/PR-ESPIDFCodebase/sdkconfig.defaults"
+      ],
+      "sdkconfigFilePath": "/workspaces/PR-ESPIDFCodebase/build/write-bot-info/sdkconfig"
+    },
+    "env": {},
+    "flashBaudRate": "",
+    "idfTarget": "",
+    "monitorBaudRate": "",
+    "openOCD": {
+      "debugLevel": -1,
+      "configs": [],
+      "args": []
+    },
+    "tasks": {
+      "preBuild": "",
+      "preFlash": "",
+      "postBuild": "",
+      "postFlash": ""
+    }
+  }
+}
