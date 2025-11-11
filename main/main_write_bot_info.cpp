@@ -19,7 +19,7 @@ extern "C" void main_app(void)
 #ifndef BOT_INDEX
 #define BOT_INDEX 0 // Default to 0 if not defined
 #endif
-  uint8_t index = 4;
+  uint8_t index = BOT_INDEX;
 
   //* CUSTOM BOT CONFIGURATION
   BotType bot_type = lineman;
