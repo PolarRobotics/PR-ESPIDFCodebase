@@ -18,18 +18,5 @@ menu "Project configuration"
         tiny image which compiles only the sources required to write bot info
         (Utilities/WriteBotInfo and minimal dependencies). This corresponds to
         the PlatformIO `write_bot_info` environment.
-    config ENV_READ_BOT_INFO
-      bool "Read bot info (helper image)"
-      help
-        Small helper firmware used to read bot info. Select this to build a
-        tiny image which compiles only the sources required to read bot info
-        (Utilities/ReadBotInfo and minimal dependencies). This corresponds to
-        the PlatformIO `read_bot_info` environment.
-    config ENV_DEPAIRING
-      bool "Depairing (light pairing/depairing firmware)"
-      help
-        Build a smaller firmware used for depairing/pairing operations. This
-        includes only a subset of sources (depairingStation, pairing, and
-        minimal robot LED helpers).
   endchoice
 endmenu

@@ -88,7 +88,7 @@ void onDisconnect()
   }
 }
 
-extern "C" void app_main()
+extern "C" void main(void)
 {
   initArduino();
   /*

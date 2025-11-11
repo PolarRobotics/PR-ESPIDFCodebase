@@ -8,7 +8,7 @@ ConfigManager config;
 
 bool validConfig = false;
 
-extern "C" void app_main()
+extern "C" void main(void)
 {
   initArduino();
 

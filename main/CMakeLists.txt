@@ -1,4 +1,5 @@
-idf_component_register(SRCS "main_write_bot_info.cpp" "main_robot.cpp"
+idf_component_register( 
+                       SRCS "main.c"
                        INCLUDE_DIRS "."
                        REQUIRES  Drive
                                  Pairing  
