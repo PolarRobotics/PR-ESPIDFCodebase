@@ -8,12 +8,12 @@
 */
 #include <stdio.h>
 #include "sdkconfig.h"
-#include "main.h"
+#include "main_app.h"
 
 void app_main(void)
 {
     /* This will call func() either from func_dev.c or func_prod.c, depending on
      * the build configuration.
      */
-    main();
+    main_app();
 }

@@ -10,8 +10,8 @@
       "sdkconfigFilePath": "/workspaces/PR-ESPIDFCodebase/build/robot/sdkconfig"
     },
     "env": {},
-    "flashBaudRate": "",
     "idfTarget": "",
+    "flashBaudRate": "",
     "monitorBaudRate": "",
     "openOCD": {
       "debugLevel": -1,
@@ -31,13 +31,16 @@
       "ninjaArgs": [],
       "buildDirectoryPath": "/workspaces/PR-ESPIDFCodebase/build/write-bot-info",
       "sdkconfigDefaults": [
-        "/workspaces/PR-ESPIDFCodebase/sdkconfig.defaults"
+        "/workspaces/PR-ESPIDFCodebase/sdkconfig.defaults",
+        "/workspaces/PR-ESPIDFCodebase/sdkconfig.defaults.write_bot_info"
       ],
       "sdkconfigFilePath": "/workspaces/PR-ESPIDFCodebase/build/write-bot-info/sdkconfig"
     },
-    "env": {},
-    "flashBaudRate": "",
+    "env": {
+      "CFG_WRITABLE": "1"
+    },
     "idfTarget": "",
+    "flashBaudRate": "",
     "monitorBaudRate": "",
     "openOCD": {
       "debugLevel": -1,

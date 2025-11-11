@@ -15,4 +15,4 @@
  * See func_dev.c and func_prod.c. Which of the files is compiled is determined in
  * CMakeLists.txt,
  */
-void main(void);
+void main_app(void);
