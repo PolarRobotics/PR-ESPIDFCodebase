@@ -31,7 +31,8 @@
   "write-bot-info": {
     "build": {
       "compileArgs": [
-        "-D CFG_WRITABLE=1"
+        "-D CFG_WRITABLE=1",
+        "-D BOT_INDEX=4"
       ],
       "ninjaArgs": [],
       "buildDirectoryPath": "/workspaces/PR-ESPIDFCodebase/build/write-bot-info",
