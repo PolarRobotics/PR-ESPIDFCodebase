@@ -3,6 +3,8 @@ sdkconfig.old
 
 # VSCode
 .vscode
+!.vscode/launch.json
+
 
 .config
 *.o
