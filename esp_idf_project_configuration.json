@@ -1,7 +1,9 @@
 {
   "robot": {
     "build": {
-      "compileArgs": [],
+      "compileArgs": [
+        "-G Ninja"
+      ],
       "ninjaArgs": [],
       "buildDirectoryPath": "/workspaces/PR-ESPIDFCodebase/build/robot",
       "sdkconfigDefaults": [
@@ -32,7 +34,8 @@
     "build": {
       "compileArgs": [
         "-D CFG_WRITABLE=1",
-        "-D BOT_INDEX=4"
+        "-D BOT_INDEX=4",
+        "-G Ninja"
       ],
       "ninjaArgs": [],
       "buildDirectoryPath": "/workspaces/PR-ESPIDFCodebase/build/write-bot-info",
