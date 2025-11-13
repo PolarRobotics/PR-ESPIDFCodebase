@@ -7,18 +7,18 @@
             "displayName": "Robot",
             "description": "Build the main robot firmware. This is the default environment and includes most source files used for the robot runtime.",
             "cacheVariables": {
-                "SDKCONFIG_DEFAULTS": "sdkconfig.defaults",
+                "SDKCONFIG_DEFAULTS": "sdkconfig.defaults;sdkconfig.defaults.robot",
                 "SDKCONFIG": "./build/robot/sdkconfig"
             }
         },
         {
-            "name": "write_bot_info",
-            "binaryDir": "build/write_bot_info",
+            "name": "write-bot-info",
+            "binaryDir": "build/write-bot-info",
             "displayName": "Write Bot Info",
             "description": "Small helper firmware used to write bot info. Writes the bot index value found in BotTypes.h to the EEPROM.",
             "cacheVariables": {
                 "SDKCONFIG_DEFAULTS": "sdkconfig.defaults;sdkconfig.defaults.write_bot_info",
-                "SDKCONFIG": "./build/write_bot_info/sdkconfig"
+                "SDKCONFIG": "./build/write-bot-info/sdkconfig"
             }
         }
     ]
