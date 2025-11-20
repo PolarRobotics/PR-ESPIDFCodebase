@@ -34,7 +34,6 @@
 #include <Preferences.h> // to store address of controller on flash
 #include "pairing.h"     // also includes PolarRobotics.h
 #include <builtInLED.h>  // pairing routine flashes LED to signify stages of pairing
-#include <Lights.h>
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
@@ -208,7 +207,6 @@ void activatePairing(bool doRePair, int discoverTime)
     {
       delay(LOOP_DELAY);
       timer += LOOP_DELAY;
-      Lights::getInstance().updateLEDS();
 
       // double blink when in pairing mode like PS5 controller
       // at: 300/400, 600/700
@@ -260,7 +258,6 @@ void activatePairing(bool doRePair, int discoverTime)
           {
             toggleBuiltInLED(); // fast blinking when hooked into a device but not yet connected
             delay(LOOP_DELAY);
-            Lights::getInstance().updateLEDS();
           }
           Serial.print(F("PS5 Controller Connected: "));
           Serial.println(ps5.isConnected());
