@@ -20,4 +20,4 @@ idf_component_register(SRCS ${ROBOT_SOURCES}
                                 ps5-esp32
                                 pr-lib-motor
                                 adafruit_lis3mdl
-                                fastled)
+                                )

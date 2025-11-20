@@ -8,7 +8,7 @@ idf_component_register(
                                  espressif__arduino-esp32 
                                  bt
                                  pr-lib-motor
-                                 fastled)
+                                 )
 
 if(CONFIG_ENV_ROBOT)
     target_sources(${COMPONENT_LIB} PRIVATE "main_robot.cpp")

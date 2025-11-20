@@ -46,11 +46,3 @@ set(CMAKE_CXX_EXTENSIONS ON)
 idf_build_set_property(MINIMAL_BUILD ON)
 
 project(PR-ESPIDFCodebase)
-
-idf_component_get_property(fastled_lib fastled COMPONENT_LIB)
-if(fastled_lib)
-  target_compile_options(${fastled_lib} PRIVATE
-    -Wno-error=narrowing
-    -Wno-error=missing-field-initializers
-  )
-endif()
