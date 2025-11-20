@@ -29,6 +29,7 @@
 					"board/esp32-wrover-kit-3.3v.cfg"
 				],
 				"idf.saveBeforeBuild": true,
+				"idf.saveScope": "workspace",
 				"idf.enableCodeCoverage": false,
 				// Enhanced file associations
 				"files.associations": {
