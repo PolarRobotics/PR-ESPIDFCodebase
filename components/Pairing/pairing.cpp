@@ -52,7 +52,7 @@ BluetoothSerial SerialBT;
 #define LOOP_DELAY 100
 
 constexpr size_t MAC_ADDR_STR_LEN = 18;           // "xx:xx:xx:xx:xx:xx" + null terminator
-constexpr int DOUBLE_BLINK_PERIOD_STEPS = 15;     // 1.5 seconds per cycle when LOOP_DELAY is 100 ms
+constexpr int DOUBLE_BLINK_PERIOD_STEPS = 10;     // 1 seconds per cycle when LOOP_DELAY is 100 ms
 constexpr int DOUBLE_BLINK_FIRST_START_STEP = 5;  // wait ~500 ms before the first blink
 constexpr int DOUBLE_BLINK_SECOND_START_STEP = 7; // quick gap between the blinks
 constexpr int DOUBLE_BLINK_ON_DURATION_STEPS = 1; // keep LED on for one LOOP_DELAY slice per blink
