@@ -1,6 +1,6 @@
 /**
  * @brief Implements pairing functions.
- * @author Max Phillips
+ * @author Max Phillips, Corbin Hibler
  * Adapted from: https://github.com/espressif/arduino-esp32/blob/master/libraries/BluetoothSerial/examples/DiscoverConnect/DiscoverConnect.ino
  *
  * Provides a framework to handle pairing of an ESP32 to a PS5 controller.
@@ -29,12 +29,12 @@
  */
 
 #include <map>
+#include <cstring>
 #include <BluetoothSerial.h>
 #include <ps5Controller.h>
 #include <Preferences.h> // to store address of controller on flash
 #include "pairing.h"     // also includes PolarRobotics.h
 #include <builtInLED.h>  // pairing routine flashes LED to signify stages of pairing
-#include <Lights.h>
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
@@ -44,14 +44,18 @@
 // #error Serial Bluetooth not available or not enabled. It is only available for the ESP32 chip.
 // #endif
 
-#define yeet return
-
 #define PREF_KEY "bt-mac" // preferences namespace, limited to 15 characters
 Preferences prefs;
 
 BluetoothSerial SerialBT;
 
 #define LOOP_DELAY 100
+
+constexpr size_t MAC_ADDR_STR_LEN = 18;           // "xx:xx:xx:xx:xx:xx" + null terminator
+constexpr int DOUBLE_BLINK_PERIOD_STEPS = 15;     // 1.5 seconds per cycle when LOOP_DELAY is 100 ms
+constexpr int DOUBLE_BLINK_FIRST_START_STEP = 5;  // wait ~500 ms before the first blink
+constexpr int DOUBLE_BLINK_SECOND_START_STEP = 7; // quick gap between the blinks
+constexpr int DOUBLE_BLINK_ON_DURATION_STEPS = 1; // keep LED on for one LOOP_DELAY slice per blink
 
 bool foundController = false;
 
@@ -60,9 +64,11 @@ esp_spp_sec_t sec_mask = ESP_SPP_SEC_NONE; // or ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC
 esp_spp_role_t role = ESP_SPP_ROLE_SLAVE;  // ESP_SPP_ROLE_MASTER or ESP_SPP_ROLE_SLAVE
 
 // MAC Addresses to match to PS5 Controllers
-const char *macTest = "bc:c7:46:03";        // length 11
-const char *macTest2 = "bc:c7:46:04";       // length 11
-const char *RhysController = "10:18:49:57"; // length 17 "10:18:49:57:49:ef"
+const char *macTest = "bc:c7:46:03";                 // length 11
+const char *macTest2 = "bc:c7:46:04";                // length 11
+const char *macTest3 = "14:3a:9a";                   // length 8
+const char *RhysController = "10:18:49:57";          // length 17 "10:18:49:57:49:ef"
+const char *NewCamoController = "90:b6:85:f8:e3:c2"; // length 17 "90:b6:85:f8:e3:c2"
 
 /// @brief Detects if a given MAC Address is considered a PS5 Controller
 /// @param addrCharPtr the address to test (C string)
@@ -73,10 +79,32 @@ bool addressIsController(const char *addrCharPtr)
     return true;
   else if (strncmp(addrCharPtr, macTest2, 11) == 0)
     return true;
+  else if (strncmp(addrCharPtr, macTest3, 8) == 0)
+    return true;
   else if (strncmp(addrCharPtr, RhysController, 11) == 0)
+    return true;
+  else if (strncmp(addrCharPtr, NewCamoController, 17) == 0)
     return true;
   else
     return false;
+}
+
+/// @brief Copies a BTAddress string representation into a destination buffer.
+/// @param addr source BTAddress
+/// @param dest destination char buffer
+/// @param len size of destination buffer
+void copyAddressToBuffer(const BTAddress &addr, char *dest, size_t len)
+{
+  if (dest == nullptr || len == 0)
+    return;
+
+  memset(dest, 0, len);
+  size_t copyLen = len - 1;
+  if (len == 1)
+    copyLen = 0;
+
+  strncpy(dest, addr.toString().c_str(), copyLen);
+  dest[len - 1] = '\0';
 }
 
 /// @brief Begins the asynchronous discovery process for PS5 controllers
@@ -92,7 +120,9 @@ bool startDiscovery()
       // Tests if the address of the device found is a controller, 
       // or if the device is named 'Wireless Controller'
       // If so, foundController is asserted.
-      if (addressIsController(&pDevice->getAddress().toString().c_str()[0]) 
+      char asyncAddr[MAC_ADDR_STR_LEN] = {0};
+      copyAddressToBuffer(pDevice->getAddress(), asyncAddr, sizeof(asyncAddr));
+      if (addressIsController(asyncAddr) 
         || (strcmp(pDevice->getName().c_str(), "Wireless Controller") == 0) 
         || (strcmp(pDevice->getName().c_str(), "DualSense Wireless Controller") == 0))
         foundController = true; });
@@ -114,7 +144,7 @@ void storeAddress(const char *addr, bool clear = false)
   // Store MAC Address
   size_t size = prefs.putString(PREF_KEY, str);
   Serial.print(F("Storing MAC Address: "));
-  Serial.print(&str.c_str()[0]);
+  Serial.print(str.c_str());
   Serial.print(F(", of size "));
   Serial.println(size);
   prefs.end();
@@ -125,15 +155,16 @@ void storeAddress(const char *addr, bool clear = false)
 /// Used: https://stackoverflow.com/questions/5660527/how-do-i-return-a-char-array-from-a-function
 void getAddress(const char *&addr)
 {
+  static String storedAddress;
   prefs.begin(PREF_KEY, true); // true is read-only mode
-  String str = prefs.getString(PREF_KEY, "");
+  storedAddress = prefs.getString(PREF_KEY, "");
   Serial.print(F("Retrieved MAC Address: "));
-  Serial.println(&str.c_str()[0]);
+  Serial.println(storedAddress.c_str());
   prefs.end();
-  if (str == "")
+  if (storedAddress == "")
     addr = nullptr;
   else
-    addr = &str.c_str()[0]; // get value of char ptr string
+    addr = storedAddress.c_str();
 }
 
 /// @brief Search for PS5 Controllers and pair to the first one found
@@ -146,6 +177,7 @@ void activatePairing(bool doRePair, int discoverTime)
 
   // if we just returned a char*, it would be deleted and point to nowhere useful
   // so we have to pass in and mutate a (reference to a) char array.
+  char discoveredAddr[MAC_ADDR_STR_LEN] = {0};
   const char *addrCharPtr = nullptr;
   getAddress(addrCharPtr);
 
@@ -176,7 +208,8 @@ void activatePairing(bool doRePair, int discoverTime)
       if (ps5.isConnected())
       {
         Serial.println(F("PS5 Controller Connected!"));
-        yeet;
+        setBuiltInLED(true); // solid blue light when fully paired
+        return;
       } // otherwise look for devices to pair with
     }
   }
@@ -202,23 +235,19 @@ void activatePairing(bool doRePair, int discoverTime)
     {
       delay(LOOP_DELAY);
       timer += LOOP_DELAY;
-      Lights::getInstance().updateLEDS();
 
-      // double blink when in pairing mode like PS5 controller
-      // at: 300/400, 600/700
-      if ((timer % 1000) % (7 * LOOP_DELAY) == 0)
-        toggleBuiltInLED();
-      else if ((timer % 1000) % (4 * LOOP_DELAY) == 0)
-        toggleBuiltInLED();
-      else if ((timer % 1000) % (3 * LOOP_DELAY) == 0 &&
-               (timer % 1000) % (9 * LOOP_DELAY) != 0) // also does 600
-        toggleBuiltInLED();
+      // emulate PS5 pairing animation: pause, blink twice quickly, repeat
+      const int cycleStep = ((timer / LOOP_DELAY) % DOUBLE_BLINK_PERIOD_STEPS);
+      const bool inFirstBlink = (cycleStep >= DOUBLE_BLINK_FIRST_START_STEP) &&
+                                (cycleStep < DOUBLE_BLINK_FIRST_START_STEP + DOUBLE_BLINK_ON_DURATION_STEPS);
+      const bool inSecondBlink = (cycleStep >= DOUBLE_BLINK_SECOND_START_STEP) &&
+                                 (cycleStep < DOUBLE_BLINK_SECOND_START_STEP + DOUBLE_BLINK_ON_DURATION_STEPS);
+      setBuiltInLED(inFirstBlink || inSecondBlink);
     }
 
     Serial.println(F("Stopping discoverAsync... "));
     SerialBT.discoverAsyncStop();
     Serial.println(F("discoverAsync stopped"));
-    delay(5000); //! why is this delay here? does removing it affect anything? this was in the original code, I must never have noticed it.
 
     // If we find devices, list them and try to pair if it is a valid controller.
     if (btDeviceList->getCount() > 0)
@@ -230,20 +259,27 @@ void activatePairing(bool doRePair, int discoverTime)
       {
         BTAdvertisedDevice *device = btDeviceList->getDevice(i);
         addr = device->getAddress();
-        auto name = device->getName().c_str();  // get name to print and check
-        auto addrStr = addr.toString().c_str(); // std::string doesn't work with Serial.print for some reason
-        // ps5.begin requires a const char*, so get memory address of string/char array
-        addrCharPtr = &addr.toString().c_str()[0]; // declared at top of function
+        copyAddressToBuffer(addr, discoveredAddr, sizeof(discoveredAddr));
+        addrCharPtr = discoveredAddr;
+
+        Serial.print("addrCharPtr: ");
+        Serial.println(addrCharPtr);
 
         // print out relevant controller details
         // reminder that we need to use flash strings whenever possible, so don't try to collapse this
         Serial.print(i);
         Serial.print(F(" | "));
-        Serial.print(addr.toString().c_str());
+        Serial.print(addrCharPtr);
         Serial.print(F(" | "));
         Serial.print(device->getName().c_str());
         Serial.print(F(" | "));
         Serial.println(device->getRSSI());
+
+        Serial.print(F("Checking if device is one of our listed MAC addresses... "));
+        Serial.println(addressIsController(addrCharPtr) ? F("YES") : F("NO"));
+
+        Serial.print(F("Checking if device name matches... "));
+        Serial.println((strcmp(device->getName().c_str(), "Wireless Controller") == 0) ? F("YES") : F("NO"));
 
         if (addressIsController(addrCharPtr) || (strcmp(device->getName().c_str(), "Wireless Controller") == 0))
         {
@@ -254,11 +290,10 @@ void activatePairing(bool doRePair, int discoverTime)
           {
             toggleBuiltInLED(); // fast blinking when hooked into a device but not yet connected
             delay(LOOP_DELAY);
-            Lights::getInstance().updateLEDS();
           }
           Serial.print(F("PS5 Controller Connected: "));
           Serial.println(ps5.isConnected());
-          storeAddress(&addr.toString().c_str()[0], true);
+          storeAddress(addrCharPtr, true);
           setBuiltInLED(true); // solid blue light when fully paired
         }
       }

@@ -8,7 +8,7 @@ ConfigManager config;
 
 bool validConfig = false;
 
-extern "C" void app_main()
+extern "C" void main_app(void)
 {
   initArduino();
 
@@ -19,7 +19,7 @@ extern "C" void app_main()
 #ifndef BOT_INDEX
 #define BOT_INDEX 0 // Default to 0 if not defined
 #endif
-  uint8_t index = BOT_INDEX;
+  uint8_t index = 4;
 
   //* CUSTOM BOT CONFIGURATION
   BotType bot_type = lineman;

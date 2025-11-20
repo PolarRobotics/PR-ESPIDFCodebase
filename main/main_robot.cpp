@@ -22,7 +22,6 @@
 #include <ConfigManager.h>
 
 // Robot Includes
-#include <Lights.h>
 #include <Robot.h>
 #include <Lineman.h>
 #include <Center.h>
@@ -39,7 +38,6 @@
 // Primary Parent Component Pointers
 Robot *robot = nullptr; // subclassed if needed
 Drive *drive = nullptr; // subclassed if needed
-Lights &lights = Lights::getInstance();
 
 //* How to use subclasses: ((SubclassName*) robot)->function()
 //! You must downcast each time you use a special function
@@ -59,7 +57,6 @@ void onConnection()
   {
     Serial.println(F("Controller Connected."));
     // ps5.setLed(0, 255, 0);   // set LED green
-    lights.setLEDStatus(Lights::PAIRED);
   }
 
   // TODO: perm sln
@@ -88,7 +85,7 @@ void onDisconnect()
   }
 }
 
-extern "C" void app_main()
+extern "C" void main_app(void)
 {
   initArduino();
   /*
@@ -121,7 +118,6 @@ extern "C" void app_main()
   // An initialization of `robot` as a new Robot subclass
   // An initialization of `drive` as a new Drive subclass
   // A call to drive->setupMotors (or downcast and call to override)
-  // An initialization of `lights` if needed depending on the bot type
   case kicker:
     robot = new Kicker(SPECBOT_PIN1, SPECBOT_PIN2, ENC1_CHA, ENC1_CHB);
     drive = new Drive(kicker, driveParams);
@@ -176,15 +172,8 @@ extern "C" void app_main()
 
   // drive->printSetup();
 
-  // Set up and initialize lights for pairing process
-  lights.setupLEDS();
-  lights.setLEDStatus(Lights::PAIRING);
-
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
-
-  // Once paired, set lights to appropriate status
-  lights.setLEDStatus(Lights::PAIRED);
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
@@ -252,54 +241,15 @@ extern "C" void app_main()
           drive->setSpeedScalar(Drive::NORMAL);
         }
 
-        if (ps5.Share())
-          lights.setLEDStatus(Lights::DISCO);
+        // Manual Home / Away Position Setting
+        // if (ps5.Options())
+        //   ;
 
-        // Manual LED State Toggle (Home/Away/Off)
-        if (ps5.Options())
-          lights.togglePosition();
-
-        // If the robot is able to hold the ball, it is able to be tackled:
-        if (robotType == receiver || robotType == quarterback_old || robotType == runningback)
-        {
-          // if the lights are in the home or away state and the tackle pin goes low (tackle sensor is active low), enter the tackled state
-          if ((lights.returnStatus() == Lights::HOME || lights.returnStatus() == Lights::AWAY) && digitalRead(TACKLE_PIN) == LOW)
-          {
-            lights.setLEDStatus(Lights::TACKLED);
-            lights.tackleTime = millis();
-          }
-          // leave the tackled state after some time and the tackle sensor pin went back to high
-          else if ((millis() - lights.tackleTime) >= lights.switchTime &&
-                   lights.returnStatus() == Lights::TACKLED && digitalRead(TACKLE_PIN) == HIGH)
-          {
-            switch (lights.homeStatus())
-            {
-            case Lights::HOME:
-              lights.setLEDStatus(Lights::HOME);
-              break;
-            case Lights::AWAY:
-              lights.setLEDStatus(Lights::AWAY);
-              break;
-            case Lights::OFF:
-              lights.setLEDStatus(Lights::OFF);
-              break;
-            }
-          }
-
-          if (lights.returnStatus() == lights.DISCO)
-            lights.updateLEDS();
-        }
         //* Update the motors based on the inputs from the controller
         //* Can change functionality depending on subclass, like robot.action()
         drive->update();
         // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
         // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
-
-        if (lights.returnStatus() == lights.DISCO && ((millis() - lights.updateTime) >= lights.updateSwitchTime))
-        {
-          lights.updateLEDS();
-          lights.updateTime = millis();
-        }
       }
       //! Performs all special robot actions depending on the instantiated Robot subclass
       robot->action();
@@ -307,9 +257,8 @@ extern "C" void app_main()
       // DEBUGGING:
       // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
       // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
-      // lights.printDebugInfo();
 
-      delay(5); // necessary for lights to be happy
+      delay(5);
     }
     else
     { // no response from PS5 controller within last 300 ms, so stop
@@ -317,7 +266,6 @@ extern "C" void app_main()
       {
         // Emergency stop if the controller disconnects
         drive->emergencyStop();
-        lights.setLEDStatus(Lights::UNPAIRED);
       }
       else
       {

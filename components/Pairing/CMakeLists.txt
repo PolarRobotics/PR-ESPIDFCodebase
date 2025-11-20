@@ -23,7 +23,6 @@ idf_component_register(SRCS ${PAIRING_SOURCES}
                                       REQUIRES Utilities 
                                                         Robot 
                                                         espressif__arduino-esp32
-                                                        fastled 
                                                         ps5-esp32
                                                         bt
                                                         nvs_flash

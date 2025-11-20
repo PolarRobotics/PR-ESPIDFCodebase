@@ -140,40 +140,35 @@ const char *ConfigManager::toString()
  */
 bool ConfigManager::write(bot_config_t *cfg)
 {
-  if (this->writable)
-  {
-    // open the "bot_config" namespace and set it to read/write
-    bool good = preferences.begin("bot_config", false);
-    if (!good)
-      return false;
-
-    // store the bot name to preferences
-    preferences.putUChar("bot_name_idx", cfg->index);
-
-    // store the bot and motor type to preferences
-    preferences.putUChar("bot_type", static_cast<uint8_t>(cfg->bot_type));
-
-    // store drive parameters (gear ratio, wheelbase, r_min, r_max)
-    preferences.putUChar("motor_type", static_cast<uint8_t>(cfg->drive_params.motor_type));
-    preferences.putFloat("gear_ratio", cfg->drive_params.gear_ratio);
-    preferences.putFloat("wheel_base", cfg->drive_params.wheel_base);
-    preferences.putFloat("r_min", cfg->drive_params.r_min);
-    preferences.putFloat("r_max", cfg->drive_params.r_max);
-
-    // close the namespace
-    preferences.end();
-
-    // // store code version to preferences
-    // // determine if code version key exists
-    // good = preferences.begin(CODE_VERSION_PREF_KEY, false);
-    // if (!good) return false;
-    // preferences.putString(CODE_VERSION_PREF_KEY, PR_CODEBASE_VERSION);
-    // preferences.end();
-
-    return true;
-  }
-  else
+  // open the "bot_config" namespace and set it to read/write
+  bool good = preferences.begin("bot_config", false);
+  if (!good)
     return false;
+
+  // store the bot name to preferences
+  preferences.putUChar("bot_name_idx", cfg->index);
+
+  // store the bot and motor type to preferences
+  preferences.putUChar("bot_type", static_cast<uint8_t>(cfg->bot_type));
+
+  // store drive parameters (gear ratio, wheelbase, r_min, r_max)
+  preferences.putUChar("motor_type", static_cast<uint8_t>(cfg->drive_params.motor_type));
+  preferences.putFloat("gear_ratio", cfg->drive_params.gear_ratio);
+  preferences.putFloat("wheel_base", cfg->drive_params.wheel_base);
+  preferences.putFloat("r_min", cfg->drive_params.r_min);
+  preferences.putFloat("r_max", cfg->drive_params.r_max);
+
+  // close the namespace
+  preferences.end();
+
+  // // store code version to preferences
+  // // determine if code version key exists
+  // good = preferences.begin(CODE_VERSION_PREF_KEY, false);
+  // if (!good) return false;
+  // preferences.putString(CODE_VERSION_PREF_KEY, PR_CODEBASE_VERSION);
+  // preferences.end();
+
+  return true;
 }
 
 /**
@@ -187,7 +182,7 @@ bool ConfigManager::write(bot_config_t *cfg)
 bool ConfigManager::setConfig(uint8_t botIndex)
 {
   // validate bot index
-  if (botIndex > (NUM_BOTS - 1) || !this->writable)
+  if (botIndex > (NUM_BOTS - 1))
     return false;
 
   this->config->index = botConfigArray[botIndex].index;
@@ -219,19 +214,14 @@ bool ConfigManager::setConfig(uint8_t botIndex)
  */
 bool ConfigManager::setConfig(uint8_t botindex, BotType bottype, MotorType motortype, float gearratio, float wheelbase, float rmin, float rmax)
 {
-  if (this->writable)
-  {
-    this->config->index = botindex;
-    this->config->bot_name = "Custom Robot";
-    this->config->bot_type = bottype;
-    this->config->drive_params.motor_type = motortype;
-    this->config->drive_params.gear_ratio = gearratio;
-    this->config->drive_params.wheel_base = wheelbase;
-    this->config->drive_params.r_min = rmin;
-    this->config->drive_params.r_max = rmax;
+  this->config->index = botindex;
+  this->config->bot_name = "Custom Robot";
+  this->config->bot_type = bottype;
+  this->config->drive_params.motor_type = motortype;
+  this->config->drive_params.gear_ratio = gearratio;
+  this->config->drive_params.wheel_base = wheelbase;
+  this->config->drive_params.r_min = rmin;
+  this->config->drive_params.r_max = rmax;
 
-    return write(this->config);
-  }
-  else
-    return false;
+  return write(this->config);
 }
