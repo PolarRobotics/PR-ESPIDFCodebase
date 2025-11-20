@@ -18,22 +18,24 @@ jobs:
       uses: actions/cache@v4.3.0
       with:
         path: |
-          ~/.espressif
           build
         key: ${{ runner.os }}-idf-${{ hashFiles('**/CMakeLists.txt', '**/sdkconfig') }}
         restore-keys: |
           ${{ runner.os }}-idf-
 
-    - name: Set target and build the project
+    - name: Configure
       run: |
         . /opt/esp/idf/export.sh
-        # Use the 'robot' preset by default in CI so the correct sdkconfigs/build dir are used
-        export IDF_PRESET=robot
         # Configure the project with the CMake preset so the correct SDKCONFIG_DEFAULTS and build dir are used.
         # This ensures CI picks the same preset as VS Code and creates the expected build/robot folder.
         idf.py set-target esp32
+
+        # Configure
         cmake -G Ninja -B build/robot -S . -DSDKCONFIG='build/robot/sdkconfig' -DSDKCONFIG_DEFAULTS='sdkconfig.defaults;sdkconfig.defaults.robot'
 
+    - name: Build
+      run: |
+        ninja -C build/robot
         
     - name: Generate version from date
       id: version
