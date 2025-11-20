@@ -10,7 +10,7 @@ dependencies:
       git: https://github.com/PolarRobotics/PR-Lib.git
       path: components/adafruit_busio
       type: git
-    version: 959b8041276970017ef0abe754f27e428f9e1467
+    version: 2ca241d58acef6775f4d0c6c96b9a9e96bbdcd00
   adafruit_lis3mdl:
     component_hash: 2901ea21c6211b2dc88484b5812affd8580cbba75ae2f433da30343a3eefe553
     dependencies:
@@ -20,7 +20,7 @@ dependencies:
       git: https://github.com/PolarRobotics/PR-Lib.git
       path: components/adafruit_lis3mdl
       type: git
-    version: 959b8041276970017ef0abe754f27e428f9e1467
+    version: 2ca241d58acef6775f4d0c6c96b9a9e96bbdcd00
   adafruit_sensor:
     component_hash: 1a44ebb53484c66011379f48a774a00a1ade7ea77a328525ea8064632e8f1a5e
     dependencies:
@@ -32,7 +32,7 @@ dependencies:
       git: https://github.com/PolarRobotics/PR-Lib.git
       path: components/adafruit_sensor
       type: git
-    version: 959b8041276970017ef0abe754f27e428f9e1467
+    version: 2ca241d58acef6775f4d0c6c96b9a9e96bbdcd00
   chmorgan/esp-libhelix-mp3:
     component_hash: cbb76089dc2c5749f7b470e2e70aedc44c9da519e04eb9a67d4c7ec275229e53
     dependencies:
@@ -494,7 +494,7 @@ dependencies:
       type: service
     version: 1.20.3
   pr-lib-motor:
-    component_hash: ed95a8a3dbcbc9a0cbadb8da2efee92c1a858daca5c2ffdcb5caa0be773218c7
+    component_hash: e3ee332d76644975f07f3187bda6a9b392a76f6d25dfc1ca9b4bfb73f768070a
     dependencies:
     - name: idf
       version: '>=4.4.0'
@@ -509,7 +509,7 @@ dependencies:
     - esp32c3
     - esp32c6
     - esp32h2
-    version: 7f20e419415ae28077929415df4c5e0c5d6877fb
+    version: 2ca241d58acef6775f4d0c6c96b9a9e96bbdcd00
   ps5-esp32:
     component_hash: 7e0762c932ff1c0cdc8ce4dc1aaf844e2cfd0ef9e6906205706bb86885a51cef
     dependencies:
@@ -519,7 +519,7 @@ dependencies:
       git: https://github.com/PolarRobotics/PR-Lib.git
       path: components/ps5_esp32
       type: git
-    version: 959b8041276970017ef0abe754f27e428f9e1467
+    version: 2ca241d58acef6775f4d0c6c96b9a9e96bbdcd00
 direct_dependencies:
 - adafruit_busio
 - adafruit_lis3mdl
