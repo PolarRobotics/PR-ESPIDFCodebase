@@ -287,7 +287,7 @@ dependencies:
       type: service
     version: 1.2.2
   espressif/esp_modem:
-    component_hash: dca5a8d8cf80dd88dc91bb22cbea52956950f1e80488996c5b41168d3cdefbb6
+    component_hash: 40af7f39c6c8c0c85c98014721fca8d9d2186f18f70645c66b94548192cf1e03
     dependencies:
     - name: idf
       require: private
@@ -295,7 +295,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.4.1
+    version: 1.4.2
   espressif/esp_rainmaker:
     component_hash: f6fe458fc7a0102ee2879f0247da4b41419e6c07de12031f66e5e9454d25baaa
     dependencies:
@@ -369,7 +369,7 @@ dependencies:
       type: service
     version: 1.2.0
   espressif/esp_secure_cert_mgr:
-    component_hash: d5d773260a965bffa8146f6c8d8620dc60dc656a9108be337155f478703d984e
+    component_hash: e8ce8d5ac0ef4ef5df12fdb266190413c4170ad39b394435f0e3115a4fddc6a6
     dependencies:
     - name: idf
       require: private
@@ -377,7 +377,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 2.7.1
+    version: 2.7.2
   espressif/jsmn:
     component_hash: d80350c41bbaa827c98a25b6072df00884e72f54885996fab4a4f0aebce6b6c3
     dependencies:
@@ -446,7 +446,7 @@ dependencies:
       type: service
     version: 1.0.20~2
   espressif/mdns:
-    component_hash: 5c148bc0996305bcf111c465bba021a8155d4247b0d9353c39da9b44a91ca381
+    component_hash: 29e47564b1a7ee778135e17fbbf2a2773f71c97ebabfe626c8eda7c958a7ad16
     dependencies:
     - name: idf
       require: private
@@ -454,7 +454,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.9.0
+    version: 1.9.1
   espressif/network_provisioning:
     component_hash: ef2e10182fd1861e68b821491916327c25416ca7ae70e5a6e43313dbc71fe993
     dependencies:
@@ -479,20 +479,12 @@ dependencies:
       registry_url: https://components.espressif.com
       type: service
     version: 1.4.6
-  fastled:
-    component_hash: 0a2ca721751c53546d9aafb03ac036eb797f15b0d874e28c375fb6bcbb6ff0fc
-    dependencies: []
-    source:
-      git: https://github.com/FastLED/FastLED.git
-      path: .
-      type: git
-    version: 335235b99051d137ee824c173f9bb1c46aeeeb57
   idf:
     source:
       type: idf
     version: 5.5.1
   joltwallet/littlefs:
-    component_hash: 150ca47225f7c9917f7f610a5f85e5e93fe3c15402234c23496ff045ad558b0b
+    component_hash: 1808d73e99168f6f3c26dd31799a248484762b3a320ec4962dec11a145f4277f
     dependencies:
     - name: idf
       require: private
@@ -500,7 +492,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.20.2
+    version: 1.20.3
   pr-lib-motor:
     component_hash: ed95a8a3dbcbc9a0cbadb8da2efee92c1a858daca5c2ffdcb5caa0be773218c7
     dependencies:
@@ -533,10 +525,9 @@ direct_dependencies:
 - adafruit_lis3mdl
 - adafruit_sensor
 - espressif/arduino-esp32
-- fastled
 - idf
 - pr-lib-motor
 - ps5-esp32
-manifest_hash: 4567e3a82204ed3e238fdeeda660d050a70bf1e0622e5e8c7cd5f83365b2ad98
+manifest_hash: a6fd50c1599708bc1f39fc09778280656a3f8144a83be60a9de3c75817a73ada
 target: esp32
 version: 2.0.0
