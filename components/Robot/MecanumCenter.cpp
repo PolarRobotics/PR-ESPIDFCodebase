@@ -1,6 +1,7 @@
-#include "MecanumCenter.h"
+#include <MecanumCenter.h>
 
-MecanumCenter::MecanumCenter(uint8_t fwpin, uint8_t conveyorpin) {
+MecanumCenter::MecanumCenter(uint8_t fwpin, uint8_t conveyorpin)
+{
   // Declare that the flywheels are off
   flywheelsOn = false;
 
@@ -26,16 +27,17 @@ MecanumCenter::MecanumCenter(uint8_t fwpin, uint8_t conveyorpin) {
   // conveyorMotor.write(MC_CONVEYOR_ON);
 }
 
-void MecanumCenter::action() {
+void MecanumCenter::action()
+{
   // Toggle the Conveyor and Flywheels
   if (ps5.Square())
     toggleConveyor();
-  
+
   if (ps5.Circle())
     toggleIntake();
-  
+
   // Change the flywheel speed
-  if(ps5.Triangle())
+  if (ps5.Triangle())
     changeFWSpeed(SpeedStatus::INCREASE);
   else if (ps5.Cross())
     changeFWSpeed(SpeedStatus::DECREASE);
@@ -43,14 +45,18 @@ void MecanumCenter::action() {
   // debug();
 }
 
-
-void MecanumCenter::toggleIntake() {
+void MecanumCenter::toggleIntake()
+{
   // Toggle the flywheels and use the speed factor to know what speed
-  if (millis() - lastDBFW >= MC_DEBOUNCE_WAIT) {
-    if (!flywheelsOn){
+  if (millis() - lastDBFW >= MC_DEBOUNCE_WAIT)
+  {
+    if (!flywheelsOn)
+    {
       flywheelMotor.write(MC_FLYWHEEL_SPEED_FULL + flywheelSpeedFactor);
       // Serial.println(F("Write FW ON"));
-    } else {
+    }
+    else
+    {
       flywheelMotor.write(MC_FLYWHEEL_STOP_SPEED);
       // Serial.println(F("Write FW OFF"));
     }
@@ -60,14 +66,19 @@ void MecanumCenter::toggleIntake() {
   }
 }
 
-void MecanumCenter::toggleConveyor() {
+void MecanumCenter::toggleConveyor()
+{
   // Debounce for button press
-  if (millis() - lastDBConv >= MC_DEBOUNCE_WAIT) {
+  if (millis() - lastDBConv >= MC_DEBOUNCE_WAIT)
+  {
     // Toggle the conveyor between on or off
-    if (!conveyorOn){
+    if (!conveyorOn)
+    {
       conveyorMotor.write(MC_CONVEYOR_ON);
       // Serial.println(F("Write CONV ON"));
-    } else {
+    }
+    else
+    {
       conveyorMotor.write(MC_CONVEYOR_OFF);
       // Serial.println(F("Write CONV OFF"));
     }
@@ -77,22 +88,32 @@ void MecanumCenter::toggleConveyor() {
   }
 }
 
-void MecanumCenter::changeFWSpeed(SpeedStatus speed) {
+void MecanumCenter::changeFWSpeed(SpeedStatus speed)
+{
   // Debounce for button press
-  if (millis() - lastDBFWChange >= MC_DEBOUNCE_WAIT) {
+  if (millis() - lastDBFWChange >= MC_DEBOUNCE_WAIT)
+  {
     // Change the speed factor based on whether the user wants to increase or decrease
-    switch(speed) {
-      case INCREASE: flywheelSpeedFactor += 0.05; break;
-      case DECREASE: flywheelSpeedFactor -= 0.05; break;
+    switch (speed)
+    {
+    case INCREASE:
+      flywheelSpeedFactor += 0.05;
+      break;
+    case DECREASE:
+      flywheelSpeedFactor -= 0.05;
+      break;
     }
     // Cap it so they only have two levels to speed up and two levels to slow down
     flywheelSpeedFactor = constrain(flywheelSpeedFactor, -0.15, 0.15);
 
     // Update the motors if they are spinning for the new speed
-    if (flywheelsOn) {
+    if (flywheelsOn)
+    {
       flywheelMotor.write(MC_FLYWHEEL_SPEED_FULL + flywheelSpeedFactor);
       // Serial.println(F("Write FW SPEED CHANGE"));
-    } else {
+    }
+    else
+    {
       flywheelMotor.write(MC_FLYWHEEL_STOP_SPEED);
       // Serial.println(F("Write FW STOP"));
     }
@@ -101,7 +122,8 @@ void MecanumCenter::changeFWSpeed(SpeedStatus speed) {
   }
 }
 
-void MecanumCenter::debug() {
+void MecanumCenter::debug()
+{
   Serial.print(F("fw on: "));
   Serial.print(flywheelsOn);
   Serial.print(F(", conv on: "));

@@ -16,10 +16,14 @@
 #define LED_BUILTIN 2
 #endif
 
-// Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>
+
+// Drive Includes
+#include <Drive.h>
+#include <DriveMecanum.h>
+
+// Pairing Includes
 #include <pairing.h>
-#include <ConfigManager.h>
 
 // Robot Includes
 #include <Robot.h>
@@ -31,9 +35,11 @@
 #include <QuarterbackBase.h>
 #include <QuarterbackTurret.h>
 
-// Drive Includes
-#include <Drive.h>
-#include <DriveMecanum.h>
+// Types Includes
+#include <BotTypes.h>
+
+// Utilities Includes
+#include <ConfigManager.h>
 
 // Primary Parent Component Pointers
 Robot *robot = nullptr; // subclassed if needed

@@ -1,17 +1,17 @@
 #include <Arduino.h>
 #include <Drive.h>
-#include "DriveMecanum.h"
+#include <DriveMecanum.h>
 
 /**
- * @brief 
- * 
- * 
+ * @brief
+ *
+ *
  *             Motor Layout                      Bottom-up view
  *
  *
- *                  ^                                  ^            
- *                  | Fwd                              | Fwd        
- *       _______________________            ______________________ 
+ *                  ^                                  ^
+ *                  | Fwd                              | Fwd
+ *       _______________________            ______________________
  *      |   __             __   |          |                      |
  *      |  |LF|           |RF|  |          |  \\\            ///  |
  *      |  |1 |           |2 |  |          |  \\\            ///  |
@@ -22,50 +22,54 @@
  *      |  |3 |           |4 |  |          |  ///            \\\  |
  *      |  |__|           |__|  |          |  ///            \\\  |
  *      |_______________________|          |______________________|
- * 
+ *
  */
 
 //! Must call base class constructor with appropriate arguments
-DriveMecanum::DriveMecanum() : Drive(BotType::mecanum_center, MotorType::mecanum) {
-  // initialize array
-  for (int i = 0; i < MC_NUM_MOTORS; i++) {
-    mecanumMotorPwr[i] = 0.0f;
-  }
+DriveMecanum::DriveMecanum() : Drive(BotType::mecanum_center, MotorType::mecanum)
+{
+    // initialize array
+    for (int i = 0; i < MC_NUM_MOTORS; i++)
+    {
+        mecanumMotorPwr[i] = 0.0f;
+    }
 }
 
-void DriveMecanum::setupMotors(uint8_t pinLF, uint8_t pinRF, uint8_t pinLB, uint8_t pinRB) {
+void DriveMecanum::setupMotors(uint8_t pinLF, uint8_t pinRF, uint8_t pinLB, uint8_t pinRB)
+{
     this->LF.setup(pinLF);
     this->RF.setup(pinRF);
     this->LB.setup(pinLB);
     this->RB.setup(pinRB);
 }
 
-void DriveMecanum::setStickPwr(int8_t leftX, int8_t leftY, int8_t rightX) {
+void DriveMecanum::setStickPwr(int8_t leftX, int8_t leftY, int8_t rightX)
+{
     // normalize the 8-bit input to 1
-    this->stickForward = leftY  / 127.5f;
-    this->stickStrafe  = leftX  / 127.5f;
-    this->stickTurn    = rightX / 127.5f;
+    this->stickForward = leftY / 127.5f;
+    this->stickStrafe = leftX / 127.5f;
+    this->stickTurn = rightX / 127.5f;
 
     // account for stick deadzone
     this->stickForward = fabs(stickForward) < MC_STICK_DEADZONE ? 0 : stickForward;
-    this->stickStrafe  = fabs(stickStrafe)  < MC_STICK_DEADZONE ? 0 : stickStrafe;
-    this->stickTurn    = fabs(stickTurn)    < MC_STICK_DEADZONE ? 0 : stickTurn;
+    this->stickStrafe = fabs(stickStrafe) < MC_STICK_DEADZONE ? 0 : stickStrafe;
+    this->stickTurn = fabs(stickTurn) < MC_STICK_DEADZONE ? 0 : stickTurn;
 }
-
 
 /**
  * @brief generateMotorValues
- * 
- * Research links: 
+ *
+ * Research links:
  * - https://www.youtube.com/watch?v=gnSW2QpkGXQ
  * - https://robotics.stackexchange.com/questions/20088/how-to-drive-mecanum-wheels-robot-code-or-algorithm
  * - https://gm0.org/en/latest/docs/software/tutorials/mecanum-drive.html
- * Drive directions cheat sheet: https://gm0.org/en/latest/_images/mecanum-drive-directions.png 
- * 
+ * Drive directions cheat sheet: https://gm0.org/en/latest/_images/mecanum-drive-directions.png
+ *
  * Current model in desmos:
  * https://www.desmos.com/calculator/xoqso2wmiw
  */
-void DriveMecanum::generateMotorValuesOld() {
+void DriveMecanum::generateMotorValuesOld()
+{
     // generate motion vector (strafe direction)
     // might want to move these, because ramp may need to be called before these
     // we may want to ramp the magnitude and turnPwr, instead of individual motors
@@ -79,8 +83,8 @@ void DriveMecanum::generateMotorValuesOld() {
     // this->x_comp = sin(theta + (PI/4));
     // this->y_comp = cos(theta + (PI/4));
 
-    this->x_comp = (r == 0) ? 0 : r * sin(theta + (PI/4));
-    this->y_comp = (r == 0) ? 0 : r * cos(theta + (PI/4));
+    this->x_comp = (r == 0) ? 0 : r * sin(theta + (PI / 4));
+    this->y_comp = (r == 0) ? 0 : r * cos(theta + (PI / 4));
 
     // this->max = _max(x_comp, y_comp);
     // motorPwr[0] = r * cos(theta) + turnPwr;
@@ -101,7 +105,6 @@ void DriveMecanum::generateMotorValuesOld() {
     // setReqMotorPwr(r * y_comp + turnPwr, 2);
     // setReqMotorPwr(r * x_comp - turnPwr, 3);
 
-    
     // mecanumMotorPwr[0] = r * x_comp + turnPwr;
     // mecanumMotorPwr[1] = r * y_comp - turnPwr;
     // mecanumMotorPwr[2] = r * y_comp + turnPwr;
@@ -111,7 +114,6 @@ void DriveMecanum::generateMotorValuesOld() {
     mecanumMotorPwr[1] = y_comp - turnPwr;
     mecanumMotorPwr[2] = y_comp + turnPwr;
     mecanumMotorPwr[3] = x_comp - turnPwr;
-
 
     // setReqMotorPwr(r * x_comp / max + turnPwr, 0);
     // setReqMotorPwr(r * y_comp / max - turnPwr, 1);
@@ -127,10 +129,10 @@ void DriveMecanum::generateMotorValuesOld() {
     //     setReqMotorPwr(getReqMotorPwr(2) / (r + abs(turnPwr)), 2);
     //     setReqMotorPwr(getReqMotorPwr(3) / (r + abs(turnPwr)), 3);
     // }
-
 }
 
-void DriveMecanum::generateMotorValues() {
+void DriveMecanum::generateMotorValues()
+{
 
     mecanumMotorPwr[0] = stickForward + stickStrafe + stickTurn; // LF
     mecanumMotorPwr[1] = stickForward - stickStrafe - stickTurn; // RF
@@ -138,16 +140,16 @@ void DriveMecanum::generateMotorValues() {
     mecanumMotorPwr[3] = stickForward + stickStrafe - stickTurn; // RB
 }
 
-
-
-void DriveMecanum::emergencyStop() {
+void DriveMecanum::emergencyStop()
+{
     this->LF.write(0);
     this->RF.write(0);
     this->LB.write(0);
     this->RB.write(0);
 }
 
-void DriveMecanum::update() {
+void DriveMecanum::update()
+{
     generateMotorValues();
 
     // ramp may need removed, including for testing purposes
@@ -162,7 +164,8 @@ void DriveMecanum::update() {
     this->RB.write(mecanumMotorPwr[3]); // getReqMotorPwr(3)
 }
 
-void DriveMecanum::printDebugInfo() {
+void DriveMecanum::printDebugInfo()
+{
     Serial.print(F("SLX: "));
     Serial.print(stickStrafe);
     Serial.print(F("  SLY: "));

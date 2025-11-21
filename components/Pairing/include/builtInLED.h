@@ -1,6 +1,8 @@
 #ifndef BUILT_IN_LED_H
 #define BUILT_IN_LED_H
 
+#include <Arduino.h>
+
 /**
  * @brief Header for Global ESP Built-In LED Handling
  * @authors Max Phillips

@@ -1,14 +1,16 @@
 idf_component_register( 
-                       SRCS "main.c"
-                       INCLUDE_DIRS "."
-                       REQUIRES  Drive
-                                 Pairing  
-                                 Robot
-                                 Utilities
-                                 espressif__arduino-esp32 
-                                 bt
-                                 pr-lib-motor
-                                 )
+    SRCS 
+        "main.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        Drive
+        Pairing
+        Robot
+        Types
+        Utilities
+        espressif__arduino-esp32 
+)
 
 if(CONFIG_ENV_ROBOT)
     target_sources(${COMPONENT_LIB} PRIVATE "main_robot.cpp")

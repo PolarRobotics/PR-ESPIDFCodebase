@@ -4,10 +4,11 @@
 /**
  * @brief drive_param
  * a list of parameters pulled from Robot Config for bot-specific parameters related to drive
- * 
+ *
  * used in Drive and RobotConfig
-*/
-typedef struct drive_param {
+ */
+typedef struct drive_param
+{
     MotorType motor_type;
     float gear_ratio;
     float wheel_base;

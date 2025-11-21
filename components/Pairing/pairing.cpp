@@ -1,3 +1,5 @@
+#include <pairing.h>
+
 /**
  * @brief Implements pairing functions.
  * @author Max Phillips, Corbin Hibler
@@ -27,14 +29,6 @@
  * use ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE in connect() if remote side requests 'RequireAuthentication': dbus.Boolean(True),
  * use ESP_SPP_SEC_NONE or ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE in connect() if remote side has Authentication: False
  */
-
-#include <map>
-#include <cstring>
-#include <BluetoothSerial.h>
-#include <ps5Controller.h>
-#include <Preferences.h> // to store address of controller on flash
-#include "pairing.h"     // also includes PolarRobotics.h
-#include <builtInLED.h>  // pairing routine flashes LED to signify stages of pairing
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it

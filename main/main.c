@@ -6,14 +6,12 @@
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
-#include <stdio.h>
-#include "sdkconfig.h"
-#include "main_app.h"
+#include <main_app.h>
 
 void app_main(void)
 {
-    /* This will call func() either from func_dev.c or func_prod.c, depending on
-     * the build configuration.
-     */
-    main_app();
+   /* This will call main_app() either from main_write_bot_info.cpp or
+      main_robot.cpp, depending on the build configuration.
+   */
+   main_app();
 }

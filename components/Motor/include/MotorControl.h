@@ -2,16 +2,18 @@
 
 #include <Arduino.h>
 #include <PolarRobotics.h>
-// #include <MotorInterface.h>
+#include <MotorTypes.h>
 #include <MotorInterface.h>
 
-
 // Enum for Increasing or Decreasing Flywheel Speed
-enum SpeedStatus {
-  INCREASE, DECREASE
+enum SpeedStatus
+{
+  INCREASE,
+  DECREASE
 };
 
-class MotorControl {
+class MotorControl
+{
 private:
   MotorType motor_type; // the type of motor to be assigned to this object
   float gear_ratio;     // the input / output gear ratio
@@ -20,7 +22,7 @@ private:
   MotorInterface Motor;
 
   // for ramp
-  float requestedRPM;     
+  float requestedRPM;
   float lastRampTime;
   float timeElapsed;
 
@@ -42,7 +44,7 @@ private:
   float omega;
 
 public:
-  int max_rpm;          // the motor max rpm * the gear ratio 
+  int max_rpm; // the motor max rpm * the gear ratio
   MotorControl();
   uint8_t setup(int mot_pin, MotorType type = big_ampflow, bool has_encoder = false, float gearRatio = 1, int enc_a_chan_pin = -1, int enc_b_chan_pin = -1); // if no encoder, leave blank, will not attach pins
 
@@ -54,7 +56,7 @@ public:
 
   float ramp(float requestedPower, float accelRate);
 
-   // Encoder Related Functions
+  // Encoder Related Functions
   void readEncoder();
   int calcSpeed(int current_count);
 };

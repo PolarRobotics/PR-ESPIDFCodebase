@@ -6,8 +6,9 @@
  * @author Max Phillips
  */
 
-template<typename K, typename V>
-struct Pair {
+template <typename K, typename V>
+struct Pair
+{
   K key;
   V value;
 };

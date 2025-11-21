@@ -1,12 +1,11 @@
-file(GLOB_RECURSE UTILITIES_SOURCES "*.cpp" "*.c")
+file(GLOB_RECURSE TYPES_SOURCES "*.cpp" "*.c")
 
 idf_component_register(
     SRCS 
-        ${UTILITIES_SOURCES}
+        ${TYPES_SOURCES}
     INCLUDE_DIRS
         "include"
         "../../main"
-    REQUIRES
-        Types
+    REQUIRES 
         espressif__arduino-esp32 
 )

@@ -1,7 +1,8 @@
-#include "MotorTypes.h"
+#include <MotorTypes.h>
 
-constexpr Pair<MotorType, const char*> 
-motorTypeStrings[NUM_MOTOR_TYPES] = {
+constexpr Pair<MotorType, const char*>
+motorTypeStrings[NUM_MOTOR_TYPES] =
+{
   { big_ampflow,      "big_ampflow"     },
   { small_ampflow,    "small_ampflow"   },
   { pancake_ampflow,  "pancake_ampflow" },
@@ -18,6 +19,7 @@ motorTypeStrings[NUM_MOTOR_TYPES] = {
  * @param type the enum to be converted to a string
  * @return a const char* representing the motor type
  */
-const char* getMotorTypeString(MotorType type) {
+const char* getMotorTypeString(MotorType type)
+{
   return motorTypeStrings[static_cast<int>(type)].value;
 }

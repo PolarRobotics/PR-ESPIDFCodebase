@@ -1,13 +1,17 @@
-#include "Debouncer.h"
+#include <Debouncer.h>
 
 // based on: https://arduinogetstarted.com/tutorials/arduino-button-debounce
 
 // Input: debounce delay (milliseconds)
-Debouncer::Debouncer(unsigned long delay, bool activeLow) {
-  if (activeLow) {
+Debouncer::Debouncer(unsigned long delay, bool activeLow)
+{
+  if (activeLow)
+  {
     BASE_STATE = HIGH;
     ACTIVE_STATE = LOW;
-  } else {
+  }
+  else
+  {
     BASE_STATE = LOW;
     ACTIVE_STATE = HIGH;
   }
@@ -18,12 +22,12 @@ Debouncer::Debouncer(unsigned long delay, bool activeLow) {
   this->lastUnstableState = BASE_STATE;
   this->lastToggleTime = 0;
   this->debounceDelay = delay;
-
 }
 
 // takes only input of 0 or 1, and outputs 0 or 1
-// @param inputState: "current" call to debounce 
-uint8_t Debouncer::debounce(uint8_t inputState) {
+// @param inputState: "current" call to debounce
+uint8_t Debouncer::debounce(uint8_t inputState)
+{
   // Serial.print(F("start: l_stab:"));
   // Serial.print(lastStableState);
   // Serial.print(F(", l_unst: "));
@@ -32,7 +36,8 @@ uint8_t Debouncer::debounce(uint8_t inputState) {
   // Serial.print(inputState);
 
   // if the switch was toggled, update the last toggle time
-  if (inputState != lastUnstableState) {
+  if (inputState != lastUnstableState)
+  {
     lastToggleTime = millis();
     lastUnstableState = inputState;
   }
@@ -43,18 +48,19 @@ uint8_t Debouncer::debounce(uint8_t inputState) {
   lastLastStableState = lastStableState;
 
   // test if the delay has been exceeded
-  if ((millis() - lastToggleTime) > debounceDelay) {
+  if ((millis() - lastToggleTime) > debounceDelay)
+  {
 
     // Serial.print(F(" | stab_st changed?: "));
     // Serial.print(lastStableState != inputState);
 
     // if the state has changed, update it
-    if (lastStableState != inputState) {
+    if (lastStableState != inputState)
+    {
       lastStableState = inputState;
 
       // Serial.print(F(" | inputState == ACTIVE_STATE: "));
       // Serial.print(inputState == ACTIVE_STATE);
-
     }
   }
 
@@ -68,31 +74,40 @@ uint8_t Debouncer::debounce(uint8_t inputState) {
   return lastStableState;
 }
 
-uint8_t Debouncer::wasToggled() {
+uint8_t Debouncer::wasToggled()
+{
   return (lastLastStableState != lastStableState);
 }
 
-uint8_t Debouncer::debounceAndToggled(uint8_t inputState) {
+uint8_t Debouncer::debounceAndToggled(uint8_t inputState)
+{
   this->debounce(inputState);
   return this->wasToggled();
 }
 
-uint8_t Debouncer::wasSwitchedToState(DebouncerState state) {
-  if (this->wasToggled()) {
-    if (state == active) {
+uint8_t Debouncer::wasSwitchedToState(DebouncerState state)
+{
+  if (this->wasToggled())
+  {
+    if (state == active)
+    {
       return lastStableState == ACTIVE_STATE;
-    } else { // state == base
+    }
+    else
+    { // state == base
       return lastStableState == BASE_STATE;
     }
   }
   return false;
 }
 
-uint8_t Debouncer::debounceAndSwitchedTo(uint8_t inputState, DebouncerState targetState) {
+uint8_t Debouncer::debounceAndSwitchedTo(uint8_t inputState, DebouncerState targetState)
+{
   this->debounce(inputState);
   return this->wasSwitchedToState(targetState);
 }
 
-uint8_t Debouncer::debounceAndPressed(uint8_t inputState) {
+uint8_t Debouncer::debounceAndPressed(uint8_t inputState)
+{
   return this->debounceAndSwitchedTo(inputState, active);
 }

@@ -1,8 +1,9 @@
-#include "BotTypes.h"
+#include <BotTypes.h>
 
 // constexpr to be evaluated at compile time
 constexpr Pair<BotType, const char*> 
-botTypeStrings[NUM_POSITIONS] = {
+botTypeStrings[NUM_POSITIONS] = 
+{
   { lineman,            "lineman"            },
   { receiver,           "receiver"           },
   { runningback,        "runningback"        },
@@ -15,7 +16,8 @@ botTypeStrings[NUM_POSITIONS] = {
 };
 
 // Function to map BotTypes to human-readable C-strings
-const char* getBotTypeString(BotType type) {
+const char* getBotTypeString(BotType type) 
+{
   return botTypeStrings[static_cast<int>(type)].value;
 }
 
