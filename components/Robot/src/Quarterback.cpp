@@ -1,4 +1,4 @@
-#include "Quarterback.h"
+#include <Quarterback.h>
 
 Quarterback::Quarterback(
     uint8_t flywheelPin,

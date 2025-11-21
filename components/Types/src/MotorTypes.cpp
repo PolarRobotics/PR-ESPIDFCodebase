@@ -1,4 +1,4 @@
-#include "MotorTypes.h"
+#include <MotorTypes.h>
 
 constexpr Pair<MotorType, const char*>
 motorTypeStrings[NUM_MOTOR_TYPES] =

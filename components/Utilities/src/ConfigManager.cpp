@@ -1,5 +1,4 @@
-
-#include "ConfigManager.h"
+#include <ConfigManager.h>
 
 using namespace std;
 using std::string;

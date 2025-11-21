@@ -1,4 +1,4 @@
-#include "BotTypes.h"
+#include <BotTypes.h>
 
 // constexpr to be evaluated at compile time
 constexpr Pair<BotType, const char*> 
