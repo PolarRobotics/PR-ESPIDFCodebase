@@ -1,7 +1,7 @@
 /**
  * @brief Polar Robotics Main Header File
- * 
- * Contains pin declarations/defines, various global enums, 
+ *
+ * Contains pin declarations/defines, various global enums,
  * and other structures that are useful in a global scope.
  **/
 
@@ -21,7 +21,7 @@
 #endif
 
 // [PIN DECLARATIONS]
-// please follow: 
+// please follow:
 // https://docs.google.com/spreadsheets/d/17pdff4T_3GTAkoctwm2IMg07Znoo-iJkyDGN5CqXq3w/edit#gid=0
 //
 //  Motor and Pin #  |     Configurations     |
@@ -44,12 +44,13 @@
 #define ENC2_CHA 36 // VP
 #define ENC2_CHB 39 // VN
 
-// pin for ws2812 LEDs to indicate positions 
-#define LED_PIN 4   
+// pin for ws2812 LEDs to indicate positions
+#define LED_PIN 4
 // receiver, tackled, etc...
 #define TACKLE_PIN 13
 
-enum BOT_STATE {
+enum BOT_STATE
+{
   PAIRING,
   CONNECTED,
   DISCONNECTED,
