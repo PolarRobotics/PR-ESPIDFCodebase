@@ -7,6 +7,7 @@ idf_component_register(
         Drive
         Pairing
         Robot
+        Types
         Utilities
         espressif__arduino-esp32 
 )

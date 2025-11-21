@@ -8,6 +8,6 @@ idf_component_register(
         "../../main"
     REQUIRES 
         Motor
-        Utilities
+        Types
         espressif__arduino-esp32
 )
