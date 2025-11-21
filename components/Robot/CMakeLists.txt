@@ -1,4 +1,4 @@
-file(GLOB_RECURSE ROBOT_SOURCES "src/*.cpp" "src/*.c")
+file(GLOB_RECURSE ROBOT_SOURCES "*.cpp" "*.c")
 
 idf_component_register(
     SRCS 
