@@ -26,7 +26,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-idf-
 
-    - name: Configure
+    - name: Configure & Build
       run: |
         . /opt/esp/idf/export.sh
         # Configure the project with the CMake preset so the correct SDKCONFIG_DEFAULTS and build dir are used.
@@ -36,8 +36,7 @@ jobs:
         # Configure
         cmake -G Ninja -B build/robot -S . -DSDKCONFIG='build/robot/sdkconfig' -DSDKCONFIG_DEFAULTS='sdkconfig.defaults;sdkconfig.defaults.robot'
 
-    - name: Build
-      run: |
+        # Build
         ninja -C build/robot
         
     - name: Generate version from date
