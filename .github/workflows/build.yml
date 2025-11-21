@@ -17,7 +17,7 @@ jobs:
     - name: Add safe directory for Git
       run: git config --global --add safe.directory $GITHUB_WORKSPACE
 
-    - name: Configure
+    - name: Configure & Build
       run: |
         # Ensure ESP-IDF environment is available
         . /opt/esp/idf/export.sh
@@ -39,11 +39,5 @@ jobs:
           -DSDKCONFIG='build/robot/sdkconfig' \
           -DSDKCONFIG_DEFAULTS='sdkconfig.defaults;sdkconfig.defaults.robot'
 
-    - name: Build
-      run: |
+        # Build
         ninja -C build/robot
-
-    - name: Size
-      run: |
-        idf_size.py build/robot/PR-ESPIDFCodebase.map
-
