@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include "Drive.h"
-#include "MotorControl.h"
+#include <Drive.h>
+#include <MotorControl.h>
 
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.

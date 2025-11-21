@@ -1,7 +1,7 @@
 #ifndef PAIRING_H
 #define PAIRING_H
 
-#include "PolarRobotics.h"
+#include <PolarRobotics.h>
 #include <builtInLED.h> // pairing routine flashes LED to signify stages of pairing
 
 // External Includes

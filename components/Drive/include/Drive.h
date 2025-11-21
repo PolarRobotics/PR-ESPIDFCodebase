@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <MotorControl.h>
 #include <BotTypes.h>
-#include "PolarRobotics.h"
+#include <PolarRobotics.h>
 
 #ifndef NUM_MOTORS
 #define NUM_MOTORS 2

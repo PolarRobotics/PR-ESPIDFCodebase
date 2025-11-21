@@ -4,9 +4,9 @@
 #define BOT_TYPES_H
 
 #include <Arduino.h>
-#include "Pair.h"
-#include "MotorTypes.h"
-#include "DriveParameters.h"
+#include <Pair.h>
+#include <MotorTypes.h>
+#include <DriveParameters.h>
 
 #define NUM_POSITIONS 9 // number of members of eBOT_TYPE
 
