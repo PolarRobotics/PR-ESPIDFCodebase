@@ -1,5 +1,3 @@
-#include <Arduino.h>
-
 #include "MotorControl.h"
 
 // void ext_read_encoder0() {

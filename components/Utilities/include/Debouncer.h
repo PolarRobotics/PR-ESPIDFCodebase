@@ -2,6 +2,7 @@
 #define DEBOUNCER_H
 
 #include <PolarRobotics.h>
+#include <Arduino.h>
 
 enum DebouncerState
 {

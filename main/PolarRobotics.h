@@ -8,11 +8,6 @@
 #ifndef POLAR_ROBOTICS_H
 #define POLAR_ROBOTICS_H
 
-#include <Arduino.h>
-#include <BotTypes.h>
-#include <MotorTypes.h>
-#include <DriveParameters.h>
-
 // #define PR_CODEBASE_VERSION "2.4.5 @ production"
 
 // PR_CODEBASE_VERSION is now defined dynamically at the start of the build process

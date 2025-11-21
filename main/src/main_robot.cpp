@@ -19,7 +19,10 @@
 // Custom Polar Robotics Libraries:
 #include <PolarRobotics.h>
 #include <pairing.h>
+
+// Utilities Includes
 #include <ConfigManager.h>
+#include <BotTypes.h>
 
 // Robot Includes
 #include <Robot.h>
