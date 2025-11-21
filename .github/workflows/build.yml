@@ -1,4 +1,4 @@
-name: ESP-IDF Build (PR)
+name: Build Robot (PR)
 
 on:
   pull_request:
@@ -14,8 +14,30 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set target and build the project
+    - name: Add safe directory for Git
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+
+    - name: Configure & Build
       run: |
+        # Ensure ESP-IDF environment is available
         . /opt/esp/idf/export.sh
+
+        # Debug environment so failures finding the toolchain are visible in CI logs
+        echo "--- ESP-IDF environment ---"
+        echo "IDF_PATH=$IDF_PATH"
+        echo "PATH=$PATH"
+        echo "Which gcc: $(which xtensa-esp32-elf-gcc || true)"
+        echo "GCC version: $(xtensa-esp32-elf-gcc --version 2>/dev/null || true)"
+        echo "which cmake: $(which cmake || true)"
+        echo "cmake version: $(cmake --version 2>/dev/null | head -n 1 || true)"
+
+        # Configure the project with the Robot preset values (explicitly pass SDKCONFIG_DEFAULTS)
         idf.py set-target esp32
-        idf.py build
+
+        # Run cmake configure step explicitly into the preset build dir
+        cmake -G Ninja -B build/robot -S . \
+          -DSDKCONFIG='build/robot/sdkconfig' \
+          -DSDKCONFIG_DEFAULTS='sdkconfig.defaults;sdkconfig.defaults.robot'
+
+        # Build
+        ninja -C build/robot
