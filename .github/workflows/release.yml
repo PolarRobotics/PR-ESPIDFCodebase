@@ -54,6 +54,6 @@ jobs:
         files: |
           build/robot/bootloader/bootloader.bin
           build/robot/partition_table/partition-table.bin
-          build/robot/{{ github.event.repository.name }}.bin
+          build/robot/PR-ESPIDFCodebase.bin
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
