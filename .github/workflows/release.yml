@@ -1,4 +1,4 @@
-name: Create Release on Push
+name: Create Release on Push (Robot)
 
 on:
   push:
@@ -14,21 +14,30 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Add safe directory for Git
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+
     - name: Cache IDF build
       uses: actions/cache@v4.3.0
       with:
         path: |
-          ~/.espressif
           build
         key: ${{ runner.os }}-idf-${{ hashFiles('**/CMakeLists.txt', '**/sdkconfig') }}
         restore-keys: |
           ${{ runner.os }}-idf-
 
-    - name: Set target and build the project
+    - name: Configure & Build
       run: |
         . /opt/esp/idf/export.sh
+        # Configure the project with the CMake preset so the correct SDKCONFIG_DEFAULTS and build dir are used.
+        # This ensures CI picks the same preset as VS Code and creates the expected build/robot folder.
         idf.py set-target esp32
-        idf.py build
+
+        # Configure
+        cmake -G Ninja -B build/robot -S . -DSDKCONFIG='build/robot/sdkconfig' -DSDKCONFIG_DEFAULTS='sdkconfig.defaults;sdkconfig.defaults.robot'
+
+        # Build
+        ninja -C build/robot
         
     - name: Generate version from date
       id: version
@@ -43,8 +52,8 @@ jobs:
         name: Release v${{ steps.version.outputs.version }}
         generate_release_notes: true
         files: |
-          build/bootloader/bootloader.bin
-          build/partition_table/partition-table.bin
-          build/${{ github.event.repository.name }}.bin
+          build/robot/bootloader/bootloader.bin
+          build/robot/partition_table/partition-table.bin
+          build/robot/{{ github.event.repository.name }}.bin
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

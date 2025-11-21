@@ -16,4 +16,32 @@ dependencies:
   #   public: true
   espressif/arduino-esp32: ^3.3.0
 
+  # PR-Lib Motor Library
+  pr-lib-motor:
+    version: '*'
+    git: https://github.com/PolarRobotics/PR-Lib.git
+    path: components/motor
 
+  # PR-Lib version of Adafruit LIS3MDL
+  adafruit_lis3mdl:
+    version: '*'
+    git: https://github.com/PolarRobotics/PR-Lib.git
+    path: components/adafruit_lis3mdl
+
+  # PR-Lib version of Adafruit BusIO
+  adafruit_busio:
+    version: '*'
+    git: https://github.com/PolarRobotics/PR-Lib.git
+    path: components/adafruit_busio
+
+  # PR-Lib version of Adafruit Unified Sensor
+  adafruit_sensor:
+    version: '*'
+    git: https://github.com/PolarRobotics/PR-Lib.git
+    path: components/adafruit_sensor
+
+  # PR-Lib version of PS5-ESP32 library
+  ps5-esp32:
+    version: '*'
+    git: https://github.com/PolarRobotics/PR-Lib.git
+    path: components/ps5_esp32

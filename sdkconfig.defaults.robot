@@ -1,0 +1,1 @@
+CONFIG_ENV_ROBOT=y

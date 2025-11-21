@@ -1,12 +1,10 @@
 build/
-sdkconfig
 sdkconfig.old
 
 # VSCode
 .vscode
-!.vscode/tasks.json
 !.vscode/launch.json
-!.vscode/c_cpp_properties.json
+
 
 .config
 *.o
@@ -119,3 +117,4 @@ XUNIT_RESULT*.xml
 
 # Vale
 .vale/styles/*
+.vscode/c_cpp_properties.json
