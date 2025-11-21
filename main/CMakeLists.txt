@@ -9,8 +9,6 @@ idf_component_register(
         Robot
         Utilities
         espressif__arduino-esp32 
-        bt
-        pr-lib-motor
 )
 
 if(CONFIG_ENV_ROBOT)

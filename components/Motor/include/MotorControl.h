@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 #include <PolarRobotics.h>
-// #include <MotorInterface.h>
+#include <MotorTypes.h>
 #include <MotorInterface.h>
 
 // Enum for Increasing or Decreasing Flywheel Speed

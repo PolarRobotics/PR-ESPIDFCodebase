@@ -3,7 +3,6 @@
 #ifndef DRIVE_MECANUM_H
 #define DRIVE_MECANUM_H
 
-#include <Arduino.h>
 #include <Drive.h>
 
 #define MC_NUM_MOTORS 4

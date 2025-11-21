@@ -6,8 +6,7 @@ idf_component_register(
     INCLUDE_DIRS
         "include"
         "../../main"
-    REQUIRES 
-        Robot
+    REQUIRES
         Utilities
         espressif__arduino-esp32
         ps5-esp32

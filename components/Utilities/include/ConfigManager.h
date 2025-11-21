@@ -5,6 +5,9 @@
 
 #include <Arduino.h>
 #include <Preferences.h>
+#include <MotorTypes.h>
+#include <BotTypes.h>
+#include <string>
 
 // #include <Utilities/BotTypes.h>
 #include <PolarRobotics.h>
