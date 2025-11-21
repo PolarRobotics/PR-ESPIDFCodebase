@@ -7,10 +7,7 @@ idf_component_register(
         "include"
         "../../main"
     REQUIRES
-        Utilities
+        Types
         espressif__arduino-esp32
         ps5-esp32
-        bt
-        nvs_flash
-        esp_system
 )
