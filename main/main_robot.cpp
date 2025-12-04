@@ -109,7 +109,7 @@ extern "C" void main_app(void)
   Serial.begin(115200);
 
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(TACKLE_PIN, INPUT); // Try INPUT_PULLUP
+  pinMode(TACKLE_PIN, OUTPUT); // Try INPUT_PULLUP
 
   // Read robot info from "EEPROM" (ESP32 Preferences) using ConfigManager
   config.read();
@@ -250,6 +250,7 @@ extern "C" void main_app(void)
         // Manual Home / Away Position Setting
         if (ps5.Options())
         {
+          // pinMode(TACKLE_PIN, OUTPUT);
         }
 
         //* Update the motors based on the inputs from the controller
