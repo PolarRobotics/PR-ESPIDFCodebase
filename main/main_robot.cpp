@@ -65,30 +65,14 @@ void onConnection()
     // ps5.setLed(0, 255, 0);   // set LED green
   }
 
-  // TODO: perm sln
-  if (robotType != quarterback_turret)
-  {
-    drive->emergencyStop();
-  }
-  else
-  {
-    ((QuarterbackTurret *)robot)->emergencyStop();
-  }
+  drive->emergencyStop();
 }
 
 void onDisconnect()
 {
   Serial.println(F("Controller Disconnected."));
 
-  // TODO: perm sln
-  if (robotType != quarterback_turret)
-  {
-    drive->emergencyStop();
-  }
-  else
-  {
-    ((QuarterbackTurret *)robot)->emergencyStop();
-  }
+  drive->emergencyStop();
 }
 
 extern "C" void main_app(void)
@@ -149,6 +133,7 @@ extern "C" void main_app(void)
     drive = new Drive(runningback, driveParams);
     drive->setupMotors(M1_PIN, M2_PIN);
     break;
+    // TODO: combine cases in switch
   case quarterback_turret:
     robot = new QuarterbackTurret(
         M1_PIN,       // left flywheel

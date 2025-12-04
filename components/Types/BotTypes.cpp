@@ -12,7 +12,8 @@ botTypeStrings[NUM_POSITIONS] =
   { mecanum_center,     "mecanum_center"     },
   { quarterback_old,    "quarterback_old"    },
   { quarterback_base,   "quarterback_base"   },
-  { quarterback_turret, "quarterback_turret" }
+  { quarterback_turret, "quarterback_turret" },
+  { quarterback, "quarterback"                }
 };
 
 // Function to map BotTypes to human-readable C-strings
