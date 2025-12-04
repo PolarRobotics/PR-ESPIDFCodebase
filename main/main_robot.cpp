@@ -81,22 +81,14 @@ void onConnection()
     // ps5.setLed(0, 255, 0);   // set LED green
   }
 
-  // TODO: perm sln
-  if (robotType != quarterback_turret)
-    drive->emergencyStop();
-  else
-    ((QuarterbackTurret *)robot)->emergencyStop();
+  drive->emergencyStop();
 }
 
 void onDisconnect()
 {
   ESP_LOGI(TAG, "Controller Disconnected.");
 
-  // TODO: perm sln
-  if (robotType != quarterback_turret)
-    drive->emergencyStop();
-  else
-    ((QuarterbackTurret *)robot)->emergencyStop();
+  drive->emergencyStop();
 }
 
 extern "C" void main_app(void)
