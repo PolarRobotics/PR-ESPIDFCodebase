@@ -248,8 +248,9 @@ extern "C" void main_app(void)
         }
 
         // Manual Home / Away Position Setting
-        // if (ps5.Options())
-        //   ;
+        if (ps5.Options())
+        {
+        }
 
         //* Update the motors based on the inputs from the controller
         //* Can change functionality depending on subclass, like robot.action()
