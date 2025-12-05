@@ -22,10 +22,9 @@
  *  4: Center Conversion
  *  5: Kicker
  *  6: Old Quarterback
- *  7: Quarterback base
- *  8: Quarterback turret
- *  9: Swerve
- *  10: Strength Lineman
+ *  7: Quarterback
+ *  8: Swerve
+ *  9: Strength Lineman
  */
 typedef enum
 {
@@ -36,8 +35,7 @@ typedef enum
   center_conversion,
   kicker,
   quarterback_old,
-  quarterback_base,
-  quarterback_turret,
+  quarterback,
   swerve,
   strength_lineman
 } BotType;
@@ -105,6 +103,7 @@ typedef struct BotConfig
 
 // PRESET BOT CONFIGURATIONS, MUST MATCH:
 // https://docs.google.com/spreadsheets/d/1Jkp-Kpj3Kk7jjbjkZ-UX2VnlHrlXVijnsoHZ04Eygu4/edit
+// TODO: bogConfigArray set up for new Quarterback
 constexpr bot_config_t botConfigArray[NUM_BOTS] = {
     // idx  bot_name     bot_type              motor_type    gear_ratio wheel_base r_min   r_max
     {0, "i++", lineman, {small_ampflow, 0.6f, 12.25f, 9.00f, 36.00f}},                        //* 0:  i++
