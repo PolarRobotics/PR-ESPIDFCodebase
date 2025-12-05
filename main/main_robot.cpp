@@ -37,6 +37,7 @@
 #include <Quarterback.h>
 #include <QuarterbackBase.h>
 #include <QuarterbackTurret.h>
+#include <Quarterback.h>
 
 // Types Includes
 #include <BotTypes.h>

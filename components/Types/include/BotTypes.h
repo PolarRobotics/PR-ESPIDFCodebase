@@ -19,10 +19,10 @@
  *  1: Receiver
  *  2: Runningback
  *  3: Center
- *  4: Kicker
- *  5: Old Quarterback
- *  6: Quarterback base
- *  7: Quarterback turret
+ *  4: Center Conversion
+ *  5: Kicker
+ *  6: Old Quarterback
+ *  7: Quarterback
  */
 typedef enum
 {
