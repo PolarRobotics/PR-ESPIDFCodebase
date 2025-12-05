@@ -135,7 +135,7 @@ extern "C" void main_app(void)
     drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
   case quarterback_old:
-    robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
+    robot = new QuarterbackOld(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
     drive = new Drive(quarterback_old, driveParams);
     drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
@@ -272,6 +272,7 @@ extern "C" void main_app(void)
     }
     else
     { // no response from PS5 controller within last 300 ms, so stop
+      // TODO: quarterback_turret
       if (robotType != quarterback_turret)
       {
         // Emergency stop if the controller disconnects
