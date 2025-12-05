@@ -153,7 +153,7 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
      "delta",
      swerve,
      {neo_vortex, 0.5f, 11.50f, 9.00f, 36.00f}},  //* 13: delta (swerve)
-                                                  //PLACEHOLDER VALUES
+                                                  // PLACEHOLDER VALUES
     {14, "beta", quarterback, {big_ampflow, 0.5f, 11.50f, 9.00f, 36.00f}},
     {16,
      "l-man-v1",
