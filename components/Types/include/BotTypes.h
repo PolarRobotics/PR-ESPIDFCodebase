@@ -14,6 +14,7 @@
  * enum for the possible positions a robot can have on the field
  * NOTE: when this list is updated, make sure to update the botTypeStrings array with a corresponding string
  *
+ *  TODO: refactor the Enum
  *  Robot Type Enum
  *  0: Lineman
  *  1: Receiver
@@ -24,6 +25,7 @@
  *  6: Old Quarterback
  *  7: Quarterback base
  *  8: Quarterback turret
+ *  9: Quarterback
  */
 typedef enum
 {
