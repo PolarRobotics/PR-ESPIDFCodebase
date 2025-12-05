@@ -35,7 +35,8 @@ typedef enum
   mecanum_center,
   quarterback_old,
   quarterback_base,
-  quarterback_turret
+  quarterback_turret,
+  quarterback
 } BotType;
 
 /**
@@ -97,6 +98,7 @@ typedef struct BotConfig
 #define BOT_25 19
 
 // PRESET BOT CONFIGURATIONS, MUST MATCH:
+// TODO: bogConfigArray set up for new Quarterback
 // https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
 constexpr bot_config_t botConfigArray[NUM_BOTS] = {
     // idx  bot_name     bot_type              motor_type    gear_ratio wheel_base r_min   r_max

@@ -48,7 +48,7 @@ enum QBElevation
  * @brief Quarterback Subclass Header
  * @authors Rhys Davies
  */
-class Quarterback : public Robot
+class QuarterbackOld : public Robot
 {
 private:
   uint8_t flywheelPin;
@@ -72,7 +72,7 @@ private:
   const float speedFac[NUM_SPEED_INCREMENTS] = {0.0, 0.45, 0.75};                 // the power levels are truly 0.3, 0.75, 1 because its FLYWHEEL_SPEED_FULL + value in array
 
 public:
-  Quarterback(
+  QuarterbackOld(
       uint8_t flywheelPin,
       uint8_t conveyorPin,
       uint8_t elevationPin);

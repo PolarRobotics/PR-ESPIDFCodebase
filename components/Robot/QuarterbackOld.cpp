@@ -1,6 +1,6 @@
-#include <Quarterback.h>
+#include <QuarterbackOld.h>
 
-Quarterback::Quarterback(
+QuarterbackOld::QuarterbackOld(
     uint8_t flywheelPin,
     uint8_t conveyorPin,
     uint8_t elevationPin)
@@ -33,7 +33,7 @@ Quarterback::Quarterback(
   lastElevationTime = millis();
 }
 
-void Quarterback::action()
+void QuarterbackOld::action()
 {
   // Update the bools within the class to see if the user wants to go up or down
   if (ps5.Up())
@@ -57,7 +57,7 @@ void Quarterback::action()
   update();
 }
 
-void Quarterback::toggleFlywheels()
+void QuarterbackOld::toggleFlywheels()
 {
   if (millis() - lastDBFW >= DEBOUNCE_WAIT)
   {
@@ -68,7 +68,7 @@ void Quarterback::toggleFlywheels()
   }
 }
 
-float Quarterback::rampFW(float requestedPower)
+float QuarterbackOld::rampFW(float requestedPower)
 {
 
   if (millis() - lastFlywheelRampTime >= FW_TIME_INCREMENT)
@@ -108,7 +108,7 @@ float Quarterback::rampFW(float requestedPower)
 }
 
 // Aiming related functions
-void Quarterback::aim(QBAim dir)
+void QuarterbackOld::aim(QBAim dir)
 {
   // Debounce for button press
   if (millis() - lastDBElev >= DEBOUNCE_WAIT)
@@ -130,7 +130,7 @@ void Quarterback::aim(QBAim dir)
   }
 }
 
-void Quarterback::update()
+void QuarterbackOld::update()
 {
   // Setup the motors on startup so they go down to absolute zero
   if (setupMotors)
@@ -181,7 +181,7 @@ void Quarterback::update()
   }
 }
 
-void Quarterback::toggleConveyor()
+void QuarterbackOld::toggleConveyor()
 {
   // Debounce for button press
   if (millis() - lastDBConv >= DEBOUNCE_WAIT)
@@ -201,7 +201,7 @@ void Quarterback::toggleConveyor()
   }
 }
 
-void Quarterback::changeFWSpeed(SpeedStatus speed)
+void QuarterbackOld::changeFWSpeed(SpeedStatus speed)
 {
   // Debounce for button press
   if (millis() - lastDBFWChange >= DEBOUNCE_WAIT)
