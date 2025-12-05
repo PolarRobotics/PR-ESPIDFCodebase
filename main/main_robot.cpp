@@ -42,6 +42,7 @@ static const char *TAG = "MainRobot";
 #include <QuarterbackBase.h>
 #include <QuarterbackTurret.h>
 #include <Robot.h>
+#include <Quarterback.h>
 
 // Types Includes
 #include <BotTypes.h>
