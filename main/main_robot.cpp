@@ -40,6 +40,7 @@
 
 // Utilities Includes
 #include <ConfigManager.h>
+#include <TackleSensor.h>
 
 // Primary Parent Component Pointers
 Robot *robot = nullptr; // subclassed if needed
@@ -110,6 +111,7 @@ extern "C" void main_app(void)
 
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(TACKLE_PIN, OUTPUT); // Try INPUT_PULLUP
+  digitalWrite(TACKLE_PIN, 0); // Initially sets tackle sensor to home
 
   // Read robot info from "EEPROM" (ESP32 Preferences) using ConfigManager
   config.read();
@@ -250,7 +252,7 @@ extern "C" void main_app(void)
         // Manual Home / Away Position Setting
         if (ps5.Options())
         {
-          // pinMode(TACKLE_PIN, OUTPUT);
+          switchTackleSensor();
         }
 
         //* Update the motors based on the inputs from the controller
