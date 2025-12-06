@@ -20,7 +20,6 @@
 
 // Drive Includes
 #include <Drive.h>
-#include <DriveMecanum.h>
 
 // Pairing Includes
 #include <pairing.h>
@@ -29,7 +28,6 @@
 #include <Robot.h>
 #include <Lineman.h>
 #include <Center.h>
-#include <MecanumCenter.h>
 #include <Kicker.h>
 #include <Quarterback.h>
 #include <QuarterbackBase.h>
@@ -144,11 +142,6 @@ extern "C" void main_app(void)
     drive = new Drive(quarterback_old, driveParams);
     drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
-  case mecanum_center:
-    robot = new MecanumCenter(SPECBOT_PIN1, SPECBOT_PIN2);
-    drive = new DriveMecanum();
-    ((DriveMecanum *)drive)->setupMotors(M1_IDX, M2_IDX, M3_PIN, M4_PIN);
-    break;
   case center:
     robot = new Center(SPECBOT_PIN1, SPECBOT_PIN2);
     drive = new Drive(center, driveParams);
@@ -226,14 +219,7 @@ extern "C" void main_app(void)
       // TODO: find better solution
       if (robotType != quarterback_turret)
       {
-        if (robotType == mecanum_center)
-        {
-          ((DriveMecanum *)drive)->setStickPwr(ps5.LStickX(), ps5.LStickY(), ps5.RStickX());
-        }
-        else
-        {
-          drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
-        }
+        drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
 
         // determine BSN percentage (boost, slow, or normal)
         if (ps5.Touchpad())

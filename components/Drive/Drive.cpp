@@ -77,27 +77,6 @@ Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int t
         lastRampPower[i] = 0.0f;
         turnMotorValues[i] = 0.0f;
     }
-
-    if (botType != mecanum_center)
-    {
-        // initialize parameters for turning model
-        omega = 0;
-        omega_L = 0, omega_R = 0;
-        R = 0.0f;
-        // R_Max = 24.0f;
-        // R_Max = 36.0f;
-        // R_Min = wheelBase/2 + 4;
-        min_RPM = 200;
-        // max_RPM = M1.Percent2RPM(1);
-        // max_RPM = M1.max_rpm;
-
-        // initialize turn sensitivity variables
-        enableTurnSensitivity = turnFunction; // 0 for linear, 1 for Rhys's function, 2 for cubic
-        turnSensitivityScalar = 0.49;         // Range: (0, 0.5) really [0.01, 0.49]
-        domainAdjustment = 1 / log((1 - (turnSensitivityScalar + 0.5)) / (turnSensitivityScalar + 0.5));
-    }
-    String debugMsg = "02: Drive Class Instantiated\n";
-    Serial.print(debugMsg.c_str());
 }
 
 void Drive::setupMotors(uint8_t lidx, uint8_t ridx)
