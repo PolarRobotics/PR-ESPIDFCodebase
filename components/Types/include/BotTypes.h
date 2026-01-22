@@ -8,7 +8,7 @@
 #include <MotorTypes.h>
 #include <DriveParameters.h>
 
-#define NUM_POSITIONS 9 // number of members of eBOT_TYPE
+#define NUM_POSITIONS 8 // number of members of eBOT_TYPE
 
 /** BotType
  * enum for the possible positions a robot can have on the field
@@ -23,9 +23,7 @@
  *  4: Kicker
  *  5: Mecanum Center
  *  6: Old Quarterback
- *  7: Quarterback base
- *  8: Quarterback turret
- *  9: Quarterback
+ *  7: Quarterback
  */
 typedef enum
 {
@@ -36,8 +34,6 @@ typedef enum
   kicker,
   mecanum_center,
   quarterback_old,
-  quarterback_base,
-  quarterback_turret,
   quarterback
 } BotType;
 
@@ -84,16 +80,13 @@ typedef struct BotConfig
 #define BOT_PHI 10
 #define BOT_CENTER 10
 #define BOT_INF 11
-#define BOT_QB 11
 #define BOT_QB_OLD 11
 #define BOT_THETA 12
 #define BOT_KICKER 12
 #define BOT_MC 13
 #define BOT_MECANUM_CENTER 13
-#define BOT_QB_BASE 14
-#define BOT_QB_BOTTOM 14
-#define BOT_QB_TURRET 15
-#define BOT_QB_TOP 15
+#define BOT_QB 14
+#define BOT_BETA 14
 #define BOT_LINEMAN_V1 16
 #define BOT_420 17
 #define BOT_24 18
@@ -118,8 +111,7 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
     {11, "inf", quarterback_old, {small_ampflow, 0.5625f, 11.50f, 9.00f, 24.00f}}, //* 11: ∞
     {12, "theta", kicker, {small_ampflow, 0.5f, 10.00f, 9.00f, 36.00f}},           //* 12: Θ
     {13, "y=x", mecanum_center, {mecanum, 1.0f, 11.00f, 9.00f, 36.00f}},           //* 13: y=x
-    {14, "qb_base", quarterback_base, {big_ampflow, 0.5f, 11.50f, 9.00f, 36.00f}}, //* 14: unassigned
-    {15, "qb_turret", quarterback_turret, {falcon, 0.5f, 11.50f, 9.00f, 36.00f}},  //* 15: unassigned
+    {14, "beta", quarterback, {big_ampflow, 0.5f, 11.50f, 9.00f, 36.00f}},         //* 14: beta
     {16, "l-man-v1", lineman, {small_12v, 1.0f, 11.00f, 9.00f, 36.00f}},           //* 16: generic lineman V1
     {17, "420", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                //* 17: 420
     {18, "24", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                 //* 18: 24
