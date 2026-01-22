@@ -13,7 +13,7 @@
 
 #include "esp_log.h"
 
-static const char *TAG = "MainRobot";
+static const char* TAG = "MainRobot";
 
 // my dumb code
 
@@ -39,10 +39,8 @@ static const char *TAG = "MainRobot";
 #include <Kicker.h>
 #include <Lineman.h>
 #include <Quarterback.h>
-#include <QuarterbackBase.h>
-#include <QuarterbackTurret.h>
+#include <QuarterbackOld.h>
 #include <Robot.h>
-#include <Quarterback.h>
 
 // Types Includes
 #include <BotTypes.h>
@@ -56,8 +54,8 @@ static const char *TAG = "MainRobot";
 #include <sabertoothinst.h>
 
 // Primary Parent Component Pointers
-Robot *robot = nullptr;  // subclassed if needed
-Drive *drive = nullptr;  // subclassed if needed
+Robot* robot = nullptr;  // subclassed if needed
+Drive* drive = nullptr;  // subclassed if needed
 
 //* How to use subclasses: ((SubclassName*) robot)->function()
 //! You must downcast each time you use a special function
@@ -70,7 +68,7 @@ drive_param_t driveParams;
 ConfigManager config;
 
 // Input Debouncer
-Debouncer *dbOptions;
+Debouncer* dbOptions;
 
 // Prototypes for Controller Callbacks
 // Implementations located at the bottom of this file
@@ -166,16 +164,16 @@ extern "C" void main_app(void)
       break;
     case quarterback_turret:
       robot = new QuarterbackTurret(
-        M1_IDX,        // left flywheel
-        M2_IDX,        // right flywheel
-        M3_PIN,        // cradle
-        M4_PIN,        // turret
-        SPECBOT_PIN1,  // assembly motor
-        SPECBOT_PIN3,  // magnetometer sda
-        SPECBOT_PIN4,  // magnetometer scl
-        ENC1_CHA,      // turret encoder
-        ENC1_CHB,      // turret encoder
-        ENC2_CHB       // zeroing laser
+          M1_IDX,        // left flywheel
+          M2_IDX,        // right flywheel
+          M3_PIN,        // cradle
+          M4_PIN,        // turret
+          SPECBOT_PIN1,  // assembly motor
+          SPECBOT_PIN3,  // magnetometer sda
+          SPECBOT_PIN4,  // magnetometer scl
+          ENC1_CHA,      // turret encoder
+          ENC1_CHB,      // turret encoder
+          ENC2_CHB       // zeroing laser
       );
       break;
     case quarterback_base:
@@ -206,8 +204,11 @@ extern "C" void main_app(void)
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
-  HWSerial.begin(115200, SERIAL_8N1, 16,
-                 17);  // 9600 baudrate default for USBSabertooth
+  HWSerial.begin(
+      115200,
+      SERIAL_8N1,
+      16,
+      17);  // 9600 baudrate default for USBSabertooth
   {
     ;  // wait for serial port to connect
   }
@@ -235,45 +236,43 @@ extern "C" void main_app(void)
       //* QBv3 Turret doesn't have drive, so this is a temporary measure to
       // avoid NPEs and chaos
       // TODO: find better solution
-      if (robotType != quarterback_turret)
+
+      drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
+
+      // determine BSN percentage (boost, slow, or normal)
+      if (ps5.Touchpad())
       {
-        drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
-
-        // determine BSN percentage (boost, slow, or normal)
-        if (ps5.Touchpad())
-        {
-          drive->emergencyStop();
-          drive->setSpeedScalar(Drive::BRAKE);
-        }
-        else if (ps5.R1())
-        {
-          drive->setSpeedScalar(Drive::BOOST);
-          // ps5.setLed(0, 255, 0);   // set LED red
-        }
-        else if (ps5.L1())
-        {
-          drive->setSpeedScalar(Drive::SLOW);
-        }
-        else if (ps5.R2() && driveParams.motor_type == falcon)
-        {
-          // used to calibrate the max pwm signal for the falcon 500 motors
-          drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
-        }
-        else
-        {
-          drive->setSpeedScalar(Drive::NORMAL);
-        }
-
-        // Manual Home / Away Position Setting
-        if (dbOptions->debounceAndPressed(ps5.Options())) switchTackleSensor();
-
-        //* Update the motors based on the inputs from the controller
-        //* Can change functionality depending on subclass, like robot.action()
-        drive->update();
-        // drive->printDebugInfo(); // comment this line out to reduce compile
-        // time and memory usage drive->printCsvInfo(); // prints info to serial
-        // monitor in a csv (comma separated value) format
+        drive->emergencyStop();
+        drive->setSpeedScalar(Drive::BRAKE);
       }
+      else if (ps5.R1())
+      {
+        drive->setSpeedScalar(Drive::BOOST);
+        // ps5.setLed(0, 255, 0);   // set LED red
+      }
+      else if (ps5.L1())
+      {
+        drive->setSpeedScalar(Drive::SLOW);
+      }
+      else if (ps5.R2() && driveParams.motor_type == falcon)
+      {
+        // used to calibrate the max pwm signal for the falcon 500 motors
+        drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
+      }
+      else
+      {
+        drive->setSpeedScalar(Drive::NORMAL);
+      }
+
+      // Manual Home / Away Position Setting
+      if (dbOptions->debounceAndPressed(ps5.Options())) switchTackleSensor();
+
+      //* Update the motors based on the inputs from the controller
+      //* Can change functionality depending on subclass, like robot.action()
+      drive->update();
+      // drive->printDebugInfo(); // comment this line out to reduce compile
+      // time and memory usage drive->printCsvInfo(); // prints info to serial
+      // monitor in a csv (comma separated value) format
       //! Performs all special robot actions depending on the instantiated Robot
       //! subclass
       robot->action();
@@ -285,16 +284,10 @@ extern "C" void main_app(void)
     }
     else
     {  // no response from PS5 controller within last 300 ms, so stop
-      // ESP_LOGI(TAG, "Controller DC\n");
-      if (robotType != quarterback_turret)
-      {
-        // Emergency stop if the controller disconnects
-        drive->emergencyStop();
-      }
-      else
-      {
-        ((QuarterbackTurret *)robot)->emergencyStop();
-      }
+       // ESP_LOGI(TAG, "Controller DC\n");
+
+      // Emergency stop if the controller disconnects
+      drive->emergencyStop();
     }
     delay(5);
   }
