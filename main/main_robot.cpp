@@ -34,9 +34,7 @@
 #include <Center.h>
 #include <CenterConversion.h>
 #include <Kicker.h>
-#include <Quarterback.h>
-#include <QuarterbackBase.h>
-#include <QuarterbackTurret.h>
+#include <QuarterbackOld.h>
 #include <Quarterback.h>
 
 // Types Includes
@@ -155,11 +153,12 @@ extern "C" void main_app(void)
     drive = new Drive(runningback, driveParams);
     drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
-    // TODO: combine cases in switch
-  case quarterback_turret:
-    robot = new QuarterbackTurret(
-        M1_IDX,       // left flywheel
-        M2_IDX,       // right flywheel
+  case quarterback:
+    drive = new Drive(quarterback, driveParams);
+    drive->setupMotors(M1_PIN, M2_PIN);
+    robot = new Quarterback(
+        M1_PIN,       // left flywheel
+        M2_PIN,       // right flywheel
         M3_PIN,       // cradle
         M4_PIN,       // turret
         SPECBOT_PIN1, // assembly motor
@@ -169,11 +168,6 @@ extern "C" void main_app(void)
         ENC1_CHB,     // turret encoder
         ENC2_CHB      // zeroing laser
     );
-    break;
-  case quarterback_base:
-    drive = new Drive(quarterback_base, driveParams);
-    drive->setupMotors(DRIVE_M1, DRIVE_M2);
-    robot = new QuarterbackBase(drive);
     break;
   case receiver:
   case lineman:
@@ -219,49 +213,43 @@ extern "C" void main_app(void)
       // Serial.print(F("\r\nConnected"));
       // ps5.setLed(255, 0, 0);   // set LED red
 
-      //* QBv3 Turret doesn't have drive, so this is a temporary measure to avoid NPEs and chaos
-      // TODO: find better solution
-      if (robotType != quarterback_turret)
+      drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
+
+      // determine BSN percentage (boost, slow, or normal)
+      if (ps5.Touchpad())
       {
-        drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
-
-        // determine BSN percentage (boost, slow, or normal)
-        if (ps5.Touchpad())
-        {
-          drive->emergencyStop();
-          drive->setSpeedScalar(Drive::BRAKE);
-        }
-        else if (ps5.R1())
-        {
-          drive->setSpeedScalar(Drive::BOOST);
-          // ps5.setLed(0, 255, 0);   // set LED red
-        }
-        else if (ps5.L1())
-        {
-          drive->setSpeedScalar(Drive::SLOW);
-        }
-        else if (ps5.R2() && driveParams.motor_type == falcon)
-        {
-          // used to calibrate the max pwm signal for the falcon 500 motors
-          drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
-        }
-        else
-        {
-          drive->setSpeedScalar(Drive::NORMAL);
-        }
-
-        // Manual Home / Away Position Setting
-        if (dbOptions->debounceAndPressed(ps5.Options()))
-        {
-          switchTackleSensor();
-        }
-
-        //* Update the motors based on the inputs from the controller
-        //* Can change functionality depending on subclass, like robot.action()
-        drive->update();
-        drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
-        // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
+        drive->emergencyStop();
+        drive->setSpeedScalar(Drive::BRAKE);
       }
+      else if (ps5.R1())
+      {
+        drive->setSpeedScalar(Drive::BOOST);
+        // ps5.setLed(0, 255, 0);   // set LED red
+      }
+      else if (ps5.L1())
+      {
+        drive->setSpeedScalar(Drive::SLOW);
+      }
+      else if (ps5.R2() && driveParams.motor_type == falcon)
+      {
+        // used to calibrate the max pwm signal for the falcon 500 motors
+        drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
+      }
+      else
+      {
+        drive->setSpeedScalar(Drive::NORMAL);
+      }
+
+      // Manual Home / Away Position Setting
+      // if (ps5.Options())
+      //   ;
+
+      //* Update the motors based on the inputs from the controller
+      //* Can change functionality depending on subclass, like robot.action()
+      drive->update();
+      drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+      // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
+
       //! Performs all special robot actions depending on the instantiated Robot subclass
       robot->action();
 
@@ -273,16 +261,8 @@ extern "C" void main_app(void)
     }
     else
     { // no response from PS5 controller within last 300 ms, so stop
-      // TODO: quarterback_turret
-      if (robotType != quarterback_turret)
-      {
-        // Emergency stop if the controller disconnects
-        drive->emergencyStop();
-      }
-      else
-      {
-        ((QuarterbackTurret *)robot)->emergencyStop();
-      }
+      // Emergency stop if the controller disconnects
+      drive->emergencyStop();
     }
   }
 
