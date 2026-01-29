@@ -44,9 +44,6 @@
 // Sabertooth USB Serial Library
 #include <Utilities/sabertoothinst.h>
 
-// Sabertooth USB Serial Library
-#include <Utilities/sabertoothinst.h>
-
 // Primary Parent Component Pointers
 Robot *robot = nullptr; // subclassed if needed
 Drive *drive = nullptr; // subclassed if needed
