@@ -106,6 +106,7 @@ extern "C" void main_app(void)
 
   */
   bool sabertoothReady = false;
+
   // runs once at the start of the program
 
   // Arduino-like setup()
@@ -153,8 +154,8 @@ extern "C" void main_app(void)
     break;
   case quarterback_turret:
     robot = new QuarterbackTurret(
-        M1_IDX, // left flywheel
-        M2_IDX, // right flywheel
+        M1_IDX,       // left flywheel
+        M2_IDX,       // right flywheel
         M3_PIN,       // cradle
         M4_PIN,       // turret
         SPECBOT_PIN1, // assembly motor
@@ -174,13 +175,15 @@ extern "C" void main_app(void)
   case lineman:
   default: // Assume lineman
     robot = new Lineman();
-     Serial.print("01: Instantiating Drive Class\n");
+    String debugMsg = "01: Instantiating Drive Class\n";
+    Serial.print(debugMsg.c_str());
     drive = new Drive(lineman, driveParams);
-    Serial.print("03: Call setupMotors\n");
+    String debugMsg2 = "03: Call setupMotors\n";
+    Serial.print(debugMsg2.c_str());
     drive->setupMotors(M1_IDX, M2_IDX);
   }
 
-  // drive->printSetup();
+  drive->printSetup();
 
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();

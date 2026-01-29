@@ -29,7 +29,7 @@
  * Default configuration:
  * @param leftmotoridx the arduino pin needed for the left motor, needed for servo
  * @param rightmotoridx the arduino pin needed for the right motor, needed for servo
-*/
+ */
 
 Drive::Drive()
 {
@@ -78,57 +78,57 @@ Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int t
         turnMotorValues[i] = 0.0f;
     }
 
-  if (botType != mecanum_center) {
-    // initialize parameters for turning model
-    omega = 0;
-    omega_L = 0, omega_R = 0;
-    R = 0.0f;
-    // R_Max = 24.0f;
-    // R_Max = 36.0f;
-    // R_Min = wheelBase/2 + 4;
-    min_RPM = 200;
-    // max_RPM = M1.Percent2RPM(1);
-    // max_RPM = M1.max_rpm;
-
-    // initialize turn sensitivity variables
-    enableTurnSensitivity = turnFunction; // 0 for linear, 1 for Rhys's function, 2 for cubic
-    turnSensitivityScalar = 0.49; // Range: (0, 0.5) really [0.01, 0.49]
-    domainAdjustment = 1/log((1-(turnSensitivityScalar + 0.5))/(turnSensitivityScalar + 0.5));
-    
-   }
-  Serial.print("02: Drive Class Instantiated\n");
+    if (botType != mecanum_center)
+    {
+        // initialize parameters for turning model
+        omega = 0;
+        omega_L = 0, omega_R = 0;
+        R = 0.0f;
+        // R_Max = 24.0f;
+        // R_Max = 36.0f;
+        // R_Min = wheelBase/2 + 4;
+        min_RPM = 200;
+        // max_RPM = M1.Percent2RPM(1);
+        // max_RPM = M1.max_rpm;
 
         // initialize turn sensitivity variables
         enableTurnSensitivity = turnFunction; // 0 for linear, 1 for Rhys's function, 2 for cubic
         turnSensitivityScalar = 0.49;         // Range: (0, 0.5) really [0.01, 0.49]
         domainAdjustment = 1 / log((1 - (turnSensitivityScalar + 0.5)) / (turnSensitivityScalar + 0.5));
     }
+    String debugMsg = "02: Drive Class Instantiated\n";
+    Serial.print(debugMsg.c_str());
 }
 
-void Drive::setupMotors(uint8_t lidx, uint8_t ridx) {
-    //this->motorPins[0] = lpin, this->motorPins[1] = rpin;
-    // this->M1 = new MotorControl(motorType, false, this->gearRatio);
-    // this->M2 = new MotorControl(motorType, false, this->gearRatio);
+void Drive::setupMotors(uint8_t lidx, uint8_t ridx)
+{
+    // this->motoridxs[0] = lidx, this->motoridxs[1] = ridx;
+    //  this->M1 = new MotorControl(motorType, false, this->gearRatio);
+    //  this->M2 = new MotorControl(motorType, false, this->gearRatio);
 
     // M1->setup(lidx), M2->setup(ridx);
-      Serial.print("04: Calling M1 and M2 setup\n");
+    String debugMsg1 = "04: Calling M1 and M2 setup\n";
+    Serial.print(debugMsg1.c_str());
     M1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio);
-     Serial.print("07: Exit M1 Setup\n");
+    String debugMsg2 = "07: Exit M1 Setup\n";
+    Serial.print(debugMsg2.c_str());
     M2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio);
-    Serial.print("10: Exit M2 Setup\n");
+    String debugMsg3 = "10: Exit M2 Setup\n";
+    Serial.print(debugMsg3.c_str());
 }
 
 /**
  * setupMotors
  * @brief to be called when setting up a motor with an encoder
- * 
- * 
-*/
-void Drive::setupMotors(uint8_t lidx, uint8_t ridx, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin) {
-    //this->motoridxs[0] = lidx, this->motoridxs[1] = ridx;
-    // this->M1 = new MotorControl(motorType, true, this->gearRatio);
-    // this->M2 = new MotorControl(motorType, true, this->gearRatio);
-    
+ *
+ *
+ */
+void Drive::setupMotors(uint8_t lidx, uint8_t ridx, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin)
+{
+    // this->motoridxs[0] = lidx, this->motoridxs[1] = ridx;
+    //  this->M1 = new MotorControl(motorType, true, this->gearRatio);
+    //  this->M2 = new MotorControl(motorType, true, this->gearRatio);
+
     M1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio, left_enc_a_pin, left_enc_b_pin);
     M2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio, right_enc_a_pin, right_enc_b_pin);
 }
@@ -151,11 +151,8 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX)
 {
     // left stick all the way forward is 0, backward is 255
     // +: forward, -: backward. needs to be negated so that forward is forward and v.v.; subtracting 1 bumps into correct range
-    stickForwardRev = (leftY);
-    stickForwardRev = stickForwardRev << 4;
-    stickTurn = (rightX);
-    stickTurn = stickTurn << 4;
-
+    stickForwardRev = (leftY / 127.5f);
+    stickTurn = (rightX / 127.5f);
     // stick deadzones
     // set to zero (no input) if within the set deadzone
     // subtacting STICK_DEADZONE and deviding by 1-STICK_DEADZONE normalize the inputs to use the full 0-1 range
@@ -204,8 +201,9 @@ void Drive::setSpeedScalar(Speed bns)
 
 /**
  * @brief setSpeedValue overrides the default predefined values from MOTORTYPE_BNS_ARRAY
-*/
-void Drive::setSpeedValue(float speed_pct) {
+ */
+void Drive::setSpeedValue(float speed_pct)
+{
     this->speedScalar = (speed_pct * SABERTOOTH_MAX_POWER);
 }
 
@@ -408,9 +406,9 @@ void Drive::printDebugInfo()
     // Serial.println(requestedPower - currentRampPower[mtr], 10);
 
     Serial.print(F("  Left Motor: "));
-    Serial.print(requestedMotorPower[0]);
+    Serial.print(requestedMotorPowerSerial[0]);
     Serial.print(F("  Right: "));
-    Serial.print(requestedMotorPower[1]);
+    Serial.print(requestedMotorPowerSerial[1]);
 
     // Serial.print(F("  scaledSensitiveTurn: "));
     // Serial.print(scaledSensitiveTurn);
@@ -470,8 +468,8 @@ void Drive::update()
         requestedMotorPower[1] = fabs(requestedMotorPower[1]) < MOTOR_ZERO_OFFST ? 0 : requestedMotorPower[1];
 
         // Write the ramped value to the motor via MotorInterface
-        M1.write(requestedMotorPower[0]);
-        M2.write(-requestedMotorPower[1]);
+        M1.write(requestedMotorPowerSerial[0]);
+        M2.write(requestedMotorPowerSerial[1]);
     }
     else
     { // CASE FOR ANY OTHER ROBOT
@@ -483,17 +481,21 @@ void Drive::update()
         requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
         requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
 
+        // Convert Motor Power to int for USBSabertooth (-2048 to 2047)
+        requestedMotorPowerSerial[0] = (int)(requestedMotorPower[0] * 2047.0f);
+        requestedMotorPowerSerial[1] = (int)(requestedMotorPower[1] * 2047.0f);
+
         // Set the ramp value to a function, needed for generateMotionValues
-        lastRampPower[0] = requestedMotorPower[0];
-        lastRampPower[1] = requestedMotorPower[1];
+        lastRampPower[0] = requestedMotorPowerSerial[0];
+        lastRampPower[1] = requestedMotorPowerSerial[1];
 
         // Write the ramped value to the motor via MotorInterface
-        M1.write(requestedMotorPower[0]);
-        M2.write(requestedMotorPower[1]);
+        M1.write(requestedMotorPowerSerial[0]);
+        M2.write(requestedMotorPowerSerial[1]);
     }
 
-    trackingMotorPower[0] = requestedMotorPower[0];
-    trackingMotorPower[1] = requestedMotorPower[1];
+    trackingMotorPower[0] = requestedMotorPowerSerial[0];
+    trackingMotorPower[1] = requestedMotorPowerSerial[1];
 }
 
 int Drive::getMotorWifiValue(int motorRequested)
