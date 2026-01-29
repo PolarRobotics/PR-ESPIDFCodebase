@@ -1,3 +1,4 @@
+#pragma once
 /**
  * @brief Polar Robotics Main Header File
  *
@@ -7,6 +8,13 @@
 
 #ifndef POLAR_ROBOTICS_H
 #define POLAR_ROBOTICS_H
+
+#include <Arduino.h>
+#include <Utilities/BotTypes.h>
+#include <Utilities/MotorTypes.h>
+#include <Utilities/DriveParameters.h>
+#include <USBSabertooth.h>
+#include <HardwareSerial.h>
 
 // #define PR_CODEBASE_VERSION "2.4.5 @ production"
 
@@ -22,8 +30,8 @@
 //  Motor and Pin #  |     Configurations     |
 //     | mot# |##|   |  2 wheels  |  4 wheels  |
 // ____|______|__|___|____________|____________|
-#define M1_IDX 1 // | leftMotor  | leftFront  |
-#define M2_IDX 2 // | rightMotor | rightFront |
+#define M1_IDX 1  // | leftMotor  | leftFront  |
+#define M2_IDX 2  // | rightMotor | rightFront |
 #define M3_PIN 26 // |    N/A     | leftRear   |
 #define M4_PIN 27 // |    N/A     | rightRear  |
 
@@ -53,5 +61,9 @@ enum BOT_STATE
   DEFENSE,
   TACKLED
 };
+
+extern HardwareSerial HWSerial;
+extern USBSabertoothSerial STSerial;
+extern USBSabertooth ST;
 
 #endif // POLAR_ROBOTICS_H

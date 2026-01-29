@@ -1,11 +1,14 @@
 #include <USBSabertooth.h>
 #include "MotorControl.h"
 
+USBSabertoothSerial C;
+USBSabertooth ST(C, 128);
+
+#include <Utilities/sabertoothinst.h>
 
 HardwareSerial HWSerial(2);
 USBSabertoothSerial STSerial(HWSerial);
 USBSabertooth ST(STSerial, 128);
-
 
 #include <Arduino.h>
 
@@ -65,35 +68,39 @@ MotorControl::MotorControl()
  *
  * @return uint8_t the channel number the pin is attached to, 255 if failure
  */
-uint8_t MotorControl::setup(int mot_idx, MotorType type, bool has_encoder, float gearRatio, int enc_a_chan_pin, int enc_b_chan_pin) {
-    this->mot_idx = mot_idx;
+void MotorControl::setup(int mot_idx, MotorType type, bool has_encoder, float gearRatio, int enc_a_chan_pin, int enc_b_chan_pin)
+{
+  this->mot_idx = mot_idx;
 
   int debugidx = 0;
-  if(mot_idx == 1) debugidx = 5;
-  else if (mot_idx == 2) debugidx = 8;
-  Serial.print("0" + String(debugidx) + ": Setting up motor " + String(this->mot_idx) + "\n");
+  if (mot_idx == 1)
+    debugidx = 5;
+  else if (mot_idx == 2)
+    debugidx = 8;
+  String debugMsg = "0" + String(debugidx) + ": Setting up motor " + String(this->mot_idx) + "\n";
+  Serial.print(debugMsg.c_str());
 
   this->has_encoder = has_encoder;
   this->motor_type = type;
   this->gear_ratio = gearRatio;
   this->enc_a_pin = enc_a_chan_pin, this->enc_b_pin = enc_b_chan_pin;
-  
 
   // Calculate the max rpm by multiplying the nominal motor RPM by the gear ratio
   this->max_rpm = int(MOTOR_MAX_RPM_ARR[static_cast<uint8_t>(this->motor_type)] * this->gear_ratio);
-    Serial.print("0" + String(debugidx+1) + ": Max RPM set to " + String(this->max_rpm) + " and setup complete\n");
-
+  String debugMsg2 = "0" + String(debugidx + 1) + ": Max RPM set to " + String(this->max_rpm) + " and setup complete\n";
+  Serial.print(debugMsg2.c_str());
 }
- /**
+/**
  * @brief Write requested power to sabertooth
  * @author Quentin Osterhage
  * Updated 10-04-2025
- * 
+ *
  * @param pwr the power value to write to the sabertooth in range -2047 to 2047
- * 
- * @return void 
+ *
+ * @return void
  */
-void MotorControl::write(int pwr) {
+void MotorControl::write(int pwr)
+{
   ST.motor(this->mot_idx, pwr);
 }
 
