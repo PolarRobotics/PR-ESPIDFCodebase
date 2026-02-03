@@ -144,7 +144,7 @@ const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.215, 0.31, 0
 #define QB_TURRET_PID_BAD_DELTA_T 250
 #define QB_NORTH_OFFSET 0
 
-// Enable or Disable Auto Mode for testing
+// Enable or Disable Auto Mode or Combine Mode for testing
 #define QB_AUTO_ENABLED false
 
 //===============================//
