@@ -10,9 +10,9 @@
 #define POLAR_ROBOTICS_H
 
 #include <Arduino.h>
-#include <Utilities/BotTypes.h>
-#include <Utilities/MotorTypes.h>
-#include <Utilities/DriveParameters.h>
+#include <BotTypes.h>
+#include <MotorTypes.h>
+#include <DriveParameters.h>
 #include <USBSabertooth.h>
 #include <HardwareSerial.h>
 

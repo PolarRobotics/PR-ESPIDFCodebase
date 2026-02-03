@@ -10,4 +10,5 @@ idf_component_register(
         Types
         espressif__arduino-esp32
         ps5-esp32
+        usbsabertooth
 )

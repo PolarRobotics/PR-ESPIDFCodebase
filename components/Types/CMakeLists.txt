@@ -7,5 +7,6 @@ idf_component_register(
         "include"
         "../../main"
     REQUIRES 
-        espressif__arduino-esp32 
+        espressif__arduino-esp32
+        usbsabertooth 
 )

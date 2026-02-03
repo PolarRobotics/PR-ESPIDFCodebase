@@ -448,6 +448,7 @@ void Drive::printCsvInfo()
 void Drive::update()
 {
     // !TODO Clean up when robots are rewired:
+    // This is PWM code here
     if (this->botType == runningback)
     {
         // Generate turning motion
@@ -473,6 +474,7 @@ void Drive::update()
     }
     else
     { // CASE FOR ANY OTHER ROBOT
+      // This is serial
         // Generate turning motion
         generateMotionValues(RB_TANK_MODE_PCT);
         // printDebugInfo();

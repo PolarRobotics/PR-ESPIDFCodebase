@@ -5,7 +5,7 @@
 
 #include <Pair.h>
 
-#define NUM_MOTOR_TYPES 6
+#define NUM_MOTOR_TYPES 7
 
 // Motor types can be found here:
 // https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=141541655
@@ -17,7 +17,8 @@ typedef enum
   pancake_ampflow, // index 2 for 24v AmpFlow motor P40-350-24
   mecanum,         // index 3 for small 12v mecanum motors
   falcon,          // index 4 for the falcon motors on the runningback
-  small_12v        // index 5 for the small 12v motors on the old robots
+  neo_vortex,      // index 5 for NEO Vortex motors
+  small_12v        // index 6 for the small 12v motors on the old robots
 } MotorType;
 
 const int MOTOR_MAX_RPM_ARR[NUM_MOTOR_TYPES] = {
@@ -26,6 +27,7 @@ const int MOTOR_MAX_RPM_ARR[NUM_MOTOR_TYPES] = {
     3500, // 24v AmpFlow motor P40-350-24
     6000, // small 12v mecanum motors
     6380, // the falcon motors on the runningback
+    6380, // NEO Vortex motors (using same as falcon for now)
     4000  // !TEMP, NEED TO CONFIRM NUMBER the small 12v motors on the old robots
 };
 

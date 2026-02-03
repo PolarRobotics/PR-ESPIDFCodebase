@@ -2,30 +2,24 @@
 
 #include <Arduino.h>
 #include <PolarRobotics.h>
-
 #include <USBSabertooth.h>
-
-#include <Utilities/sabertoothinst.h>
-// #include <MotorInterface.h>
+#include <MotorInterface.h>
 
 // Enum for Increasing or Decreasing Flywheel Speed
-enum SpeedStatus
-{
-  INCREASE,
-  DECREASE
+enum SpeedStatus {
+  INCREASE, DECREASE
 };
 
-class MotorControl
-{
+class MotorControl {
 private:
   MotorType motor_type; // the type of motor to be assigned to this object
   float gear_ratio;     // the input / output gear ratio
 
   // Servo:
-  // MotorInterface Motor;
+  MotorInterface Motor;
 
   // for ramp
-  float requestedRPM;
+  float requestedRPM;     
   float lastRampTime;
   float timeElapsed;
 
@@ -47,20 +41,21 @@ private:
   float omega;
 
 public:
-  int max_rpm; // the motor max rpm * the gear ratio
+  int max_rpm;          // the motor max rpm * the gear ratio 
   int mot_idx;
   MotorControl();
+  uint8_t setupPWM(int mot_pin, MotorType type = big_ampflow, bool has_encoder = false, float gearRatio = 1, int enc_a_chan_pin = -1, int enc_b_chan_pin = -1); 
   void setup(int mot_pin, MotorType type = big_ampflow, bool has_encoder = false, float gearRatio = 1, int enc_a_chan_pin = -1, int enc_b_chan_pin = -1); // if no encoder, leave blank, will not attach pins
 
   //! TEMPORARY FUNCTION, TO BE REMOVED IN FUTURE
   void write(int pwr); // write power in range -2047 to 2047
-
+  void writePWM(float pct);
   int Percent2RPM(float pct);
   float RPM2Percent(int rpm);
 
   float ramp(float requestedPower, float accelRate);
 
-  // Encoder Related Functions
+   // Encoder Related Functions
   void readEncoder();
   int calcSpeed(int current_count);
 };
