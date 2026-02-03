@@ -89,6 +89,7 @@ protected:
   float turnPower;
 
   float requestedMotorPower[NUM_MOTORS];
+  int requestedMotorPowerSerial[NUM_MOTORS];
   float trackingMotorPower[NUM_MOTORS];
   float lastRampPower[NUM_MOTORS];
   float turnMotorValues[NUM_MOTORS];
