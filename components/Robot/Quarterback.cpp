@@ -198,7 +198,7 @@ void Quarterback::action()
         aimAssembly(targetAssemblyAngle);
       }
 
-      //* Share Button: Switch to Combine Mode
+      //* TODO: Share button to Switch between auto and manual, set options to change LED color from Offense/Defense
       if (dbShare->debounceAndPressed(ps5.Share()))
       {
         if (mode != combine)
@@ -216,23 +216,8 @@ void Quarterback::action()
       //* Options (Button): Switch Mode (toggle between auto/manual targeting)
       else if (QB_AUTO_ENABLED && dbOptions->debounceAndPressed(ps5.Options()))
       {
-        switchMode();
-      }
-      //* Left Button (L1): Switch Target to Receiver 1
-      else if (QB_AUTO_ENABLED && ps5.L1())
-      {
-        switchTarget(receiver_1);
-      }
-      //* Right Button (R1): Switch Target to Receiver 2
-      else if (QB_AUTO_ENABLED && ps5.R1())
-      {
-        switchTarget(receiver_2);
-      }
-      //* Auto Mode
-      else if (QB_AUTO_ENABLED && mode == automatic)
-      {
-        // TODO: Implement auto mode
-        // do something based on current value of 'targetReceiver'
+        // TODO: Implement Automatic Targeting System when it is finished (capstone from build team)
+        // until then, this is here to ensure the automatic targeting system toggle works.
       }
       //* Manual Controls
       else
