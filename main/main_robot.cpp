@@ -16,6 +16,10 @@
 #define LED_BUILTIN 2
 #endif
 
+// Debounce for Tacke Sensor Switch
+// 50 ms for default delay (50L)
+#define TACKLE_SENSOR_DELAY 50L
+
 #include <PolarRobotics.h>
 
 // Drive Includes
@@ -55,6 +59,9 @@ drive_param_t driveParams;
 
 // Config
 ConfigManager config;
+
+// Input Debouncer
+Debouncer *dbOptions;
 
 // Prototypes for Controller Callbacks
 // Implementations located at the bottom of this file
@@ -112,6 +119,9 @@ extern "C" void main_app(void)
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(TACKLE_PIN, OUTPUT); // Try INPUT_PULLUP
   digitalWrite(TACKLE_PIN, 0); // Initially sets tackle sensor to home
+
+  // Initialize debouncer
+  dbOptions = new Debouncer(TACKLE_SENSOR_DELAY);
 
   // Read robot info from "EEPROM" (ESP32 Preferences) using ConfigManager
   config.read();
@@ -248,7 +258,7 @@ extern "C" void main_app(void)
         }
 
         // Manual Home / Away Position Setting
-        if (ps5.Options())
+        if (dbOptions->debounceAndPressed(ps5.Options()))
         {
           switchTackleSensor();
         }
