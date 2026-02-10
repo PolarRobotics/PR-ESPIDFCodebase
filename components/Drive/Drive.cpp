@@ -1,6 +1,4 @@
-#include <Arduino.h>
 #include <Drive.h>
-#include <MotorControl.h>
 
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
@@ -44,6 +42,8 @@ Drive::Drive(BotType botType, MotorType motorType)
 Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int turnFunction)
 {
     this->botType = botType;
+    this->motorType = driveParams.motor_type;
+    this->motorInterfaceType = MOTORTYPE_INTERFACE_ARRAY[driveParams.motor_type];
     this->hasEncoders = hasEncoders;
     this->motorType = driveParams.motor_type;
     this->gearRatio = driveParams.gear_ratio;
@@ -131,11 +131,6 @@ void Drive::setupMotors(uint8_t lidx, uint8_t ridx, uint8_t left_enc_a_pin, uint
 
     M1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio, left_enc_a_pin, left_enc_b_pin);
     M2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio, right_enc_a_pin, right_enc_b_pin);
-}
-
-void Drive::setMotorType(MotorType motorType)
-{
-    this->motorType = motorType;
 }
 
 /**
@@ -449,7 +444,7 @@ void Drive::update()
 {
     // !TODO Clean up when robots are rewired:
     // This is PWM code here
-    if (this->botType == runningback)
+    if (this->)
     {
         // Generate turning motion
         generateMotionValues();

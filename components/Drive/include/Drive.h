@@ -1,8 +1,8 @@
 #pragma once
 
 #include <Arduino.h>
-#include "MotorControl.h"
-#include "PolarRobotics.h"
+#include <MotorControl.h>
+#include <MotorTypes.h>
 
 #ifndef NUM_MOTORS
 #define NUM_MOTORS 2
@@ -48,35 +48,12 @@
 // This array must follow the same order as MotorType to be used effectively
 constexpr int SABERTOOTH_MAX_POWER = 2047; // Max power value accepted via USBSabertooth Packetized Serial Protocol
 
-// PWM POWERS
-// constexpr int MOTORTYPE_BNS_ARRAY[NUM_MOTOR_TYPES][3] = {
-//     // Boost   Normal  Slow
-//     {int(0.70f * SABERTOOTH_MAX_POWER), int(0.60f * SABERTOOTH_MAX_POWER), int(0.30f * SABERTOOTH_MAX_POWER)}, // index 0: Big Ampflow Motor
-//     {int(0.85f * SABERTOOTH_MAX_POWER), int(0.70f * SABERTOOTH_MAX_POWER), int(0.40f * SABERTOOTH_MAX_POWER)}, // index 1: Small Ampflow Motor
-//     {int(0.70f * SABERTOOTH_MAX_POWER), int(0.60f * SABERTOOTH_MAX_POWER), int(0.30f * SABERTOOTH_MAX_POWER)}, // index 2: Pancake Ampflow Motor
-//     {int(0.80f * SABERTOOTH_MAX_POWER), int(0.60f * SABERTOOTH_MAX_POWER), int(0.40f * SABERTOOTH_MAX_POWER)}, // index 3: Mecanum Motor (Torquenado)
-//     {int(0.60f * SABERTOOTH_MAX_POWER), int(0.40f * SABERTOOTH_MAX_POWER), int(0.15f * SABERTOOTH_MAX_POWER)}, // index 4: Falcon500 motors
-//     {int(0.60f * SABERTOOTH_MAX_POWER), int(0.40f * SABERTOOTH_MAX_POWER), int(0.15f * SABERTOOTH_MAX_POWER)}, // index 5: NEO Vortex motors
-//     {int(0.15f * SABERTOOTH_MAX_POWER), int(0.10f * SABERTOOTH_MAX_POWER), int(0.05f * SABERTOOTH_MAX_POWER)}  // index 6: Small 12v motors (old robots)
-// };
-
-// SERIAL POWERS
-constexpr float MOTORTYPE_BNS_ARRAY[NUM_MOTOR_TYPES][3] = {
-    // Boost   Normal  Slow
-    {0.70f, 0.60f, 0.30f}, // index 0: Big Ampflow Motor
-    {0.85f, 0.70f, 0.40f}, // index 1: Small Ampflow Motor
-    {0.70f, 0.60f, 0.30f}, // index 2: Pancake Ampflow Motor
-    {0.80f, 0.60f, 0.40f}, // index 3: Mecanum Motor (Torquenado)
-    {0.60f, 0.40f, 0.15f}, // index 4: Falcon500 motors
-    {0.60f, 0.40f, 0.15f}, // index 5: NEO Vortex motors
-    {0.15f, 0.10f, 0.05f}  // index 6: Small 12v motors (old robots)
-};
-
 class Drive
 {
 private:
   BotType botType;
   MotorType motorType; // TODO: Why is this private if we have a setter with no input validation? - MP 2023-05-10
+  MotorInterfaceType motorInterfaceType;
   float gearRatio;
   bool hasEncoders;
 
@@ -122,7 +99,6 @@ public:
   Drive(BotType botType, drive_param_t driveParams, bool hasEncoders = false, int turnFunction = 2);
   void setupMotors(uint8_t lpin, uint8_t rpin);
   void setupMotors(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin);
-  void setMotorType(MotorType motorType);
   void setStickPwr(int8_t leftY, int8_t rightX);
   float getForwardPower();
   float getTurnPower();
