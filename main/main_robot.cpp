@@ -42,6 +42,7 @@
 
 // Utilities Includes
 #include <ConfigManager.h>
+#include <TackleSensor.h>
 
 // Sabertooth USB Serial Library
 #include <sabertoothinst.h>
