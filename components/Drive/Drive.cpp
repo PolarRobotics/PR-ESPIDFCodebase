@@ -77,6 +77,17 @@ Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int t
         lastRampPower[i] = 0.0f;
         turnMotorValues[i] = 0.0f;
     }
+
+    // initialize parameters for turning model
+    omega = 0;
+    omega_L = 0, omega_R = 0;
+    R = 0.0f;
+    min_RPM = 200;
+
+    // initialize turn sensitivity variables
+    enableTurnSensitivity = turnFunction; // 0 for linear, 1 for Rhys's function, 2 for cubic
+    turnSensitivityScalar = 0.49;         // Range: (0, 0.5) really [0.01, 0.49]
+    domainAdjustment = 1 / log((1 - (turnSensitivityScalar + 0.5)) / (turnSensitivityScalar + 0.5));
 }
 
 void Drive::setupMotors(uint8_t lidx, uint8_t ridx)
