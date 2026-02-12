@@ -4,7 +4,8 @@
 #define QUARTERBACK_H
 
 #include <Robot.h>
-#include <MotorControl.h>
+#include <PWMMotor.h>
+#include <MotorEnums.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 
 // Flywheel defines
@@ -55,9 +56,9 @@ private:
   uint8_t conveyorPin;
   uint8_t elevationPin;
   int arrayPos = 0;
-  MotorControl flywheelMotor;
-  MotorControl conveyorMotor;
-  MotorControl elevationMotors;
+  PWMMotor flywheelMotor;
+  PWMMotor conveyorMotor;
+  PWMMotor elevationMotors;
   bool flywheelsOn, conveyorOn;
   bool aimingUp, aimingDown;
   bool raise, lower;
