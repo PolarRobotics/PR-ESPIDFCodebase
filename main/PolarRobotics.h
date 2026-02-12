@@ -30,8 +30,13 @@
 //  Motor and Pin #  |     Configurations     |
 //     | mot# |##|   |  2 wheels  |  4 wheels  |
 // ____|______|__|___|____________|____________|
-#define M1_IDX 1  // | leftMotor  | leftFront  |
-#define M2_IDX 2  // | rightMotor | rightFront |
+#define M1_IDX 1 // | leftMotor  | leftFront  |
+#define M2_IDX 2 // | rightMotor | rightFront |
+
+// PWM drive pins (GPIO) for PWM-based robots
+#define M1_PWM 32 // left motor PWM pin
+#define M2_PWM 33 // right motor PWM pin
+
 #define M3_PIN 26 // |    N/A     | leftRear   |
 #define M4_PIN 27 // |    N/A     | rightRear  |
 

@@ -120,6 +120,13 @@ extern "C" void main_app(void)
   robotType = config.getBotType();
   driveParams = config.getDriveParams();
 
+  // Drive motor identifiers:
+  // - Packet Serial robots: use Sabertooth motor indices (M1_IDX/M2_IDX)
+  // - PWM robots: use GPIO pins (M1_PWM/M2_PWM)
+  const bool driveUsesPwmPins = (MOTORTYPE_INTERFACE_ARRAY[driveParams.motor_type] == pwm);
+  const uint8_t DRIVE_M1 = driveUsesPwmPins ? M1_PWM : M1_IDX;
+  const uint8_t DRIVE_M2 = driveUsesPwmPins ? M2_PWM : M2_IDX;
+
   // work backwards from highest ordinal enum since lineman should be default case
   switch (robotType)
   {
@@ -130,12 +137,12 @@ extern "C" void main_app(void)
   case kicker:
     robot = new Kicker(SPECBOT_PIN1, SPECBOT_PIN2, ENC1_CHA, ENC1_CHB);
     drive = new Drive(kicker, driveParams);
-    drive->setupMotors(M1_IDX, M2_IDX);
+    drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
   case quarterback_old:
     robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
     drive = new Drive(quarterback_old, driveParams);
-    drive->setupMotors(M1_IDX, M2_IDX);
+    drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
   case mecanum_center:
     robot = new MecanumCenter(SPECBOT_PIN1, SPECBOT_PIN2);
@@ -145,12 +152,12 @@ extern "C" void main_app(void)
   case center:
     robot = new Center(SPECBOT_PIN1, SPECBOT_PIN2);
     drive = new Drive(center, driveParams);
-    drive->setupMotors(M1_IDX, M2_IDX);
+    drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
   case runningback:
     robot = new Lineman();
     drive = new Drive(runningback, driveParams);
-    drive->setupMotors(M1_IDX, M2_IDX);
+    drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
   case quarterback_turret:
     robot = new QuarterbackTurret(
@@ -168,7 +175,7 @@ extern "C" void main_app(void)
     break;
   case quarterback_base:
     drive = new Drive(quarterback_base, driveParams);
-    drive->setupMotors(M1_IDX, M2_IDX);
+    drive->setupMotors(DRIVE_M1, DRIVE_M2);
     robot = new QuarterbackBase(drive);
     break;
   case receiver:
@@ -180,7 +187,7 @@ extern "C" void main_app(void)
     drive = new Drive(lineman, driveParams);
     String debugMsg2 = "03: Call setupMotors\n";
     Serial.print(debugMsg2.c_str());
-    drive->setupMotors(M1_IDX, M2_IDX);
+    drive->setupMotors(DRIVE_M1, DRIVE_M2);
   }
 
   drive->printSetup();
