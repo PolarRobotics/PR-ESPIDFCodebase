@@ -80,7 +80,8 @@ Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int t
 
     // initialize parameters for turning model
     omega = 0;
-    omega_L = 0, omega_R = 0;
+    omega_L = 0;
+    omega_R = 0;
     R = 0.0f;
     min_RPM = 200;
 
