@@ -7,10 +7,6 @@
 #include <SerialMotor.h>
 #include <MotorTypes.h>
 
-// Legacy compatibility: `DriveMecanum` still uses the `MotorControl` name.
-// It is scheduled for removal; for now map it to the PWM implementation.
-using MotorControl = PWMMotor;
-
 #ifndef NUM_MOTORS
 #define NUM_MOTORS 2
 #endif // !NUM_MOTORS
