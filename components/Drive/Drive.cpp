@@ -107,14 +107,16 @@ void Drive::setupMotors(uint8_t lidx, uint8_t ridx)
     //  this->M2 = new MotorControl(motorType, false, this->gearRatio);
 
     // M1->setup(lidx), M2->setup(ridx);
-    String debugMsg1 = "04: Calling M1 and M2 setup\n";
-    Serial.print(debugMsg1.c_str());
-    M1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio);
-    String debugMsg2 = "07: Exit M1 Setup\n";
-    Serial.print(debugMsg2.c_str());
-    M2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio);
-    String debugMsg3 = "10: Exit M2 Setup\n";
-    Serial.print(debugMsg3.c_str());
+    if (motorInterfaceType == pwm)
+    {
+        pwmM1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio);
+        pwmM2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio);
+    }
+    else
+    {
+        serialM1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio);
+        serialM2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio);
+    }
 }
 
 /**
@@ -129,8 +131,16 @@ void Drive::setupMotors(uint8_t lidx, uint8_t ridx, uint8_t left_enc_a_pin, uint
     //  this->M1 = new MotorControl(motorType, true, this->gearRatio);
     //  this->M2 = new MotorControl(motorType, true, this->gearRatio);
 
-    M1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio, left_enc_a_pin, left_enc_b_pin);
-    M2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio, right_enc_a_pin, right_enc_b_pin);
+    if (motorInterfaceType == pwm)
+    {
+        pwmM1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio, left_enc_a_pin, left_enc_b_pin);
+        pwmM2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio, right_enc_a_pin, right_enc_b_pin);
+    }
+    else
+    {
+        serialM1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio, left_enc_a_pin, left_enc_b_pin);
+        serialM2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio, right_enc_a_pin, right_enc_b_pin);
+    }
 }
 
 /**
@@ -199,7 +209,7 @@ void Drive::setSpeedScalar(Speed bns)
  */
 void Drive::setSpeedValue(float speed_pct)
 {
-    this->speedScalar = (speed_pct * SABERTOOTH_MAX_POWER);
+    this->speedScalar = constrain(speed_pct, 0.0f, 1.0f);
 }
 
 float Drive::getSpeedScalar()
@@ -301,6 +311,13 @@ void Drive::generateMotionValues(float tankModePct)
  */
 void Drive::calcTurning(float stickTrn, float fwdLinPwr)
 {
+    MotorControlCommon *leftMotor = (motorInterfaceType == pwm)
+                                        ? static_cast<MotorControlCommon *>(&pwmM1)
+                                        : static_cast<MotorControlCommon *>(&serialM1);
+    MotorControlCommon *rightMotor = (motorInterfaceType == pwm)
+                                         ? static_cast<MotorControlCommon *>(&pwmM2)
+                                         : static_cast<MotorControlCommon *>(&serialM2);
+
     // R_Min = R_Min + abs(stickForwardRev)*(R_High_Min - R_Min); // start of turn scaling
     if (enableTurnSensitivity == 0) // linear
         scaledSensitiveTurn = stickTrn;
@@ -313,7 +330,7 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr)
     R = (1 - scaledSensitiveTurn) * (R_Max - R_Min) + R_Min;
 
     // calculate the requested angular velocity for the robot
-    omega = abs(M1.Percent2RPM(fwdLinPwr));
+    omega = abs(leftMotor->Percent2RPM(fwdLinPwr));
 
     // calculate the rpm for the left wheel
     omega_L = (omega / R) * (R + (wheelBase / 2));
@@ -321,12 +338,12 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr)
     omega_R = (omega / R) * (R - (wheelBase / 2));
 
     // ensure the left wheel RPM doesnt go below the min or above the max RPM
-    omega_L = constrain(omega_L, min_RPM, M1.max_rpm);
+    omega_L = constrain(omega_L, min_RPM, leftMotor->getMaxRPM());
     // ensure the left wheel RPM doesnt go below the min or above the max RPM
-    omega_R = constrain(omega_R, min_RPM, M1.max_rpm);
+    omega_R = constrain(omega_R, min_RPM, leftMotor->getMaxRPM());
 
-    turnMotorValues[0] = M1.RPM2Percent(omega_L);
-    turnMotorValues[1] = M2.RPM2Percent(omega_R);
+    turnMotorValues[0] = leftMotor->RPM2Percent(omega_L);
+    turnMotorValues[1] = rightMotor->RPM2Percent(omega_R);
 }
 
 void Drive::emergencyStop()
@@ -334,12 +351,22 @@ void Drive::emergencyStop()
     // M1->writelow(), M2->writelow();
     // M1.writelow(), M2.writelow();
 
-    M1.write(0);
-    M2.write(0);
+    if (motorInterfaceType == pwm)
+    {
+        pwmM1.write(0.0f);
+        pwmM2.write(0.0f);
+    }
+    else
+    {
+        serialM1.writeRaw(0);
+        serialM2.writeRaw(0);
+    }
 }
 
 void Drive::printSetup()
 {
+    const int maxRpm = (motorInterfaceType == pwm) ? pwmM1.getMaxRPM() : serialM1.getMaxRPM();
+
     Serial.print(F("\nDrive::printSetup():"));
     Serial.print(F("\nMotorType: "));
     Serial.print(getMotorTypeString(this->motorType));
@@ -352,7 +379,7 @@ void Drive::printSetup()
     Serial.print(F("\nMin RPM: "));
     Serial.print(this->min_RPM);
     Serial.print(F("\nMAX RPM: "));
-    Serial.print(M1.max_rpm);
+    Serial.print(maxRpm);
     Serial.print(F("\nTurnSensitivityMode: "));
     Serial.print(enableTurnSensitivity);
     Serial.print(F("\nEncoders: "));
@@ -442,57 +469,54 @@ void Drive::printCsvInfo()
  */
 void Drive::update()
 {
-    // !TODO Clean up when robots are rewired:
-    // This is PWM code here
-    if (this->)
+    const bool isRunningback = (botType == runningback);
+    const float tankPct = isRunningback ? RB_TANK_MODE_PCT : TANK_MODE_PCT;
+    const float accelRate = isRunningback ? RB_ACCELERATION_RATE : ACCELERATION_RATE;
+
+    // Generate turning motion
+    generateMotionValues(tankPct);
+
+    // Ramp in normalized percent space [-1, 1]
+    if (motorInterfaceType == pwm)
     {
-        // Generate turning motion
-        generateMotionValues();
-        // printDebugInfo();
-
-        // calculate the value to set to the motors to based on the acceleration rate
-        requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], RB_ACCELERATION_RATE);
-        requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], RB_ACCELERATION_RATE);
-
-        // Set the ramp value to a function, needed for generateMotionValues
-        lastRampPower[0] = requestedMotorPower[0];
-        lastRampPower[1] = requestedMotorPower[1];
-
-        // TODO: move to MotorController
-        // Make sure the min values written to the motor are not zero, gives the motor enough to break the deadband
-        requestedMotorPower[0] = fabs(requestedMotorPower[0]) < MOTOR_ZERO_OFFST ? 0 : requestedMotorPower[0];
-        requestedMotorPower[1] = fabs(requestedMotorPower[1]) < MOTOR_ZERO_OFFST ? 0 : requestedMotorPower[1];
-
-        // Write the ramped value to the motor via MotorInterface
-        M1.write(requestedMotorPowerSerial[0]);
-        M2.write(requestedMotorPowerSerial[1]);
+        requestedMotorPower[0] = pwmM1.ramp(requestedMotorPower[0], accelRate);
+        requestedMotorPower[1] = pwmM2.ramp(requestedMotorPower[1], accelRate);
     }
     else
-    { // CASE FOR ANY OTHER ROBOT
-      // This is serial
-        // Generate turning motion
-        generateMotionValues(RB_TANK_MODE_PCT);
-        // printDebugInfo();
-
-        // calculate the value to set to the motors to based on the acceleration rate
-        requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
-        requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
-
-        // Convert Motor Power to int for USBSabertooth (-2048 to 2047)
-        requestedMotorPowerSerial[0] = (int)(requestedMotorPower[0] * 2047.0f);
-        requestedMotorPowerSerial[1] = (int)(requestedMotorPower[1] * 2047.0f);
-
-        // Set the ramp value to a function, needed for generateMotionValues
-        lastRampPower[0] = requestedMotorPowerSerial[0];
-        lastRampPower[1] = requestedMotorPowerSerial[1];
-
-        // Write the ramped value to the motor via MotorInterface
-        M1.write(requestedMotorPowerSerial[0]);
-        M2.write(requestedMotorPowerSerial[1]);
+    {
+        requestedMotorPower[0] = serialM1.ramp(requestedMotorPower[0], accelRate);
+        requestedMotorPower[1] = serialM2.ramp(requestedMotorPower[1], accelRate);
     }
 
-    trackingMotorPower[0] = requestedMotorPowerSerial[0];
-    trackingMotorPower[1] = requestedMotorPowerSerial[1];
+    // Deadband (percent-space)
+    const float deadbandPct = float(MOTOR_ZERO_OFFST) / 2047.0f;
+    requestedMotorPower[0] = (fabs(requestedMotorPower[0]) < deadbandPct) ? 0.0f : requestedMotorPower[0];
+    requestedMotorPower[1] = (fabs(requestedMotorPower[1]) < deadbandPct) ? 0.0f : requestedMotorPower[1];
+
+    // Track ramp output for debugging/turn model
+    lastRampPower[0] = requestedMotorPower[0];
+    lastRampPower[1] = requestedMotorPower[1];
+
+    // Write output
+    if (motorInterfaceType == pwm)
+    {
+        pwmM1.write(requestedMotorPower[0]);
+        pwmM2.write(requestedMotorPower[1]);
+
+        requestedMotorPowerSerial[0] = int(requestedMotorPower[0] * 2047.0f);
+        requestedMotorPowerSerial[1] = int(requestedMotorPower[1] * 2047.0f);
+    }
+    else
+    {
+        requestedMotorPowerSerial[0] = int(requestedMotorPower[0] * 2047.0f);
+        requestedMotorPowerSerial[1] = int(requestedMotorPower[1] * 2047.0f);
+
+        serialM1.writeRaw(requestedMotorPowerSerial[0]);
+        serialM2.writeRaw(requestedMotorPowerSerial[1]);
+    }
+
+    trackingMotorPower[0] = requestedMotorPower[0];
+    trackingMotorPower[1] = requestedMotorPower[1];
 }
 
 int Drive::getMotorWifiValue(int motorRequested)

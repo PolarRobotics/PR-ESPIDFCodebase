@@ -4,6 +4,7 @@
 #define KICKER_H
 
 #include <MotorInterface.h>
+#include <PWMMotor.h>
 #include <Robot.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 #include <Debouncer.h>
@@ -35,7 +36,7 @@ private:
   static uint8_t kickerEncoderPinB;         // Signal Pin for channel B of the encoder
   static uint8_t kickerEncoderStateB;       // Keeps track of the current state of channel B
   static int32_t currentKickerEncoderCount; // Encoder count of kicker arm motor encoder
-  MotorControl windupMotor;                 // MotorControl instantation for the kicker arm motor
+  PWMMotor windupMotor;                     // PWM motor controller for the kicker arm motor
 
   Debouncer *dbEnable;
 

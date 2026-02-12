@@ -1,8 +1,15 @@
 #pragma once
 
 #include <Arduino.h>
-#include <MotorControl.h>
+#include <BotTypes.h>
+#include <DriveParameters.h>
+#include <PWMMotor.h>
+#include <SerialMotor.h>
 #include <MotorTypes.h>
+
+// Legacy compatibility: `DriveMecanum` still uses the `MotorControl` name.
+// It is scheduled for removal; for now map it to the PWM implementation.
+using MotorControl = PWMMotor;
 
 #ifndef NUM_MOTORS
 #define NUM_MOTORS 2
@@ -72,15 +79,16 @@ private:
   void calcTurning(float stickTrn, float fwdLinPwr);
 
 protected:
-  // MotorControl* M1;
-  // MotorControl* M2;
-  MotorControl M1, M2;
+  // Drive can be either PWM or Packet Serial depending on `motorInterfaceType`.
+  PWMMotor pwmM1, pwmM2;
+  SerialMotor serialM1, serialM2;
   float stickForwardRev, stickTurn;
   float lastTurnPwr;
   float turnPower;
 
   float requestedMotorPower[NUM_MOTORS];
   int requestedMotorPowerSerial[NUM_MOTORS];
+  // Always tracked as normalized percent [-1, 1] for telemetry.
   float trackingMotorPower[NUM_MOTORS];
   float lastRampPower[NUM_MOTORS];
   float turnMotorValues[NUM_MOTORS];

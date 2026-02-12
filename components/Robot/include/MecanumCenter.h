@@ -4,7 +4,8 @@
 #define MECANUM_CENTER_H
 
 #include <Robot.h>
-#include <MotorControl.h>
+#include <PWMMotor.h>
+#include <MotorEnums.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 #include <Debouncer.h>
 
@@ -29,8 +30,8 @@ class MecanumCenter : public Robot
 private:
   uint8_t flywheelPin;
   uint8_t conveyorPin;
-  MotorControl flywheelMotor;
-  MotorControl conveyorMotor;
+  PWMMotor flywheelMotor;
+  PWMMotor conveyorMotor;
 
   // Debouncer* conveyorDB;
   // Debouncer* intakeDB;

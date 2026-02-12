@@ -4,7 +4,7 @@
 #define OLD_CENTER_H
 
 #include <Robot.h>
-#include <MotorControl.h>
+#include <PWMMotor.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
 
 enum ArmStatus
@@ -26,7 +26,7 @@ class Center : public Robot
 {
 private:
   uint8_t armPin, clawPin;
-  MotorControl clawMotor, armMotor;
+  PWMMotor clawMotor, armMotor;
 
 public:
   Center(uint8_t armPin, uint8_t clawPin);
