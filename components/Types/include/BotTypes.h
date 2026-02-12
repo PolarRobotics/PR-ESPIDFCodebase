@@ -20,10 +20,9 @@
  *  2: Runningback
  *  3: Center
  *  4: Kicker
- *  5: Mecanum Center
- *  6: Old Quarterback
- *  7: Quarterback base
- *  8: Quarterback turret
+ *  5: Old Quarterback
+ *  6: Quarterback base
+ *  7: Quarterback turret
  */
 typedef enum
 {
@@ -32,7 +31,6 @@ typedef enum
   runningback,
   center,
   kicker,
-  mecanum_center,
   quarterback_old,
   quarterback_base,
   quarterback_turret
@@ -85,8 +83,6 @@ typedef struct BotConfig
 #define BOT_QB_OLD 11
 #define BOT_THETA 12
 #define BOT_KICKER 12
-#define BOT_MC 13
-#define BOT_MECANUM_CENTER 13
 #define BOT_QB_BASE 14
 #define BOT_QB_BOTTOM 14
 #define BOT_QB_TURRET 15
@@ -103,7 +99,7 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
     {0, "i++", lineman, {small_ampflow, 0.6f, 12.25f, 9.00f, 36.00f}},             //* 0:  i++
     {1, "sqrt(-1)", lineman, {big_ampflow, 0.53333f, 11.25f, 9.00f, 36.00f}},      //* 1:  sqrt(-1)
     {2, "pi", receiver, {small_ampflow, 0.46667f, 11.00f, 6.00f, 36.00f}},         //* 2:  pi
-    {3, "rho", lineman, {big_ampflow, 0.6f, 11.25f, 9.00f, 36.00f}},               //* 3:  ρ
+    {3, "rho", kicker, {big_ampflow, 0.6f, 11.25f, 9.00f, 36.00f}},                //* 3:  ρ
     {4, "2.72", lineman, {big_ampflow, 0.4f, 11.25f, 9.00f, 36.00f}},              //* 4:  2.72
     {5, ":)", lineman, {big_ampflow, 1.0f, 9.75f, 9.00f, 36.00f}},                 //* 5:  :)
     {6, ">=", lineman, {small_ampflow, 1.0f, 10.00f, 6.00f, 27.00f}},              //* 6:  >=
@@ -113,7 +109,6 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
     {10, "phi", center, {small_ampflow, 0.6f, 11.50f, 9.00f, 36.00f}},             //* 10: Φ
     {11, "inf", quarterback_old, {small_ampflow, 0.5625f, 11.50f, 9.00f, 24.00f}}, //* 11: ∞
     {12, "theta", kicker, {small_ampflow, 0.5f, 10.00f, 9.00f, 36.00f}},           //* 12: Θ
-    {13, "y=x", mecanum_center, {mecanum, 1.0f, 11.00f, 9.00f, 36.00f}},           //* 13: y=x
     {14, "qb_base", quarterback_base, {big_ampflow, 0.5f, 11.50f, 9.00f, 36.00f}}, //* 14: unassigned
     {15, "qb_turret", quarterback_turret, {falcon, 0.5f, 11.50f, 9.00f, 36.00f}},  //* 15: unassigned
     {16, "l-man-v1", lineman, {small_12v, 1.0f, 11.00f, 9.00f, 36.00f}},           //* 16: generic lineman V1
