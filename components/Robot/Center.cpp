@@ -25,8 +25,8 @@ Center::Center(uint8_t armPin, uint8_t clawPin)
 {
   this->armPin = armPin;
   this->clawPin = clawPin;
-  //armMotor.setup(armPin);
-  //clawMotor.setup(clawPin);
+  armMotor.setup(armPin, small_12v);
+  clawMotor.setup(clawPin, small_12v);
 }
 
 void Center::action()
