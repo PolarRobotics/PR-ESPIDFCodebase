@@ -32,6 +32,7 @@
 #include <Robot.h>
 #include <Lineman.h>
 #include <Center.h>
+#include <CenterConversion.h>
 #include <Kicker.h>
 #include <Quarterback.h>
 #include <QuarterbackBase.h>
@@ -157,6 +158,11 @@ extern "C" void main_app(void)
   case center:
     robot = new Center(SPECBOT_PIN1, SPECBOT_PIN2);
     drive = new Drive(center, driveParams);
+    drive->setupMotors(DRIVE_M1, DRIVE_M2);
+    break;
+  case center_conversion:
+    robot = new CenterConversion(SPECBOT_PIN1);
+    drive = new Drive(center_conversion, driveParams);
     drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
   case runningback:

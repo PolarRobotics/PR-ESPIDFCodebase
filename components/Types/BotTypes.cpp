@@ -8,6 +8,7 @@ constexpr Pair<BotType, const char *>
             {receiver, "receiver"},
             {runningback, "runningback"},
             {center, "center"},
+            {center_conversion, "center_conversion"},
             {kicker, "kicker"},
             {quarterback_old, "quarterback_old"},
             {quarterback_base, "quarterback_base"},
