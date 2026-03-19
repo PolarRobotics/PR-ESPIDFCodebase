@@ -233,36 +233,50 @@ extern "C" void main_app(void)
       // ESP_LOGI(TAG, "\r\nConnected");
       // ps5.setLed(255, 0, 0);   // set LED red
 
-      //* QBv3 Turret doesn't have drive, so this is a temporary measure to
-      // avoid NPEs and chaos
-      // TODO: find better solution
+      // Drive controls for non-QB
+      if (robotType != quarterback)
+      {
+        // Do all normal drive functions as usual
+        drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
+        // determine BSN percentage (boost, slow, or normal)
+        if (ps5.Touchpad())
+        {
+          drive->emergencyStop();
+          drive->setSpeedScalar(Drive::BRAKE);
+        }
+        else if (ps5.R1())
+        {
+          drive->setSpeedScalar(Drive::BOOST);
+          // ps5.setLed(0, 255, 0);   // set LED red
+        }
+        else if (ps5.L1())
+        {
+          drive->setSpeedScalar(Drive::SLOW);
+        }
+        else if (ps5.R2() && driveParams.motor_type == falcon)
+        {
+          // used to calibrate the max pwm signal for the falcon 500 motors
+          drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
+        }
+        else
+        {
+          drive->setSpeedScalar(Drive::NORMAL);
+        }
+      }
 
-      drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
+      // Drive controls for QB only in drive mode (i.e. when not enabled)
+      // Should only get to this point if the robot is a QB, so we can cast
+      // robot as a Quarterback without issue
+      else if (!((Quarterback*)robot)->isEnabled())
+      {
+        // If the QB is not enabled, allow driving but not manual turret or
+        // flywheel movement
+        drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
 
-      // determine BSN percentage (boost, slow, or normal)
-      if (ps5.Touchpad())
-      {
-        drive->emergencyStop();
-        drive->setSpeedScalar(Drive::BRAKE);
-      }
-      else if (ps5.R1())
-      {
-        drive->setSpeedScalar(Drive::BOOST);
-        // ps5.setLed(0, 255, 0);   // set LED red
-      }
-      else if (ps5.L1())
-      {
-        drive->setSpeedScalar(Drive::SLOW);
-      }
-      else if (ps5.R2() && driveParams.motor_type == falcon)
-      {
-        // used to calibrate the max pwm signal for the falcon 500 motors
-        drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
-      }
-      else
-      {
+        // avoid using R1, L1, touchpad, etc. as they are used in Quarterback
+        // control scheme for different functions like changing recievers
         drive->setSpeedScalar(Drive::NORMAL);
-      }
+      }  // else robot is quarterback and also drive is disbled! SO DO NOTHING!
 
       // Manual Home / Away Position Setting
       if (dbOptions->debounceAndPressed(ps5.Options())) switchTackleSensor();
