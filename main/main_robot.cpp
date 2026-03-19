@@ -213,42 +213,64 @@ extern "C" void main_app(void)
       // Serial.print(F("\r\nConnected"));
       // ps5.setLed(255, 0, 0);   // set LED red
 
-      drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
+      // Drive controls for non-QB
+      if(robotType != quarterback)
+      {
+        // Do all normal drive functions as usual
+        drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
+        // determine BSN percentage (boost, slow, or normal)
+        if (ps5.Touchpad())
+        {
+          drive->emergencyStop();
+          drive->setSpeedScalar(Drive::BRAKE);
+        }
+        else if (ps5.R1())
+        {
+          drive->setSpeedScalar(Drive::BOOST);
+          // ps5.setLed(0, 255, 0);   // set LED red
+        }
+        else if (ps5.L1())
+        {
+          drive->setSpeedScalar(Drive::SLOW);
+        }
+        else if (ps5.R2() && driveParams.motor_type == falcon)
+        {
+          // used to calibrate the max pwm signal for the falcon 500 motors
+          drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
+        }
+        else
+        {
+          drive->setSpeedScalar(Drive::NORMAL);
+        }
 
-      // determine BSN percentage (boost, slow, or normal)
-      if (ps5.Touchpad())
-      {
-        drive->emergencyStop();
-        drive->setSpeedScalar(Drive::BRAKE);
+        //* Update the motors based on the inputs from the controller
+        //* Can change functionality depending on subclass, like robot.action()
+        drive->update();
+        drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+        // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
       }
-      else if (ps5.R1())
+
+      // Drive controls for QB only in drive mode (i.e. when not enabled)
+      // Should only get to this point if the robot is a QB, so we can cast robot as a Quarterback without issue
+      else if (!((Quarterback *)robot)->isEnabled())
       {
-        drive->setSpeedScalar(Drive::BOOST);
-        // ps5.setLed(0, 255, 0);   // set LED red
-      }
-      else if (ps5.L1())
-      {
-        drive->setSpeedScalar(Drive::SLOW);
-      }
-      else if (ps5.R2() && driveParams.motor_type == falcon)
-      {
-        // used to calibrate the max pwm signal for the falcon 500 motors
-        drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
-      }
-      else
-      {
+        // If the QB is not enabled, allow driving but not manual turret or flywheel movement
+        drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
+
+        // avoid using R1, L1, touchpad, etc. as they are used in Quarterback control scheme 
+        // for different functions like changing recievers
         drive->setSpeedScalar(Drive::NORMAL);
-      }
+
+        //* Update the motors based on the inputs from the controller
+        //* Can change functionality depending on subclass, like robot.action()
+        drive->update();
+        drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+        // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
+      } // else robot is quarterback and also drive is disbled! SO DO NOTHING!
 
       // Manual Home / Away Position Setting
       // if (ps5.Options())
       //   ;
-
-      //* Update the motors based on the inputs from the controller
-      //* Can change functionality depending on subclass, like robot.action()
-      drive->update();
-      drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
-      // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
 
       //! Performs all special robot actions depending on the instantiated Robot subclass
       robot->action();

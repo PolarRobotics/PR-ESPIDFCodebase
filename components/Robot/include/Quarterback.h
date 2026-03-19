@@ -488,6 +488,7 @@ public:
   // emergencyStop            If the E-Stop button on controller is pressed this should override every other motor function and force them to stop
   // testForDisableOrStop     Used for safety, returns false if the robot is disabled or should be stopped
   void setEnabled(bool enabled);
+  bool isEnabled();
   void emergencyStop();
   bool testForDisableOrStop();
 

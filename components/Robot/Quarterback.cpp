@@ -135,8 +135,21 @@ void Quarterback::action()
 
   if (!testForDisableOrStop() && !runningMacro)
   {
+    //* Square: Toggle Driving/Turret Control
+    if(dbSquare->debounceAndPressed(ps5.Square())) {
+      if (!enabled)
+      {
+        setEnabled(true);
+        Serial.println(F("Turret Control Enabled"));
+      }
+      else
+      {
+        setEnabled(false);
+        Serial.println(F("Turret Control Disabled"));
+      }
+    }
     //* Circle: Startup and Home (Reset or Zero Turret)
-    if (dbCircle->debounceAndPressed(ps5.Circle()))
+    else if (dbCircle->debounceAndPressed(ps5.Circle()))
     {
       if (!initialized)
       {
@@ -157,15 +170,12 @@ void Quarterback::action()
     {
       handoff();
     }
-    // else if (ps5.Left()) {
-    //   testRoutine();
-    // }
-    //* Manual and Automatic Controls
-    else
+
+    //* Right Trigger (R2): Fire (cradle/grabber forward)
+    // Do not fire unless moving forward (do not fire when intaking or stopped)
+    if(ps5.R2())
     {
-      //* Right Trigger (R2): Fire (cradle/grabber forward)
-      // Do not fire unless moving forward (do not fire when intaking or stopped)
-      if (currentFlywheelSpeed > STICK_DEADZONE && ps5.R2())
+      if (currentFlywheelSpeed > STICK_DEADZONE)
       {
         moveCradle(forward);
       }
@@ -173,183 +183,182 @@ void Quarterback::action()
       {
         moveCradle(back);
       }
+    }
+    //* Left Trigger (L2): Toggle Assembly Angle
+    if (ps5.L2() && !assemblyTriggerToggled)
+    {
+      assemblyTriggerToggled = true;
 
-      //* Left Trigger (L2): Toggle Assembly Angle
-      if (ps5.L2() && !assemblyTriggerToggled)
+      // if angled or unknown, move to straight angle. else, move to firing angle.
+      if (currentAssemblyAngle == unknownAngle || currentAssemblyAngle == angled)
       {
-        assemblyTriggerToggled = true;
+        aimAssembly(straight);
+      }
+      else if (currentAssemblyAngle == straight)
+      {
+        aimAssembly(angled);
+      }
+    }
+    else if (assemblyTriggerToggled && !ps5.L2())
+    {
+      assemblyTriggerToggled = false;
+    }
+    else
+    {
+      aimAssembly(targetAssemblyAngle);
+    }
 
-        // if angled or unknown, move to straight angle. else, move to firing angle.
-        if (currentAssemblyAngle == unknownAngle || currentAssemblyAngle == angled)
-        {
-          aimAssembly(straight);
-        }
-        else if (currentAssemblyAngle == straight)
-        {
-          aimAssembly(angled);
-        }
-      }
-      else if (assemblyTriggerToggled && !ps5.L2())
-      {
-        assemblyTriggerToggled = false;
-      }
-      else
-      {
-        aimAssembly(targetAssemblyAngle);
-      }
+    if (dbShare->debounceAndPressed(ps5.Share()))
+    {
+      // TODO: Implement Automatic Targeting System when it is finished (capstone from build team)
+      // until then, this is here to ensure the automatic targeting system toggle works.
+    }
+    
+    //* Options (Button): Switch LED Color between Offense and Defense
+    if (dbOptions->debounceAndPressed(ps5.Options()))
+    {
+      // TODO: Implement LED color switching for offense and defense modes
+    }
 
-      //* TODO: Share button to Switch between auto and manual, set options to change LED color from Offense/Defense
-      if (dbShare->debounceAndPressed(ps5.Share()))
-      {
-        if (mode != combine)
-        {
-          switchMode(combine);
-          this->combinePosition = combineStraight;
-          targetRelativeHeading = 0;
-          zeroTurret();
-        }
-        else
-        {
-          switchMode(manual);
-        }
-      }
-      //* Options (Button): Switch Mode (toggle between auto/manual targeting)
-      else if (QB_AUTO_ENABLED && dbOptions->debounceAndPressed(ps5.Options()))
-      {
-        // TODO: Implement Automatic Targeting System when it is finished (capstone from build team)
-        // until then, this is here to ensure the automatic targeting system toggle works.
-      }
+    // else if (ps5.Left()) {
+    //   testRoutine();
+    // }
+
+    //* Manual and Automatic Controls.
+    // ONLY FOR TURRET MODE
+    if(enabled)
+    {
+      
       //* Manual Controls
+    
+      stickFlywheel = (ps5.LStickY() / 127.5f);
+      stickTurret = (ps5.RStickX() / 127.5f);
+
+      
+      //* NO option to set combine mode
+      // Could remove/implement in the future
+      if (mode == combine)
+      {
+        //* Combine "Macro" Mode
+        // Overrides turret control
+        // Allows switching between 3 different angles (left, straight, right)
+        // Flywheel control is available as normal (set powers with override via stick)
+
+        //* D-Pad Left: Move left one position
+        if (dbDpadLeft->debounceAndPressed(ps5.Left()))
+        {
+          if (this->combinePosition == combineStraight)
+          {
+            this->combinePosition = combineLeft;
+            // moveTurretAndWait(-45);
+            targetRelativeHeading = -45;
+          }
+          else if (this->combinePosition == combineRight)
+          {
+            this->combinePosition = combineStraight;
+            // moveTurretAndWait(0);
+            targetRelativeHeading = 0;
+          }
+        }
+        //* D-Pad Right: Move right one position
+        else if (dbDpadRight->debounceAndPressed(ps5.Right()))
+        {
+          if (this->combinePosition == combineStraight)
+          {
+            this->combinePosition = combineRight;
+            // moveTurretAndWait(45);
+            targetRelativeHeading = 45;
+          }
+          else if (this->combinePosition == combineLeft)
+          {
+            this->combinePosition = combineStraight;
+            // moveTurretAndWait(0);
+            targetRelativeHeading = 0;
+          }
+        }
+
+        // Run the PID loop
+        turretPIDSpeed = turretPIDController((float)getCurrentHeading(), (float)targetRelativeHeading, kp, kd, ki, .3);
+        setTurretSpeed(turretPIDSpeed);
+
+        // if (utmsCtr <= UTMS_CTR_MAX) {
+        //   utmsCtr = 0;
+        Serial.print(F("combine mode -- ctec = "));
+        Serial.print(currentTurretEncoderCount);
+        Serial.print(F("; ttec = "));
+        Serial.println(targetTurretEncoderCount);
+        // } else {
+        //   utmsCtr++;
+        // }
+      }
       else
       {
-        stickFlywheel = (ps5.LStickY() / 127.5f);
-        stickTurret = (ps5.RStickX() / 127.5f);
-
-        // Serial.print(F("stickTurret: "));
-        // Serial.println(stickTurret);
-
-        if (mode == combine)
+        //* Right Stick X: Turret Control
+        // Left = CCW, Right = CW
+        if (fabs(stickTurret) > STICK_DEADZONE)
         {
-          //* Combine "Macro" Mode
-          // Overrides turret control
-          // Allows switching between 3 different angles (left, straight, right)
-          // Flywheel control is available as normal (set powers with override via stick)
-
-          //* D-Pad Left: Move left one position
-          if (dbDpadLeft->debounceAndPressed(ps5.Left()))
+          //* Use absolute positioning and position-based control iff. magnetometer functionality is enabled
+          if (useMagnetometer && holdTurretStillEnabled)
           {
-            if (this->combinePosition == combineStraight)
+            // only change position every 4 loops
+            if (manualHeadingIncrementCount == 0)
             {
-              this->combinePosition = combineLeft;
-              // moveTurretAndWait(-45);
-              targetRelativeHeading = -45;
-            }
-            else if (this->combinePosition == combineRight)
-            {
-              this->combinePosition = combineStraight;
-              // moveTurretAndWait(0);
-              targetRelativeHeading = 0;
-            }
-          }
-          //* D-Pad Right: Move right one position
-          else if (dbDpadRight->debounceAndPressed(ps5.Right()))
-          {
-            if (this->combinePosition == combineStraight)
-            {
-              this->combinePosition = combineRight;
-              // moveTurretAndWait(45);
-              targetRelativeHeading = 45;
-            }
-            else if (this->combinePosition == combineLeft)
-            {
-              this->combinePosition = combineStraight;
-              // moveTurretAndWait(0);
-              targetRelativeHeading = 0;
-            }
-          }
-
-          // Run the PID loop
-          turretPIDSpeed = turretPIDController((float)getCurrentHeading(), (float)targetRelativeHeading, kp, kd, ki, .3);
-          setTurretSpeed(turretPIDSpeed);
-
-          // if (utmsCtr <= UTMS_CTR_MAX) {
-          //   utmsCtr = 0;
-          Serial.print(F("combine mode -- ctec = "));
-          Serial.print(currentTurretEncoderCount);
-          Serial.print(F("; ttec = "));
-          Serial.println(targetTurretEncoderCount);
-          // } else {
-          //   utmsCtr++;
-          // }
-        }
-        else
-          //* Right Stick X: Turret Control
-          // Left = CCW, Right = CW
-          if (fabs(stickTurret) > STICK_DEADZONE)
-          {
-            //* Use absolute positioning and position-based control iff. magnetometer functionality is enabled
-            if (useMagnetometer && holdTurretStillEnabled)
-            {
-              // only change position every 4 loops
-              if (manualHeadingIncrementCount == 0)
-              {
-                targetAbsoluteHeading += (1 * copysign(1, stickTurret));
-                targetAbsoluteHeading %= 360;
-              }
-              else
-              {
-                manualHeadingIncrementCount++;
-                manualHeadingIncrementCount %= 4;
-              }
-              // Serial.print(F("--target abs heading: "));
-              // Serial.println(targetAbsoluteHeading);
-              calculateHeadingMag();
-              holdTurretStill();
-            }
-            //* Use relative positioning and speed-based control
-            else
-            {
-              setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
-            }
-          }
-          else
-          {
-            // Check if magnetometer functionality is enabled
-            if (useMagnetometer && holdTurretStillEnabled)
-            {
-              calculateHeadingMag();
-              holdTurretStill();
+              targetAbsoluteHeading += (1 * copysign(1, stickTurret));
+              targetAbsoluteHeading %= 360;
             }
             else
             {
-              setTurretSpeed(0);
+              manualHeadingIncrementCount++;
+              manualHeadingIncrementCount %= 4;
             }
-            updateTurretMotionStatus();
+            // Serial.print(F("--target abs heading: "));
+            // Serial.println(targetAbsoluteHeading);
+            calculateHeadingMag();
+            holdTurretStill();
           }
-
-        // updateTurretMotionStatus();
-
-        //* Left Stick Y: Flywheel Override
-        if (fabs(stickFlywheel) > STICK_DEADZONE)
-        {
-          setFlywheelSpeed(stickFlywheel);
+          //* Use relative positioning and speed-based control
+          else
+          {
+            setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
+          }
         }
         else
         {
-          //* D-Pad Up: Increase flywheel speed by one stage
-          if (dbDpadUp->debounceAndPressed(ps5.Up()))
+          // Check if magnetometer functionality is enabled
+          if (useMagnetometer && holdTurretStillEnabled)
           {
-            adjustFlywheelSpeedStage(INCREASE);
-          }
-          //* D-Pad Down: Decrease flywheel speed by one stage
-          else if (dbDpadDown->debounceAndPressed(ps5.Down()))
-          {
-            adjustFlywheelSpeedStage(DECREASE);
+            calculateHeadingMag();
+            holdTurretStill();
           }
           else
           {
-            setFlywheelSpeedStage(currentFlywheelStage);
+            setTurretSpeed(0);
           }
+          updateTurretMotionStatus();
+        }
+      }
+      // updateTurretMotionStatus();
+
+      //* Left Stick Y: Flywheel Override
+      if (fabs(stickFlywheel) > STICK_DEADZONE)
+      {
+        setFlywheelSpeed(stickFlywheel);
+      }
+      else
+      {
+        //* D-Pad Up: Increase flywheel speed by one stage
+        if (dbDpadUp->debounceAndPressed(ps5.Up()))
+        {
+          adjustFlywheelSpeedStage(INCREASE);
+        }
+        //* D-Pad Down: Decrease flywheel speed by one stage
+        else if (dbDpadDown->debounceAndPressed(ps5.Down()))
+        {
+          adjustFlywheelSpeedStage(DECREASE);
+        }
+        else
+        {
+          setFlywheelSpeedStage(currentFlywheelStage);
         }
       }
     }
@@ -1133,21 +1142,7 @@ bool Quarterback::testForDisableOrStop()
     Serial.println(F("emergency stopping"));
     return true;
   }
-  //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
-  else if (dbSquare->debounceAndPressed(ps5.Square()))
-  {
-    if (!enabled)
-    {
-      setEnabled(true);
-      Serial.println(F("setting enabled"));
-    }
-    else
-    {
-      setEnabled(false);
-      Serial.println(F("setting disabled"));
-    }
-    return true;
-  }
+  // Remove the Square emergency stop to use for switching modes
   else
   {
     // Serial.println(F("not disabling or stopping"));
@@ -1158,6 +1153,11 @@ bool Quarterback::testForDisableOrStop()
 void Quarterback::setEnabled(bool enabled)
 {
   this->enabled = enabled;
+}
+
+bool Quarterback::isEnabled()
+{
+  return this->enabled;
 }
 
 void Quarterback::emergencyStop()
