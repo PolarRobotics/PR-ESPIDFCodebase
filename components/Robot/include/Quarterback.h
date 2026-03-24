@@ -12,7 +12,8 @@
 #define QUARTERBACK_TURRET_H
 
 #include <Robot.h>
-#include <MotorControl.h>
+#include <PWMMotor.h>
+#include <MotorEnums.h>
 #include <ps5Controller.h>    // ESP PS5 library, access using global instance `ps5`
 #include <Adafruit_LIS3MDL.h> // Magnetometer
 #include <Debouncer.h>
@@ -179,13 +180,13 @@ class Quarterback : public Robot
   //============================//
 private:
   //==============================//
-  //    MotorControl Instances    //
+  //    PWM Motor Instances    //
   //==============================//
-  MotorControl cradleActuator;
-  MotorControl turretMotor;
-  MotorControl assemblyMotor;
-  MotorControl flywheelLeftMotor;
-  MotorControl flywheelRightMotor;
+  PWMMotor cradleActuator;
+  PWMMotor turretMotor;
+  PWMMotor assemblyMotor;
+  PWMMotor flywheelLeftMotor;
+  PWMMotor flywheelRightMotor;
 
   //==============================//
   //       Pin Declarations       //

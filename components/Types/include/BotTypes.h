@@ -107,11 +107,11 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
     {10, "phi", center, {small_ampflow, 0.6f, 11.50f, 9.00f, 36.00f}},             //* 10: Φ
     {11, "inf", quarterback_old, {small_ampflow, 0.5625f, 11.50f, 9.00f, 24.00f}}, //* 11: ∞
     {12, "theta", kicker, {small_ampflow, 0.5f, 10.00f, 9.00f, 36.00f}},           //* 12: Θ
-    {14, "beta", quarterback, {big_ampflow, 0.5f, 11.50f, 9.00f, 36.00f}},         //* 14: beta
-    {16, "l-man-v1", lineman, {small_12v, 1.0f, 11.00f, 9.00f, 36.00f}},           //* 16: generic lineman V1
-    {17, "420", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                //* 17: 420
-    {18, "24", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                 //* 18: 24
-    {19, "25", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}}                  //* 19: 25
+    {13, "beta", quarterback, {big_ampflow, 0.5f, 11.50f, 9.00f, 36.00f}},         //* 13: beta
+    {14, "l-man-v1", lineman, {small_12v, 1.0f, 11.00f, 9.00f, 36.00f}},           //* 14: generic lineman V1
+    {15, "420", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                //* 15: 420
+    {16, "24", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                 //* 16: 24
+    {17, "25", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}}                  //* 17: 25
 };
 
 //! Do not decrease r_min to less than half of the wheelbase, or the math might break

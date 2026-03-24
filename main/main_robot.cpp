@@ -26,6 +26,7 @@
 #include <Drive.h>
 
 // Pairing Includes
+
 #include <pairing.h>
 
 // Robot Includes
@@ -155,10 +156,10 @@ extern "C" void main_app(void)
     break;
   case quarterback:
     drive = new Drive(quarterback, driveParams);
-    drive->setupMotors(M1_PIN, M2_PIN);
+    drive->setupMotors(DRIVE_M1, DRIVE_M2);
     robot = new Quarterback(
-        M1_PIN,       // left flywheel
-        M2_PIN,       // right flywheel
+        DRIVE_M1,     // left flywheel
+        DRIVE_M2,     // right flywheel
         M3_PIN,       // cradle
         M4_PIN,       // turret
         SPECBOT_PIN1, // assembly motor
@@ -214,7 +215,7 @@ extern "C" void main_app(void)
       // ps5.setLed(255, 0, 0);   // set LED red
 
       // Drive controls for non-QB
-      if(robotType != quarterback)
+      if (robotType != quarterback)
       {
         // Do all normal drive functions as usual
         drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
@@ -257,7 +258,7 @@ extern "C" void main_app(void)
         // If the QB is not enabled, allow driving but not manual turret or flywheel movement
         drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
 
-        // avoid using R1, L1, touchpad, etc. as they are used in Quarterback control scheme 
+        // avoid using R1, L1, touchpad, etc. as they are used in Quarterback control scheme
         // for different functions like changing recievers
         drive->setSpeedScalar(Drive::NORMAL);
 
