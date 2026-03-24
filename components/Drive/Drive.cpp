@@ -59,9 +59,9 @@ Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int t
     }
     else if (botType == center)
     {
-        this->BIG_BOOST_PCT = 0.5;
-        this->BIG_NORMAL_PCT = 0.4;
-        this->BIG_SLOW_PCT = 0.25;
+        this->BIG_BOOST_PCT = 0.4;
+        this->BIG_NORMAL_PCT = 0.25;
+        this->BIG_SLOW_PCT = 0.15;
     }
     else
     {
