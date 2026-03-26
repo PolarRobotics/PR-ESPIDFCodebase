@@ -89,6 +89,10 @@ Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int t
     enableTurnSensitivity = turnFunction; // 0 for linear, 1 for Rhys's function, 2 for cubic
     turnSensitivityScalar = 0.49;         // Range: (0, 0.5) really [0.01, 0.49]
     domainAdjustment = 1 / log((1 - (turnSensitivityScalar + 0.5)) / (turnSensitivityScalar + 0.5));
+
+    // Initialize the Mutex
+    driveMutex = xSemaphoreCreateMutex();
+    stopSemaphore = xSemaphoreCreateBinary();
 }
 
 void Drive::setupMotors(uint8_t lidx, uint8_t ridx)
@@ -145,26 +149,33 @@ void Drive::setupMotors(uint8_t lidx, uint8_t ridx, uint8_t left_enc_a_pin, uint
  */
 void Drive::setStickPwr(int8_t leftY, int8_t rightX)
 {
-    // left stick all the way forward is 0, backward is 255
-    // +: forward, -: backward. needs to be negated so that forward is forward and v.v.; subtracting 1 bumps into correct range
-    stickForwardRev = (leftY / 127.5f);
-    stickTurn = (rightX / 127.5f);
-    // stick deadzones
-    // set to zero (no input) if within the set deadzone
-    // subtacting STICK_DEADZONE and deviding by 1-STICK_DEADZONE normalize the inputs to use the full 0-1 range
-    if (fabs(stickForwardRev) < STICK_DEADZONE)
-        stickForwardRev = 0;
-    else if (stickForwardRev > 0)
-        stickForwardRev = (stickForwardRev - STICK_DEADZONE) / (1 - STICK_DEADZONE);
-    else if (stickForwardRev < 0)
-        stickForwardRev = (stickForwardRev + STICK_DEADZONE) / (1 - STICK_DEADZONE);
+    // Try to take the Mutex. Wait up to 10ms if busy
+    if (xSemaphoreTake(driveMutex, pdMS_TO_TICKS(5)) == pdTRUE)
+    {
+        // left stick all the way forward is 0, backward is 255
+        // +: forward, -: backward. needs to be negated so that forward is forward and v.v.; subtracting 1 bumps into correct range
+        this->stickForwardRev = (leftY / 127.5f);
+        this->stickTurn = (rightX / 127.5f);
+        // stick deadzones
+        // set to zero (no input) if within the set deadzone
+        // subtacting STICK_DEADZONE and deviding by 1-STICK_DEADZONE normalize the inputs to use the full 0-1 range
+        if (fabs(stickForwardRev) < STICK_DEADZONE)
+            stickForwardRev = 0;
+        else if (stickForwardRev > 0)
+            stickForwardRev = (stickForwardRev - STICK_DEADZONE) / (1 - STICK_DEADZONE);
+        else if (stickForwardRev < 0)
+            stickForwardRev = (stickForwardRev + STICK_DEADZONE) / (1 - STICK_DEADZONE);
 
-    if (fabs(stickTurn) < STICK_DEADZONE)
-        stickTurn = 0;
-    else if (stickTurn > 0)
-        stickTurn = (stickTurn - STICK_DEADZONE) / (1 - STICK_DEADZONE);
-    else if (stickTurn < 0)
-        stickTurn = (stickTurn + STICK_DEADZONE) / (1 - STICK_DEADZONE);
+        if (fabs(stickTurn) < STICK_DEADZONE)
+            stickTurn = 0;
+        else if (stickTurn > 0)
+            stickTurn = (stickTurn - STICK_DEADZONE) / (1 - STICK_DEADZONE);
+        else if (stickTurn < 0)
+            stickTurn = (stickTurn + STICK_DEADZONE) / (1 - STICK_DEADZONE);
+    }
+
+    // Release the Mutex so the motor task can see new values
+    xSemaphoreGive(driveMutex);
 }
 
 float Drive::getForwardPower()
@@ -175,6 +186,36 @@ float Drive::getForwardPower()
 float Drive::getTurnPower()
 {
     return stickTurn;
+}
+
+void Drive::driveTaskWrapper(void *pvParameters)
+{
+    Drive *driveInstance = static_cast<Drive *>(pvParameters);
+    driveInstance->driveTask();
+}
+
+void Drive::driveTask()
+{
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    const TickType_t xFrequency = pdMS_TO_TICK(20); // 20ms loop time, adjust as needed
+
+    while (true)
+    {
+        // Check emergency stop Semaphore
+        if (xSemaphoreTake(stopSemaphore, 0) == pdTRUE)
+        {
+            this->emergencyStop();
+        }
+
+        // Run standard update logic
+        this->update();
+
+        // Feed the Watchdog
+        esp_task_wdt_reset();
+
+        // Maintain precise timiing
+        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+    }
 }
 
 /**
@@ -460,54 +501,59 @@ void Drive::printCsvInfo()
  */
 void Drive::update()
 {
-    const bool isRunningback = (botType == runningback);
-    const float tankPct = isRunningback ? RB_TANK_MODE_PCT : TANK_MODE_PCT;
-    const float accelRate = isRunningback ? RB_ACCELERATION_RATE : ACCELERATION_RATE;
-
-    // Generate turning motion
-    generateMotionValues(tankPct);
-
-    // Ramp in normalized percent space [-1, 1]
-    if (motorInterfaceType == pwm)
+    if (xSemaphoreTake(driveMutex, pdMS_TO_TICK(5)) == pdTRUE)
     {
-        requestedMotorPower[0] = pwmM1.ramp(requestedMotorPower[0], accelRate);
-        requestedMotorPower[1] = pwmM2.ramp(requestedMotorPower[1], accelRate);
+        const bool isRunningback = (botType == runningback);
+        const float tankPct = isRunningback ? RB_TANK_MODE_PCT : TANK_MODE_PCT;
+        const float accelRate = isRunningback ? RB_ACCELERATION_RATE : ACCELERATION_RATE;
+
+        // Generate turning motion
+        generateMotionValues(tankPct);
+
+        // Ramp in normalized percent space [-1, 1]
+        if (motorInterfaceType == pwm)
+        {
+            requestedMotorPower[0] = pwmM1.ramp(requestedMotorPower[0], accelRate);
+            requestedMotorPower[1] = pwmM2.ramp(requestedMotorPower[1], accelRate);
+        }
+        else
+        {
+            requestedMotorPower[0] = serialM1.ramp(requestedMotorPower[0], accelRate);
+            requestedMotorPower[1] = serialM2.ramp(requestedMotorPower[1], accelRate);
+        }
+
+        // Deadband (percent-space)
+        const float deadbandPct = float(MOTOR_ZERO_OFFST) / 2047.0f;
+        requestedMotorPower[0] = (fabs(requestedMotorPower[0]) < deadbandPct) ? 0.0f : requestedMotorPower[0];
+        requestedMotorPower[1] = (fabs(requestedMotorPower[1]) < deadbandPct) ? 0.0f : requestedMotorPower[1];
+
+        // Track ramp output for debugging/turn model
+        lastRampPower[0] = requestedMotorPower[0];
+        lastRampPower[1] = requestedMotorPower[1];
+
+        // Write output
+        if (motorInterfaceType == pwm)
+        {
+            pwmM1.write(requestedMotorPower[0]);
+            pwmM2.write(requestedMotorPower[1]);
+
+            requestedMotorPowerSerial[0] = int(requestedMotorPower[0] * 2047.0f);
+            requestedMotorPowerSerial[1] = int(requestedMotorPower[1] * 2047.0f);
+        }
+        else
+        {
+            requestedMotorPowerSerial[0] = int(requestedMotorPower[0] * 2047.0f);
+            requestedMotorPowerSerial[1] = int(requestedMotorPower[1] * 2047.0f);
+
+            serialM1.writeRaw(requestedMotorPowerSerial[0]);
+            serialM2.writeRaw(requestedMotorPowerSerial[1]);
+        }
+
+        trackingMotorPower[0] = requestedMotorPower[0];
+        trackingMotorPower[1] = requestedMotorPower[1];
     }
-    else
-    {
-        requestedMotorPower[0] = serialM1.ramp(requestedMotorPower[0], accelRate);
-        requestedMotorPower[1] = serialM2.ramp(requestedMotorPower[1], accelRate);
-    }
 
-    // Deadband (percent-space)
-    const float deadbandPct = float(MOTOR_ZERO_OFFST) / 2047.0f;
-    requestedMotorPower[0] = (fabs(requestedMotorPower[0]) < deadbandPct) ? 0.0f : requestedMotorPower[0];
-    requestedMotorPower[1] = (fabs(requestedMotorPower[1]) < deadbandPct) ? 0.0f : requestedMotorPower[1];
-
-    // Track ramp output for debugging/turn model
-    lastRampPower[0] = requestedMotorPower[0];
-    lastRampPower[1] = requestedMotorPower[1];
-
-    // Write output
-    if (motorInterfaceType == pwm)
-    {
-        pwmM1.write(requestedMotorPower[0]);
-        pwmM2.write(requestedMotorPower[1]);
-
-        requestedMotorPowerSerial[0] = int(requestedMotorPower[0] * 2047.0f);
-        requestedMotorPowerSerial[1] = int(requestedMotorPower[1] * 2047.0f);
-    }
-    else
-    {
-        requestedMotorPowerSerial[0] = int(requestedMotorPower[0] * 2047.0f);
-        requestedMotorPowerSerial[1] = int(requestedMotorPower[1] * 2047.0f);
-
-        serialM1.writeRaw(requestedMotorPowerSerial[0]);
-        serialM2.writeRaw(requestedMotorPowerSerial[1]);
-    }
-
-    trackingMotorPower[0] = requestedMotorPower[0];
-    trackingMotorPower[1] = requestedMotorPower[1];
+    xSemaphoreGive(driveMutex);
 }
 
 int Drive::getMotorWifiValue(int motorRequested)
@@ -519,4 +565,34 @@ int Drive::getMotorWifiValue(int motorRequested)
         valueToReturn = value;
     }
     return valueToReturn;
+}
+
+void Drive::emergencyStop()
+{
+    isSafe = false; // Set the global abort flag
+
+    if (motorInterfaceType == pwm)
+    {
+        pwmM1.write(0.0f);
+        pwmM2.write(0.0f);
+    }
+    else
+    {
+        serialM1.writeRaw(0);
+        serialM2.writeRaw(0);
+    }
+}
+
+void IRAM_ATTR Drive::collision_ISR(void *arg)
+{
+    Drive *driveInstance = static_cast<Drive *>(arg);
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+    // Signal the task to the stop immediately
+    xSemaphoreGiveFromISR(driveInstance->stopSemaphore, &xHigherPriorityTaskWoken);
+
+    if (xHigherPriorityTaskWoken)
+    {
+        portYIELD_FROM_ISR();
+    }
 }

@@ -6,6 +6,9 @@
 #include <PWMMotor.h>
 #include <SerialMotor.h>
 #include <MotorTypes.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
+#include <freertos/task.h>
 
 #ifndef NUM_MOTORS
 #define NUM_MOTORS 2
@@ -59,7 +62,18 @@ private:
   MotorInterfaceType motorInterfaceType;
   float gearRatio;
   bool hasEncoders;
+  // RTOS semaphore for drive parameters
+  SemaphoreHandle_t driveMutex;
+  SemaphoreHandle_t stopSemaphore;
+  TaskHandle_t driveTaskHandle;
 
+  static void driveTaskWrapper(void *pvParameters);
+  void driveTask();
+
+  // ISR for collision saftey
+  static void IRAM_ATTR collision_ISR(void *arg);
+
+  volatile bool isSafe;
   float speedScalar;
   float wheelBase;
   int omega;
@@ -78,9 +92,9 @@ protected:
   // Drive can be either PWM or Packet Serial depending on `motorInterfaceType`.
   PWMMotor pwmM1, pwmM2;
   SerialMotor serialM1, serialM2;
-  float stickForwardRev, stickTurn;
-  float lastTurnPwr;
-  float turnPower;
+  volatile float stickForwardRev, stickTurn;
+  volatile float lastTurnPwr;
+  volatile float turnPower;
 
   float requestedMotorPower[NUM_MOTORS];
   int requestedMotorPowerSerial[NUM_MOTORS];
