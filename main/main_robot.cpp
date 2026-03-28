@@ -199,7 +199,6 @@ extern "C" void main_app(void)
   }
 
   drive->printSetup();
-
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
 

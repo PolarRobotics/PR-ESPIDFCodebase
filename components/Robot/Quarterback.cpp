@@ -85,13 +85,13 @@ Quarterback::Quarterback(
   // turret laser setup
   this->turretLaserPin = turretLaserPin;
   this->turretLaserState = 0;
-  pinMode(turretLaserPin, INPUT_PULLUP); //! will be 1 when at home position or main power is off (the latter is electrically unavoidable)
+  pinMode(turretLaserPin, INPUT); //! will be 1 when at home position or main power is off (the latter is electrically unavoidable)
 
   // encoder setup
   Quarterback::turretEncoderPinA = turretEncoderPinA;
   Quarterback::turretEncoderPinB = turretEncoderPinB;
   Quarterback::currentTurretEncoderCount = 0;
-  pinMode(turretEncoderPinA, INPUT_PULLUP);
+  pinMode(turretEncoderPinA, INPUT);
   pinMode(turretEncoderPinB, INPUT);
   attachInterrupt(turretEncoderPinA, turretEncoderISR, RISING);
 
@@ -100,6 +100,7 @@ Quarterback::Quarterback(
   cradleActuator.setup(cradlePin, big_ampflow); // TODO: change to MotorInterface when merged
   turretMotor.setup(turretPin, falcon);         // TODO: add encoder
   assemblyMotor.setup(assemblyPin, small_12v);
+  Serial.println("Quarterback Constructor");
   flywheelLeftMotor.setup(flywheelLeftPin, falcon);
   flywheelRightMotor.setup(flywheelRightPin, falcon);
 
@@ -119,8 +120,7 @@ Quarterback::Quarterback(
   this->dbTurretInterpolator = new Debouncer(QB_TURRET_INTERPOLATION_DELAY);
 
   magnetometerSetup();
-
-  Uart_Turret.begin(115200, SERIAL_8N1, RX2, TX2);
+  // Uart_Turret.begin(115200, SERIAL_8N1, RX2, TX2);
 }
 #pragma endregion
 
@@ -136,7 +136,8 @@ void Quarterback::action()
   if (!testForDisableOrStop() && !runningMacro)
   {
     //* Square: Toggle Driving/Turret Control
-    if(dbSquare->debounceAndPressed(ps5.Square())) {
+    if (dbSquare->debounceAndPressed(ps5.Square()))
+    {
       if (!enabled)
       {
         setEnabled(true);
@@ -173,7 +174,7 @@ void Quarterback::action()
 
     //* Right Trigger (R2): Fire (cradle/grabber forward)
     // Do not fire unless moving forward (do not fire when intaking or stopped)
-    if(ps5.R2())
+    if (ps5.R2())
     {
       if (currentFlywheelSpeed > STICK_DEADZONE)
       {
@@ -213,7 +214,7 @@ void Quarterback::action()
       // TODO: Implement Automatic Targeting System when it is finished (capstone from build team)
       // until then, this is here to ensure the automatic targeting system toggle works.
     }
-    
+
     //* Options (Button): Switch LED Color between Offense and Defense
     if (dbOptions->debounceAndPressed(ps5.Options()))
     {
@@ -226,15 +227,14 @@ void Quarterback::action()
 
     //* Manual and Automatic Controls.
     // ONLY FOR TURRET MODE
-    if(enabled)
+    if (enabled)
     {
-      
+
       //* Manual Controls
-    
+
       stickFlywheel = (ps5.LStickY() / 127.5f);
       stickTurret = (ps5.RStickX() / 127.5f);
 
-      
       //* NO option to set combine mode
       // Could remove/implement in the future
       if (mode == combine)

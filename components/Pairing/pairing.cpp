@@ -3,12 +3,14 @@
 /**
  * @brief Implements pairing functions.
  * @author Max Phillips, Corbin Hibler
- * Adapted from: https://github.com/espressif/arduino-esp32/blob/master/libraries/BluetoothSerial/examples/DiscoverConnect/DiscoverConnect.ino
+ * Adapted from:
+ * https://github.com/espressif/arduino-esp32/blob/master/libraries/BluetoothSerial/examples/DiscoverConnect/DiscoverConnect.ino
  *
  * Provides a framework to handle pairing of an ESP32 to a PS5 controller.
  * `activatePairing()` should be called in your main code file during setup.
- * It is a *blocking* function (not asynchronous and takes a discrete amount of time), so consider that.
- * Other functions in this file are helper functions for `activatePairing()` and generally should not be called outside it.
+ * It is a *blocking* function (not asynchronous and takes a discrete amount of
+ * time), so consider that. Other functions in this file are helper functions
+ * for `activatePairing()` and generally should not be called outside it.
  */
 
 /**
@@ -22,12 +24,15 @@
  * Example python server:
  * source: https://gist.github.com/ukBaz/217875c83c2535d22a16ba38fc8f2a91
  *
- * Tested with Raspberry Pi onboard Wifi/BT, USB BT 4.0 dongles, USB BT 1.1 dongles,
- * 202202: does NOT work with USB BT 2.0 dongles when esp32 aduino lib is compiled with SSP support!
- *         see https://github.com/espressif/esp-idf/issues/8394
+ * Tested with Raspberry Pi onboard Wifi/BT, USB BT 4.0 dongles, USB BT 1.1
+ * dongles, 202202: does NOT work with USB BT 2.0 dongles when esp32 aduino lib
+ * is compiled with SSP support! see
+ * https://github.com/espressif/esp-idf/issues/8394
  *
- * use ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE in connect() if remote side requests 'RequireAuthentication': dbus.Boolean(True),
- * use ESP_SPP_SEC_NONE or ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE in connect() if remote side has Authentication: False
+ * use ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE in connect() if remote side
+ * requests 'RequireAuthentication': dbus.Boolean(True), use ESP_SPP_SEC_NONE or
+ * ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE in connect() if remote side has
+ * Authentication: False
  */
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
@@ -35,44 +40,53 @@
 #endif
 
 // #if !defined(CONFIG_BT_SPP_ENABLED)
-// #error Serial Bluetooth not available or not enabled. It is only available for the ESP32 chip.
-// #endif
+// #error Serial Bluetooth not available or not enabled. It is only available
+// for the ESP32 chip. #endif
 
-#define PREF_KEY "bt-mac" // preferences namespace, limited to 15 characters
+#define PREF_KEY "bt-mac"  // preferences namespace, limited to 15 characters
 Preferences prefs;
 
 #include "esp_log.h"
-static const char *TAG = "Pairing";
+static const char* TAG = "Pairing";
 
 BluetoothSerial SerialBT;
 
 #define LOOP_DELAY 100
 
-constexpr size_t MAC_ADDR_STR_LEN = 18;           // "xx:xx:xx:xx:xx:xx" + null terminator
-constexpr int DOUBLE_BLINK_PERIOD_STEPS = 10;     // 1 seconds per cycle when LOOP_DELAY is 100 ms
-constexpr int DOUBLE_BLINK_FIRST_START_STEP = 5;  // wait ~500 ms before the first blink
-constexpr int DOUBLE_BLINK_SECOND_START_STEP = 7; // quick gap between the blinks
-constexpr int DOUBLE_BLINK_ON_DURATION_STEPS = 1; // keep LED on for one LOOP_DELAY slice per blink
+constexpr size_t MAC_ADDR_STR_LEN =
+    18;  // "xx:xx:xx:xx:xx:xx" + null terminator
+constexpr int DOUBLE_BLINK_PERIOD_STEPS =
+    10;  // 1 seconds per cycle when LOOP_DELAY is 100 ms
+constexpr int DOUBLE_BLINK_FIRST_START_STEP =
+    5;  // wait ~500 ms before the first blink
+constexpr int DOUBLE_BLINK_SECOND_START_STEP =
+    7;  // quick gap between the blinks
+constexpr int DOUBLE_BLINK_ON_DURATION_STEPS =
+    1;  // keep LED on for one LOOP_DELAY slice per blink
 
 bool foundController = false;
 
 // Bluetooth connection security and role for ESP32
-esp_spp_sec_t sec_mask = ESP_SPP_SEC_NONE; // or ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE to request pincode confirmation
-esp_spp_role_t role = ESP_SPP_ROLE_SLAVE;  // ESP_SPP_ROLE_MASTER or ESP_SPP_ROLE_SLAVE
+esp_spp_sec_t sec_mask =
+    ESP_SPP_SEC_NONE;  // or ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC_AUTHENTICATE to
+                       // request pincode confirmation
+esp_spp_role_t role =
+    ESP_SPP_ROLE_SLAVE;  // ESP_SPP_ROLE_MASTER or ESP_SPP_ROLE_SLAVE
 
 // MAC Addresses to match to PS5 Controllers
-const char *macTest = "bc:c7:46:03";                    // length 11
-const char *macTest2 = "bc:c7:46:04";                   // length 11
-const char *macTest3 = "14:3a:9a";                      // length 8
-const char *RhysController = "10:18:49:57";             // length 17 "10:18:49:57:49:ef"
-const char *NewCamoController = "90:b6:85:f8:e3:c2";    // length 17 "90:b6:85:f8:e3:c2"
-const char *derivativeController = "0c:27:56:78:a8:5a"; // length 17
-const char *integralController = "0c:27:56:78:aa:db";   // length 17
+const char* macTest = "bc:c7:46:03";         // length 11
+const char* macTest2 = "bc:c7:46:04";        // length 11
+const char* macTest3 = "14:3a:9a";           // length 8
+const char* RhysController = "10:18:49:57";  // length 17 "10:18:49:57:49:ef"
+const char* NewCamoController =
+    "90:b6:85:f8:e3:c2";  // length 17 "90:b6:85:f8:e3:c2"
+const char* derivativeController = "0c:27:56:78:a8:5a";  // length 17
+const char* integralController = "0c:27:56:78:aa:db";    // length 17
 
 /// @brief Detects if a given MAC Address is considered a PS5 Controller
 /// @param addrCharPtr the address to test (C string)
 /// @return true if the address represents a controller, false otherwise
-bool addressIsController(const char *addrCharPtr)
+bool addressIsController(const char* addrCharPtr)
 {
   if (strncmp(addrCharPtr, macTest, 11) == 0)
     return true;
@@ -96,48 +110,58 @@ bool addressIsController(const char *addrCharPtr)
 /// @param addr source BTAddress
 /// @param dest destination char buffer
 /// @param len size of destination buffer
-void copyAddressToBuffer(const BTAddress &addr, char *dest, size_t len)
+void copyAddressToBuffer(const BTAddress& addr, char* dest, size_t len)
 {
-  if (dest == nullptr || len == 0)
-    return;
+  if (dest == nullptr || len == 0) return;
 
   memset(dest, 0, len);
   size_t copyLen = len - 1;
-  if (len == 1)
-    copyLen = 0;
+  if (len == 1) copyLen = 0;
 
   strncpy(dest, addr.toString().c_str(), copyLen);
   dest[len - 1] = '\0';
 }
 
 /// @brief Begins the asynchronous discovery process for PS5 controllers
-/// @return a boolean if the discovery started successfully. should generally return true.
-/// This function is used in `activatePairing()` to begin async discovery if a paired controller is not found
+/// @return a boolean if the discovery started successfully. should generally
+/// return true. This function is used in `activatePairing()` to begin async
+/// discovery if a paired controller is not found
 bool startDiscovery()
 {
-  return SerialBT.discoverAsync([](BTAdvertisedDevice *pDevice)
-                                {   
-      ESP_LOGI(TAG, "Found a new device asynchronously: %s", pDevice->toString().c_str());
+  return SerialBT.discoverAsync(
+      [](BTAdvertisedDevice* pDevice)
+      {
+        ESP_LOGI(
+            TAG,
+            "Found a new device asynchronously: %s",
+            pDevice->toString().c_str());
 
-      // Tests if the address of the device found is a controller, 
-      // or if the device is named 'Wireless Controller'
-      // If so, foundController is asserted.
-      char asyncAddr[MAC_ADDR_STR_LEN] = {0};
-      copyAddressToBuffer(pDevice->getAddress(), asyncAddr, sizeof(asyncAddr));
-      if (addressIsController(asyncAddr) 
-        || (strcmp(pDevice->getName().c_str(), "Wireless Controller") == 0) 
-        || (strcmp(pDevice->getName().c_str(), "DualSense Wireless Controller") == 0))
-        foundController = true; });
+        // Tests if the address of the device found is a controller,
+        // or if the device is named 'Wireless Controller'
+        // If so, foundController is asserted.
+        char asyncAddr[MAC_ADDR_STR_LEN] = {0};
+        copyAddressToBuffer(
+            pDevice->getAddress(),
+            asyncAddr,
+            sizeof(asyncAddr));
+        if (addressIsController(asyncAddr) ||
+            (strcmp(pDevice->getName().c_str(), "Wireless Controller") == 0) ||
+            (strcmp(
+                 pDevice->getName().c_str(),
+                 "DualSense Wireless Controller") == 0))
+          foundController = true;
+      });
 }
 
-/// @brief Stores the paired controller's MAC address into ESP32 `Preferences` (persistent memory)
+/// @brief Stores the paired controller's MAC address into ESP32 `Preferences`
+/// (persistent memory)
 /// @param addr the address (as a string-like) to store
-/// @param clear whether to clear the preferences before storing. defaults to false.
-void storeAddress(const char *addr, bool clear = false)
+/// @param clear whether to clear the preferences before storing. defaults to
+/// false.
+void storeAddress(const char* addr, bool clear = false)
 {
-  if (clear)
-    prefs.clear();
-  prefs.begin(PREF_KEY, false); // false means read/write mode
+  if (clear) prefs.clear();
+  prefs.begin(PREF_KEY, false);  // false means read/write mode
 
   // create 'String' from char array to store in preferences
   //* this is not std::string, it's an ESP thing
@@ -149,13 +173,15 @@ void storeAddress(const char *addr, bool clear = false)
   prefs.end();
 }
 
-/// @brief Retrieves the stored controller MAC address from ESP32 `Preferences` (persistent memory)
-/// @param addr the variable to place the address in. a more primitive version of a string, essentially.
-/// Used: https://stackoverflow.com/questions/5660527/how-do-i-return-a-char-array-from-a-function
-void getAddress(const char *&addr)
+/// @brief Retrieves the stored controller MAC address from ESP32 `Preferences`
+/// (persistent memory)
+/// @param addr the variable to place the address in. a more primitive version
+/// of a string, essentially. Used:
+/// https://stackoverflow.com/questions/5660527/how-do-i-return-a-char-array-from-a-function
+void getAddress(const char*& addr)
 {
   static String storedAddress;
-  prefs.begin(PREF_KEY, true); // true is read-only mode
+  prefs.begin(PREF_KEY, true);  // true is read-only mode
   storedAddress = prefs.getString(PREF_KEY, "");
   ESP_LOGI(TAG, "Retrieved MAC Address: %s", storedAddress.c_str());
   prefs.end();
@@ -166,14 +192,16 @@ void getAddress(const char *&addr)
 }
 
 /// @brief Search for PS5 Controllers and pair to the first one found
-/// @param doRePair whether or not to search for the controller whose MAC address is stored in non-volatile memory, default true
-/// @param discoverTime the time limit to repair to existing devices, or search for new devices, in milliseconds
+/// @param doRePair whether or not to search for the controller whose MAC
+/// address is stored in non-volatile memory, default true
+/// @param discoverTime the time limit to repair to existing devices, or search
+/// for new devices, in milliseconds
 void activatePairing(bool doRePair, int discoverTime)
 {
-  // if we just returned a char*, it would be deleted and point to nowhere useful
-  // so we have to pass in and mutate a (reference to a) char array.
+  // if we just returned a char*, it would be deleted and point to nowhere
+  // useful so we have to pass in and mutate a (reference to a) char array.
   char discoveredAddr[MAC_ADDR_STR_LEN] = {0};
-  const char *addrCharPtr = nullptr;
+  const char* addrCharPtr = nullptr;
   getAddress(addrCharPtr);
 
   if (doRePair)
@@ -192,39 +220,39 @@ void activatePairing(bool doRePair, int discoverTime)
         timer += LOOP_DELAY;
 
         // slow blink when searching for previous device
-        if (timer % (5 * LOOP_DELAY) == 0)
-        {
-          toggleBuiltInLED();
-        }
+        if (timer % (5 * LOOP_DELAY) == 0) toggleBuiltInLED();
       }
 
       // return if we get a connection at this point
       if (ps5.isConnected())
       {
         ESP_LOGI(TAG, "PS5 Controller Connected!");
-        setBuiltInLED(true); // solid blue light when fully paired
+        setBuiltInLED(true);  // solid blue light when fully paired
         return;
-      } // otherwise look for devices to pair with
+      }  // otherwise look for devices to pair with
     }
   }
 
   // begin broadcasting as "ESP32" as master role
   if (!SerialBT.begin("ESP32", true))
   {
-    ESP_LOGE(TAG, "SerialBT failed!"); // function returns false if failed
+    ESP_LOGE(TAG, "SerialBT failed!");  // function returns false if failed
     abort();
   }
-  SerialBT.enableSSP(); // according to SRC of this code, doesn't seem to change anything
+  SerialBT.enableSSP();  // according to SRC of this code, doesn't seem to
+                         // change anything
 
   ESP_LOGI(TAG, "Searching for devices...");
-  BTScanResults *btDeviceList = SerialBT.getScanResults(); // may be accessing from different threads!
+  BTScanResults* btDeviceList =
+      SerialBT.getScanResults();  // may be accessing from different threads!
 
   // Beginning of Asynchronous Discovery Process
   if (startDiscovery())
   {
     int timer = 0;
 
-    // recall foundController is set by the callback in `startDiscovery` when a valid PS5 controller is found
+    // recall foundController is set by the callback in `startDiscovery` when a
+    // valid PS5 controller is found
     while (timer < discoverTime && !foundController)
     {
       delay(LOOP_DELAY);
@@ -232,10 +260,14 @@ void activatePairing(bool doRePair, int discoverTime)
 
       // emulate PS5 pairing animation: pause, blink twice quickly, repeat
       const int cycleStep = ((timer / LOOP_DELAY) % DOUBLE_BLINK_PERIOD_STEPS);
-      const bool inFirstBlink = (cycleStep >= DOUBLE_BLINK_FIRST_START_STEP) &&
-                                (cycleStep < DOUBLE_BLINK_FIRST_START_STEP + DOUBLE_BLINK_ON_DURATION_STEPS);
-      const bool inSecondBlink = (cycleStep >= DOUBLE_BLINK_SECOND_START_STEP) &&
-                                 (cycleStep < DOUBLE_BLINK_SECOND_START_STEP + DOUBLE_BLINK_ON_DURATION_STEPS);
+      const bool inFirstBlink =
+          (cycleStep >= DOUBLE_BLINK_FIRST_START_STEP) &&
+          (cycleStep <
+           DOUBLE_BLINK_FIRST_START_STEP + DOUBLE_BLINK_ON_DURATION_STEPS);
+      const bool inSecondBlink =
+          (cycleStep >= DOUBLE_BLINK_SECOND_START_STEP) &&
+          (cycleStep <
+           DOUBLE_BLINK_SECOND_START_STEP + DOUBLE_BLINK_ON_DURATION_STEPS);
       setBuiltInLED(inFirstBlink || inSecondBlink);
     }
 
@@ -243,7 +275,8 @@ void activatePairing(bool doRePair, int discoverTime)
     SerialBT.discoverAsyncStop();
     ESP_LOGI(TAG, "discoverAsync stopped");
 
-    // If we find devices, list them and try to pair if it is a valid controller.
+    // If we find devices, list them and try to pair if it is a valid
+    // controller.
     if (btDeviceList->getCount() > 0)
     {
       BTAddress addr;
@@ -251,7 +284,7 @@ void activatePairing(bool doRePair, int discoverTime)
       ESP_LOGI(TAG, "Found devices:");
       for (int i = 0; i < btDeviceList->getCount(); i++)
       {
-        BTAdvertisedDevice *device = btDeviceList->getDevice(i);
+        BTAdvertisedDevice* device = btDeviceList->getDevice(i);
         addr = device->getAddress();
         copyAddressToBuffer(addr, discoveredAddr, sizeof(discoveredAddr));
         addrCharPtr = discoveredAddr;
@@ -259,30 +292,45 @@ void activatePairing(bool doRePair, int discoverTime)
         ESP_LOGI(TAG, "addrCharPtr: %s", addrCharPtr);
 
         // print out relevant controller details
-        ESP_LOGI(TAG, "%d | %s | %s | %d", i, addrCharPtr, device->getName().c_str(), device->getRSSI());
+        ESP_LOGI(
+            TAG,
+            "%d | %s | %s | %d",
+            i,
+            addrCharPtr,
+            device->getName().c_str(),
+            device->getRSSI());
 
-        ESP_LOGI(TAG, "Checking if device is one of our listed MAC addresses... %s", addressIsController(addrCharPtr) ? "YES" : "NO");
+        ESP_LOGI(
+            TAG,
+            "Checking if device is one of our listed MAC addresses... %s",
+            addressIsController(addrCharPtr) ? "YES" : "NO");
 
-        ESP_LOGI(TAG, "Checking if device name matches... %s", (strcmp(device->getName().c_str(), "Wireless Controller") == 0) ? "YES" : "NO");
+        ESP_LOGI(
+            TAG,
+            "Checking if device name matches... %s",
+            (strcmp(device->getName().c_str(), "Wireless Controller") == 0)
+                ? "YES"
+                : "NO");
 
-        if (addressIsController(addrCharPtr) || (strcmp(device->getName().c_str(), "Wireless Controller") == 0))
+        if (addressIsController(addrCharPtr) ||
+            (strcmp(device->getName().c_str(), "Wireless Controller") == 0))
         {
           ESP_LOGI(TAG, "Connecting to PS5 Controller @ %s", addrCharPtr);
           ps5.begin(addrCharPtr);
           while (!ps5.isConnected())
           {
-            toggleBuiltInLED(); // fast blinking when hooked into a device but not yet connected
+            toggleBuiltInLED();  // fast blinking when hooked into a device but
+                                 // not yet connected
             delay(LOOP_DELAY);
           }
           ESP_LOGI(TAG, "PS5 Controller Connected: %d", ps5.isConnected());
           storeAddress(addrCharPtr, true);
-          setBuiltInLED(true); // solid blue light when fully paired
+          setBuiltInLED(true);  // solid blue light when fully paired
         }
       }
 
       // if not connected at this point, no valid controllers have been found
-      if (!ps5.isConnected())
-        setBuiltInLED(false); // turn the led off
+      if (!ps5.isConnected()) setBuiltInLED(false);  // turn the led off
     }
     else
     {
