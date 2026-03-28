@@ -105,6 +105,8 @@ extern "C" void main_app(void)
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(TACKLE_PIN, OUTPUT); // Try INPUT_PULLUP
   digitalWrite(TACKLE_PIN, 0); // Initially sets tackle sensor to home
+  digitalWrite(LED_BUILTIN, LOW);
+  // digitalMode(LED_BUILTIN, OUTPUT);
 
   // Initialize debouncer
   dbOptions = new Debouncer(TACKLE_SENSOR_DELAY);
@@ -156,7 +158,7 @@ extern "C" void main_app(void)
     break;
   case quarterback:
     drive = new Drive(quarterback, driveParams);
-    drive->setupMotors(DRIVE_M1, DRIVE_M2);
+    drive->setupMotors(M1_IDX, M2_IDX);
     robot = new Quarterback(
         DRIVE_M1,     // left flywheel
         DRIVE_M2,     // right flywheel
@@ -183,7 +185,6 @@ extern "C" void main_app(void)
   }
 
   drive->printSetup();
-
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
 
