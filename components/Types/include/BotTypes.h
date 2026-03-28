@@ -82,12 +82,12 @@ typedef struct BotConfig
 #define BOT_QB_OLD 11
 #define BOT_THETA 12
 #define BOT_KICKER 12
-#define BOT_QB 14
-#define BOT_BETA 14
-#define BOT_LINEMAN_V1 16
-#define BOT_420 17
-#define BOT_24 18
-#define BOT_25 19
+#define BOT_QB 13
+#define BOT_BETA 13
+#define BOT_LINEMAN_V1 14
+#define BOT_420 15
+#define BOT_24 16
+#define BOT_25 17
 
 // PRESET BOT CONFIGURATIONS, MUST MATCH:
 // TODO: bogConfigArray set up for new Quarterback

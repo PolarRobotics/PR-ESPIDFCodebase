@@ -158,10 +158,11 @@ extern "C" void main_app(void)
     break;
   case quarterback:
     drive = new Drive(quarterback, driveParams);
+    /* USE SPECIFIC PINS FOR QUARTERBACK */
     drive->setupMotors(M1_IDX, M2_IDX);
     robot = new Quarterback(
-        DRIVE_M1,     // left flywheel
-        DRIVE_M2,     // right flywheel
+        M1_PWM,       // left flywheel
+        M2_PWM,       // right flywheel
         M3_PIN,       // cradle
         M4_PIN,       // turret
         SPECBOT_PIN1, // assembly motor
