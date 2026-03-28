@@ -35,6 +35,7 @@ void ConfigManager::read()
   this->config->bot_type = (BotType)preferences.getUChar("bot_type");
 
   // read drive parameters
+  // TODO: might need to refactor to fit quarterback
   this->config->drive_params.motor_type = (MotorType)preferences.getUChar("motor_type");
   this->config->drive_params.gear_ratio = (float)preferences.getFloat("gear_ratio");
   this->config->drive_params.wheel_base = (float)preferences.getFloat("wheel_base");

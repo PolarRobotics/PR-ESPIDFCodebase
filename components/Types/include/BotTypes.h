@@ -8,7 +8,7 @@
 #include <MotorTypes.h>
 #include <DriveParameters.h>
 
-#define NUM_POSITIONS 9 // number of members of eBOT_TYPE
+#define NUM_POSITIONS 8 // number of members of eBOT_TYPE
 
 /** BotType
  * enum for the possible positions a robot can have on the field
@@ -19,10 +19,10 @@
  *  1: Receiver
  *  2: Runningback
  *  3: Center
- *  4: Kicker
- *  5: Old Quarterback
- *  6: Quarterback base
- *  7: Quarterback turret
+ *  4: Center Conversion
+ *  5: Kicker
+ *  6: Old Quarterback
+ *  7: Quarterback
  */
 typedef enum
 {
@@ -33,8 +33,7 @@ typedef enum
   center_conversion,
   kicker,
   quarterback_old,
-  quarterback_base,
-  quarterback_turret
+  quarterback
 } BotType;
 
 /**
@@ -80,20 +79,18 @@ typedef struct BotConfig
 #define BOT_PHI 10
 #define BOT_CENTER 10
 #define BOT_INF 11
-#define BOT_QB 11
 #define BOT_QB_OLD 11
 #define BOT_THETA 12
 #define BOT_KICKER 12
-#define BOT_QB_BASE 14
-#define BOT_QB_BOTTOM 14
-#define BOT_QB_TURRET 15
-#define BOT_QB_TOP 15
-#define BOT_LINEMAN_V1 16
-#define BOT_420 17
-#define BOT_24 18
-#define BOT_25 19
+#define BOT_QB 13
+#define BOT_BETA 13
+#define BOT_LINEMAN_V1 14
+#define BOT_420 15
+#define BOT_24 16
+#define BOT_25 17
 
 // PRESET BOT CONFIGURATIONS, MUST MATCH:
+// TODO: bogConfigArray set up for new Quarterback
 // https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
 constexpr bot_config_t botConfigArray[NUM_BOTS] = {
     // idx  bot_name     bot_type              motor_type    gear_ratio wheel_base r_min   r_max
@@ -110,12 +107,11 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
     {10, "phi", center, {small_ampflow, 0.6f, 11.50f, 9.00f, 36.00f}},             //* 10: Φ
     {11, "inf", quarterback_old, {small_ampflow, 0.5625f, 11.50f, 9.00f, 24.00f}}, //* 11: ∞
     {12, "theta", kicker, {small_ampflow, 0.5f, 10.00f, 9.00f, 36.00f}},           //* 12: Θ
-    {14, "qb_base", quarterback_base, {big_ampflow, 0.5f, 11.50f, 9.00f, 36.00f}}, //* 14: unassigned
-    {15, "qb_turret", quarterback_turret, {falcon, 0.5f, 11.50f, 9.00f, 36.00f}},  //* 15: unassigned
-    {16, "l-man-v1", lineman, {small_12v, 1.0f, 11.00f, 9.00f, 36.00f}},           //* 16: generic lineman V1
-    {17, "420", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                //* 17: 420
-    {18, "24", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                 //* 18: 24
-    {19, "25", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}}                  //* 19: 25
+    {13, "beta", quarterback, {big_ampflow, 0.5f, 11.50f, 9.00f, 36.00f}},         //* 13: beta
+    {14, "l-man-v1", lineman, {small_12v, 1.0f, 11.00f, 9.00f, 36.00f}},           //* 14: generic lineman V1
+    {15, "420", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                //* 15: 420
+    {16, "24", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                 //* 16: 24
+    {17, "25", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}}                  //* 17: 25
 };
 
 //! Do not decrease r_min to less than half of the wheelbase, or the math might break

@@ -166,7 +166,11 @@ void getAddress(const char *&addr)
 /// @param discoverTime the time limit to repair to existing devices, or search for new devices, in milliseconds
 void activatePairing(bool doRePair, int discoverTime)
 {
-  Serial.begin(115200);
+  // Ensure the built-in LED pin is configured before any digitalWrite() calls.
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
+
+  // Serial.begin(115200);
   // pinMode(LED_BUILTIN, OUTPUT);
 
   // if we just returned a char*, it would be deleted and point to nowhere useful

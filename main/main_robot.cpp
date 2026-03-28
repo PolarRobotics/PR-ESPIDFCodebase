@@ -26,6 +26,7 @@
 #include <Drive.h>
 
 // Pairing Includes
+
 #include <pairing.h>
 
 // Robot Includes
@@ -34,9 +35,8 @@
 #include <Center.h>
 #include <CenterConversion.h>
 #include <Kicker.h>
+#include <QuarterbackOld.h>
 #include <Quarterback.h>
-#include <QuarterbackBase.h>
-#include <QuarterbackTurret.h>
 
 // Types Includes
 #include <BotTypes.h>
@@ -75,30 +75,14 @@ void onConnection()
     // ps5.setLed(0, 255, 0);   // set LED green
   }
 
-  // TODO: perm sln
-  if (robotType != quarterback_turret)
-  {
-    drive->emergencyStop();
-  }
-  else
-  {
-    ((QuarterbackTurret *)robot)->emergencyStop();
-  }
+  drive->emergencyStop();
 }
 
 void onDisconnect()
 {
   Serial.println(F("Controller Disconnected."));
 
-  // TODO: perm sln
-  if (robotType != quarterback_turret)
-  {
-    drive->emergencyStop();
-  }
-  else
-  {
-    ((QuarterbackTurret *)robot)->emergencyStop();
-  }
+  drive->emergencyStop();
 }
 
 extern "C" void main_app(void)
@@ -121,6 +105,8 @@ extern "C" void main_app(void)
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(TACKLE_PIN, OUTPUT); // Try INPUT_PULLUP
   digitalWrite(TACKLE_PIN, 0); // Initially sets tackle sensor to home
+  digitalWrite(LED_BUILTIN, LOW);
+  // digitalMode(LED_BUILTIN, OUTPUT);
 
   // Initialize debouncer
   dbOptions = new Debouncer(TACKLE_SENSOR_DELAY);
@@ -151,7 +137,7 @@ extern "C" void main_app(void)
     drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
   case quarterback_old:
-    robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
+    robot = new QuarterbackOld(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
     drive = new Drive(quarterback_old, driveParams);
     drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
@@ -170,10 +156,13 @@ extern "C" void main_app(void)
     drive = new Drive(runningback, driveParams);
     drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
-  case quarterback_turret:
-    robot = new QuarterbackTurret(
-        M1_IDX,       // left flywheel
-        M2_IDX,       // right flywheel
+  case quarterback:
+    drive = new Drive(quarterback, driveParams);
+    /* USE SPECIFIC PINS FOR QUARTERBACK */
+    drive->setupMotors(M1_IDX, M2_IDX);
+    robot = new Quarterback(
+        M1_PWM,       // left flywheel
+        M2_PWM,       // right flywheel
         M3_PIN,       // cradle
         M4_PIN,       // turret
         SPECBOT_PIN1, // assembly motor
@@ -183,11 +172,6 @@ extern "C" void main_app(void)
         ENC1_CHB,     // turret encoder
         ENC2_CHB      // zeroing laser
     );
-    break;
-  case quarterback_base:
-    drive = new Drive(quarterback_base, driveParams);
-    drive->setupMotors(DRIVE_M1, DRIVE_M2);
-    robot = new QuarterbackBase(drive);
     break;
   case receiver:
   case lineman:
@@ -202,7 +186,6 @@ extern "C" void main_app(void)
   }
 
   drive->printSetup();
-
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
 
@@ -233,12 +216,11 @@ extern "C" void main_app(void)
       // Serial.print(F("\r\nConnected"));
       // ps5.setLed(255, 0, 0);   // set LED red
 
-      //* QBv3 Turret doesn't have drive, so this is a temporary measure to avoid NPEs and chaos
-      // TODO: find better solution
-      if (robotType != quarterback_turret)
+      // Drive controls for non-QB
+      if (robotType != quarterback)
       {
+        // Do all normal drive functions as usual
         drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
-
         // determine BSN percentage (boost, slow, or normal)
         if (ps5.Touchpad())
         {
@@ -264,18 +246,35 @@ extern "C" void main_app(void)
           drive->setSpeedScalar(Drive::NORMAL);
         }
 
-        // Manual Home / Away Position Setting
-        if (dbOptions->debounceAndPressed(ps5.Options()))
-        {
-          switchTackleSensor();
-        }
-
         //* Update the motors based on the inputs from the controller
         //* Can change functionality depending on subclass, like robot.action()
         drive->update();
         drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
         // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
       }
+
+      // Drive controls for QB only in drive mode (i.e. when not enabled)
+      // Should only get to this point if the robot is a QB, so we can cast robot as a Quarterback without issue
+      else if (!((Quarterback *)robot)->isEnabled())
+      {
+        // If the QB is not enabled, allow driving but not manual turret or flywheel movement
+        drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
+
+        // avoid using R1, L1, touchpad, etc. as they are used in Quarterback control scheme
+        // for different functions like changing recievers
+        drive->setSpeedScalar(Drive::NORMAL);
+
+        //* Update the motors based on the inputs from the controller
+        //* Can change functionality depending on subclass, like robot.action()
+        drive->update();
+        drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+        // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
+      } // else robot is quarterback and also drive is disbled! SO DO NOTHING!
+
+      // Manual Home / Away Position Setting
+      // if (ps5.Options())
+      //   ;
+
       //! Performs all special robot actions depending on the instantiated Robot subclass
       robot->action();
 
@@ -287,15 +286,8 @@ extern "C" void main_app(void)
     }
     else
     { // no response from PS5 controller within last 300 ms, so stop
-      if (robotType != quarterback_turret)
-      {
-        // Emergency stop if the controller disconnects
-        drive->emergencyStop();
-      }
-      else
-      {
-        ((QuarterbackTurret *)robot)->emergencyStop();
-      }
+      // Emergency stop if the controller disconnects
+      drive->emergencyStop();
     }
   }
 
