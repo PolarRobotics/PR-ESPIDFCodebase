@@ -287,6 +287,7 @@ extern "C" void main_app(void)
     }
     else
     { // no response from PS5 controller within last 300 ms, so stop
+      Serial.println("Controller DC\n");
       if (robotType != quarterback_turret)
       {
         // Emergency stop if the controller disconnects

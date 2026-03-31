@@ -461,8 +461,9 @@ void Drive::printCsvInfo()
 void Drive::update()
 {
     const bool isRunningback = (botType == runningback);
-    const float tankPct = isRunningback ? RB_TANK_MODE_PCT : TANK_MODE_PCT;
+    const float tankPct = (isRunningback || motorInterfaceType == serial) ? RB_TANK_MODE_PCT : TANK_MODE_PCT;
     const float accelRate = isRunningback ? RB_ACCELERATION_RATE : ACCELERATION_RATE;
+    const float serialAccelRate = 0.002f;
 
     // Generate turning motion
     generateMotionValues(tankPct);
@@ -475,8 +476,8 @@ void Drive::update()
     }
     else
     {
-        requestedMotorPower[0] = serialM1.ramp(requestedMotorPower[0], accelRate);
-        requestedMotorPower[1] = serialM2.ramp(requestedMotorPower[1], accelRate);
+        requestedMotorPower[0] = serialM1.ramp(requestedMotorPower[0], serialAccelRate);
+        requestedMotorPower[1] = serialM2.ramp(requestedMotorPower[1], serialAccelRate);
     }
 
     // Deadband (percent-space)
