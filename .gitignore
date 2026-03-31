@@ -1,10 +1,6 @@
 build/
 sdkconfig.old
 
-# VSCode
-.vscode
-!.vscode/launch.json
-
 # dependencies.lock updates everytime so there is no point tracking it
 dependencies.lock
 
@@ -77,9 +73,6 @@ coverage_report/
 
 test_multi_heap_host
 
-# VS Code Settings
-.vscode/
-
 # VIM files
 *.swp
 *.swo
@@ -119,4 +112,3 @@ XUNIT_RESULT*.xml
 
 # Vale
 .vale/styles/*
-.vscode/c_cpp_properties.json

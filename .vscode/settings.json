@@ -1,0 +1,57 @@
+{
+  "idf.enableIdfComponentManager": true,
+  "idf.showOnboardingOnInit": false,
+  "idf.enableUpdateSrcsToCMakeListsFile": true,
+  "idf.flashBaudRate": "460800",
+  "idf.monitorBaudRate": "115200",
+  "idf.flashType": "UART",
+  "idf.saveBeforeBuild": true,
+  "files.associations": {
+    "*.h": "c",
+    "*.hpp": "cpp",
+    "*.ino": "cpp",
+    "arduino.h": "c",
+    "nvs_flash.h": "c",
+    "gpio.h": "c",
+    "freertos.h": "c",
+    "esp_*.h": "c",
+    "driver/*.h": "c",
+    "CMakeLists.txt": "cmake",
+    "*.cmake": "cmake",
+    "Kconfig*": "kconfig",
+    "sdkconfig": "kconfig"
+  },
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  "git.autofetch": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "editor.rulers": [
+    80,
+    120
+  ],
+  "editor.renderWhitespace": "boundary",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "search.exclude": {
+    "**/build": true,
+    "**/managed_components": true,
+    "**/.git": true,
+    "**/node_modules": true
+  },
+  "files.exclude": {
+    "**/managed_components": true
+  },
+  "idf.port": "/dev/ttyUSB0",
+  "idf.openOcdConfigs": [
+    "board/esp32-bridge.cfg"
+  ],
+  "C_Cpp.intelliSenseEngine": "default",
+  "C_Cpp.default.configurationProvider": "esp-idf",
+  "C_Cpp.errorSquiggles": "enabled",
+  "C_Cpp.autocompleteAddParentheses": true,
+  "C_Cpp.formatting": "clangFormat",
+  "C_Cpp.default.browse.limitSymbolsToIncludedHeaders": false
+}
