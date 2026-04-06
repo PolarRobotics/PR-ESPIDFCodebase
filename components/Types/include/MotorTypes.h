@@ -23,7 +23,8 @@ typedef enum
     pancake_ampflow, // index 2 for 24v AmpFlow motor P40-350-24
     falcon,          // index 3 for the falcon motors on the runningback
     neo_vortex,      // index 4: NEO Vortex motors
-    small_12v        // index 5 for the small 12v motors on the old robots
+    small_12v,       // index 5 for the small 12v motors on the old robots
+    big_ampflow_pwm  // index 0 for 24v AmpFlow motor E30-400-24
 } MotorType;
 
 const int MOTOR_MAX_RPM_ARR[NUM_MOTOR_TYPES] = {
