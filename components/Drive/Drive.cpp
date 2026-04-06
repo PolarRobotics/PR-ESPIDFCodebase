@@ -464,6 +464,8 @@ void Drive::update()
     const float tankPct = (isRunningback || motorInterfaceType == serial) ? RB_TANK_MODE_PCT : TANK_MODE_PCT;
     const float accelRate = isRunningback ? RB_ACCELERATION_RATE : ACCELERATION_RATE;
     const float serialAccelRate = 0.002f;
+    const bool isStrengthLineman = (botType == strength_lineman);
+    const float decelRate = isStrengthLineman ? STRENGTH_LINEMAN_DECELERATION_RATE : accelRate;
 
     // Generate turning motion
     generateMotionValues(tankPct);
@@ -471,13 +473,13 @@ void Drive::update()
     // Ramp in normalized percent space [-1, 1]
     if (motorInterfaceType == pwm)
     {
-        requestedMotorPower[0] = pwmM1.ramp(requestedMotorPower[0], accelRate);
-        requestedMotorPower[1] = pwmM2.ramp(requestedMotorPower[1], accelRate);
+        requestedMotorPower[0] = pwmM1.ramp(requestedMotorPower[0], accelRate, decelRate);
+        requestedMotorPower[1] = pwmM2.ramp(requestedMotorPower[1], accelRate, decelRate);
     }
     else
     {
-        requestedMotorPower[0] = serialM1.ramp(requestedMotorPower[0], serialAccelRate);
-        requestedMotorPower[1] = serialM2.ramp(requestedMotorPower[1], serialAccelRate);
+        requestedMotorPower[0] = serialM1.ramp(requestedMotorPower[0], serialAccelRate, decelRate);
+        requestedMotorPower[1] = serialM2.ramp(requestedMotorPower[1], serialAccelRate, decelRate);
     }
 
     // Deadband (percent-space)

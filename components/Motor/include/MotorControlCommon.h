@@ -75,19 +75,43 @@ public:
      */
     float ramp(float requestedPower, float accelRate)
     {
+        return ramp(requestedPower, accelRate, accelRate);
+    }
+
+    /**
+     * @brief Ramp requestedPower towards target with separate acceleration and deceleration rates.
+     * @param requestedPower target power in range [-1.0, 1.0]
+     * @param accelRate acceleration rate (%/ms) - used when increasing power
+     * @param decelRate deceleration rate (%/ms) - used when decreasing power
+     */
+    float ramp(float requestedPower, float accelRate, float decelRate)
+    {
+        return ramp(requestedPower, accelRate, accelRate);
+    }
+
+    /**
+     * @brief Ramp requestedPower towards target with separate acceleration and deceleration rates.
+     * @param requestedPower target power in range [-1.0, 1.0]
+     * @param accelRate acceleration rate (%/ms) - used when increasing power
+     * @param decelRate deceleration rate (%/ms) - used when decreasing power
+     */
+    float ramp(float requestedPower, float accelRate, float decelRate)
+    {
         uint32_t currentMillis = millis();
         timeElapsed = float(currentMillis - lastRampTime);
         lastRampTime = currentMillis;
 
         if (requestedPower > requestedRPM)
         {
+            // Accelerating - use accelRate
             requestedRPM = requestedRPM + accelRate * timeElapsed;
             if (requestedRPM > requestedPower)
                 requestedRPM = requestedPower;
         }
         else
         {
-            requestedRPM = requestedRPM - accelRate * timeElapsed;
+            // Decelerating - use decelRate
+            requestedRPM = requestedRPM - decelRate * timeElapsed;
             if (requestedRPM < requestedPower)
                 requestedRPM = requestedPower;
         }

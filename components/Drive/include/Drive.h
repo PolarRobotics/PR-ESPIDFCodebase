@@ -15,6 +15,9 @@
 // rate of change of power with respect to time when accelerating %power/10th of sec
 #define ACCELERATION_RATE 0.00375f   // [RPM/ms] possibly change to RPM/s for future
 #define RB_ACCELERATION_RATE 0.0015f // default: 0.00375f, Runningback old: 0.03f, 0.015f
+// Strength linemen deceleration rate - slows down gradually to prevent flipping when releasing joystick
+// 0.0001 = ~1 second to decelerate from full power to zero, adjust higher for faster decel
+#define STRENGTH_LINEMAN_DECELERATION_RATE 0.0001f // [%/ms]
 
 // rate of deceleration/braking
 #define BRAKE_PERCENTAGE 0.9
