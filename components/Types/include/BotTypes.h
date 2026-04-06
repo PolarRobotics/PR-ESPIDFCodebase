@@ -8,7 +8,7 @@
 #include <MotorTypes.h>
 #include <DriveParameters.h>
 
-#define NUM_POSITIONS 10 // number of members of eBOT_TYPE
+#define NUM_POSITIONS 11 // number of members of eBOT_TYPE
 
 /** BotType
  * enum for the possible positions a robot can have on the field
@@ -37,7 +37,8 @@ typedef enum
   quarterback_old,
   quarterback_base,
   quarterback_turret,
-  swerve
+  swerve,
+  strength_lineman
 } BotType;
 
 /**
@@ -65,7 +66,7 @@ typedef struct BotConfig
   // BotType secondary_type;
 } bot_config_t;
 
-#define NUM_BOTS 23
+#define NUM_BOTS 25
 
 // Bot Aliases
 #define BOT_IPP 0
@@ -98,6 +99,8 @@ typedef struct BotConfig
 #define BOT_25 19
 #define BOT_TAU 20
 #define BOT_1_21 21
+#define BOT_DERIVATIVE 22
+#define BOT_INTEGRAL 23
 
 // PRESET BOT CONFIGURATIONS, MUST MATCH:
 // https://docs.google.com/spreadsheets/d/1Jkp-Kpj3Kk7jjbjkZ-UX2VnlHrlXVijnsoHZ04Eygu4/edit
@@ -125,6 +128,8 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
     {19, "25", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                 //* 19: 25
     {20, "tau", kicker, {small_ampflow, 0.5f, 9.00f, 9.00f, 36.00f}},              //* 20: tau
     {21, "1.21", runningback, {neo_vortex, 0.4f, 8.00f, 6.00f, 36.00f}}            //* 21: 1.21 (new RB)
+    {22, "derivative", lineman, {big_ampflow, 0.53333f, 11.25f, 9.00f, 36.00f}}, //* 22: derivative
+    {23, "integral", lineman, {big_ampflow, 0.53333f, 11.25f, 9.00f, 36.00f}}    //* 23: integral
 };
 
 //! Do not decrease r_min to less than half of the wheelbase, or the math might break
