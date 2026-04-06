@@ -8,7 +8,8 @@ constexpr Pair<MotorType, const char *>
             {pancake_ampflow, "pancake_ampflow"},
             {falcon, "falcon"},
             {neo_vortex, "neo_vortex"},
-            {small_12v, "small_12v"}};
+            {small_12v, "small_12v"},
+            {big_ampflow_pwm, "big_ampflow_pwm"}};
 
 /**
  * @brief getMotorTypeString returns a string correlating to the passed motor type enum

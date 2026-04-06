@@ -13,7 +13,8 @@ constexpr Pair<BotType, const char *>
             {quarterback_old, "quarterback_old"},
             {quarterback_base, "quarterback_base"},
             {quarterback_turret, "quarterback_turret"},
-            {swerve, "swerve"}};
+            {swerve, "swerve"},
+            {strength_lineman, "strength_lineman"}};
 
 // Function to map BotTypes to human-readable C-strings
 const char *getBotTypeString(BotType type)
