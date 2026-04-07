@@ -13,12 +13,14 @@ void CenterConversion::action()
         actuatorControl(true);
     else if (ps5.Cross())
         actuatorControl(false);
+    else
+        actuatorMotor.write(0);
 }
 
 void CenterConversion::actuatorControl(bool raise)
 {
     if (raise)
-        actuatorMotor.write(-0.15);
+        actuatorMotor.write(0.5);
     else
-        actuatorMotor.write(0.15);
+        actuatorMotor.write(-0.5);
 }

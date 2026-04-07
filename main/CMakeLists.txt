@@ -14,7 +14,7 @@ idf_component_register(
 )
 
 if(CONFIG_ENV_ROBOT)
-    target_sources(${COMPONENT_LIB} PRIVATE "main_robot.cpp")
+    target_sources(${COMPONENT_LIB} PRIVATE)
 elseif(CONFIG_ENV_WRITE_BOT_INFO)
     target_sources(${COMPONENT_LIB} PRIVATE "main_write_bot_info.cpp")
 endif()
