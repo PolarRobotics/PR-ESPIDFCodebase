@@ -40,7 +40,7 @@ public:
   int getBotIndex();
   BotType getBotType();
   drive_param_t getDriveParams();
-  const char *toString();
+  String toString();
   bool setConfig(uint8_t botindex);
   bool setConfig(uint8_t botindex, BotType bottype, MotorType motortype, float gearratio, float wheelbase, float r_min, float r_max);
 };

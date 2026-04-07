@@ -97,30 +97,30 @@ drive_param_t ConfigManager::getDriveParams()
  *
  * @return const char* the string containing the bot configuration
  */
-const char *ConfigManager::toString()
+String ConfigManager::toString()
 {
-  string temp = "\nBot info: ";
-  temp.append("\ncode version: ");
+  String temp = "\nBot info: ";
+  temp += "\ncode version: ";
   // temp.append(version().c_str());
-  temp.append(PR_CODEBASE_VERSION);
-  temp.append("\nbot array index #: ");
-  temp.append(to_string(config->index));
-  temp.append("\nbot name: ");
-  temp.append(getBotName(config->index));
-  temp.append("\nbot type: ");
-  temp.append(getBotTypeString(config->bot_type));
-  temp.append("\nmotor type: ");
-  temp.append(getMotorTypeString(config->drive_params.motor_type));
-  temp.append("\ngear ratio: ");
-  temp.append(to_string(config->drive_params.gear_ratio));
-  temp.append("\nwheel base: ");
-  temp.append(to_string(config->drive_params.wheel_base));
-  temp.append("\nr_min: ");
-  temp.append(to_string(config->drive_params.r_min));
-  temp.append("\nr_max: ");
-  temp.append(to_string(config->drive_params.r_max));
-  temp.append("\r\n");
-  return temp.c_str();
+  temp += PR_CODEBASE_VERSION;
+  temp += "\nbot array index #: ";
+  temp += String(config->index);
+  temp += "\nbot name: ";
+  temp += getBotName(config->index);
+  temp += "\nbot type: ";
+  temp += getBotTypeString(config->bot_type);
+  temp += "\nmotor type: ";
+  temp += getMotorTypeString(config->drive_params.motor_type);
+  temp += "\ngear ratio: ";
+  temp += String(config->drive_params.gear_ratio);
+  temp += "\nwheel base: ";
+  temp += String(config->drive_params.wheel_base);
+  temp += "\nr_min: ";
+  temp += String(config->drive_params.r_min);
+  temp += "\nr_max: ";
+  temp += String(config->drive_params.r_max);
+  temp += "\r\n";
+  return temp;
 }
 
 //! Writable Methods Below

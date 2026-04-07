@@ -51,8 +51,8 @@ extern "C" void main_app(void)
 
   //* Read back for verification
   Serial.println(F("Readback:"));
-  config.read();                      // read the configuration from eeprom
-  Serial.print(F(config.toString())); // print the configuration to the serial monitor
+  config.read();                   // read the configuration from eeprom
+  Serial.print(config.toString()); // print the configuration to the serial monitor
 
   Serial.println(F("Done"));
 
