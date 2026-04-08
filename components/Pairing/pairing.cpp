@@ -63,6 +63,7 @@ const char *macTest2 = "bc:c7:46:04";                // length 11
 const char *macTest3 = "14:3a:9a";                   // length 8
 const char *RhysController = "10:18:49:57";          // length 17 "10:18:49:57:49:ef"
 const char *NewCamoController = "90:b6:85:f8:e3:c2"; // length 17 "90:b6:85:f8:e3:c2"
+const char *strengthControllers = "0C:27:56:78";     // length 11
 
 /// @brief Detects if a given MAC Address is considered a PS5 Controller
 /// @param addrCharPtr the address to test (C string)
@@ -78,6 +79,8 @@ bool addressIsController(const char *addrCharPtr)
   else if (strncmp(addrCharPtr, RhysController, 11) == 0)
     return true;
   else if (strncmp(addrCharPtr, NewCamoController, 17) == 0)
+    return true;
+  else if (strncmp(addrCharPtr, strengthControllers, 11) == 0)
     return true;
   else
     return false;
