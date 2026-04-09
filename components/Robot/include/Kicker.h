@@ -14,8 +14,6 @@
 #define KICKER_COUNTS_PER_ARM_REV 1188   // Number of encoder counts per revolution of output shaft (11 * 108 = 1188)
 #define KICKER_COUNTS_PER_ARM_DEGREE 3.3 // Number of encoder counts per degree of the arm (1188 / 360 = 3.3)
 
-#define KICKER_ENABLE_DB_DELAY 100L
-
 /**
  * @brief Kicker Class
  *
@@ -28,7 +26,6 @@
 class Kicker : public Robot
 {
 private:
-  bool enabled;                             // Safety feature to ensure robot does not act when it is not supposed to.
   u_int16_t angleZero;                      // Angle of the limit switch.
   uint8_t kickerPin;                        // Pin to control the motor of the kicker arm
   uint8_t limitSwitchPin;                   // Pin to connect to the limit switch
@@ -38,8 +35,6 @@ private:
   static int32_t currentKickerEncoderCount; // Encoder count of kicker arm motor encoder
   PWMMotor windupMotor;                     // PWM motor controller for the kicker arm motor
 
-  Debouncer *dbEnable;
-
 public:
   Kicker(
       uint8_t kickerPin,         // Pin to control the motor of the kicker arm
@@ -48,7 +43,6 @@ public:
       u_int8_t kickerEncoderPinB // Signal Pin for channel B of the encoder
   );
   void action() override; //! robot subclass must override action
-  void enable();
   void test();
   void turnForward();
   void turnReverse();

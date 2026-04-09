@@ -16,11 +16,9 @@
  */
 Kicker::Kicker(uint8_t kickerPin, uint8_t limitSwitchPin, uint8_t kickerEncoderPinA, uint8_t kickerEncoderPinB)
 {
-  enabled = false;
   this->kickerPin = kickerPin;
   this->limitSwitchPin = limitSwitchPin;
   windupMotor.setup(kickerPin, small_12v);
-  this->dbEnable = new Debouncer(KICKER_ENABLE_DB_DELAY);
 
   // Encoder Setup
   this->kickerEncoderPinA = kickerEncoderPinA;
@@ -67,34 +65,12 @@ void Kicker::kickerEncoderISR()
 void Kicker::action()
 {
   // Control the motor on the kicker manually
-  if (enabled)
-  {
-    if (dbEnable->debounceAndPressed(ps5.Circle()))
-      enabled = false;
-    else if (ps5.Triangle())
-      turnForward();
-    else if (ps5.Cross())
-      turnReverse();
-    else
-      stop();
-
-    Serial.println(F("kicker enabled"));
-  }
+  if (ps5.Triangle())
+    turnForward();
+  else if (ps5.Cross())
+    turnReverse();
   else
-  {
-    if (dbEnable->debounceAndPressed(ps5.Circle()))
-      enable();
-  }
-}
-
-/**
- * @brief Enable Function
- *
- * Enables the kicker for safety purposes.
- */
-void Kicker::enable()
-{
-  enabled = true;
+    stop();
 }
 
 /**
@@ -104,10 +80,7 @@ void Kicker::enable()
  */
 void Kicker::turnForward()
 {
-  if (enabled)
-  {
-    windupMotor.write(-1);
-  }
+  windupMotor.write(-1);
 }
 
 /**
@@ -117,10 +90,7 @@ void Kicker::turnForward()
  */
 void Kicker::turnReverse()
 {
-  if (enabled)
-  {
-    windupMotor.write(1);
-  }
+  windupMotor.write(1);
 }
 
 /**
@@ -130,10 +100,7 @@ void Kicker::turnReverse()
  */
 void Kicker::stop()
 {
-  if (enabled)
-  {
-    windupMotor.write(0);
-  }
+  windupMotor.write(0);
 }
 
 /**
