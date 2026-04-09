@@ -87,6 +87,7 @@ typedef struct BotConfig
 #define BOT_QB_OLD 11
 #define BOT_THETA 12
 #define BOT_KICKER 12
+#define BOT_DELTA 13
 #define BOT_QB_BASE 14
 #define BOT_QB_BOTTOM 14
 #define BOT_QB_TURRET 15
@@ -97,7 +98,6 @@ typedef struct BotConfig
 #define BOT_25 19
 #define BOT_TAU 20
 #define BOT_1_21 21
-#define BOT_DELTA 22
 
 // PRESET BOT CONFIGURATIONS, MUST MATCH:
 // https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
@@ -116,6 +116,7 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
     {10, "phi", center, {small_ampflow, 0.6f, 11.50f, 9.00f, 36.00f}},             //* 10: Φ
     {11, "inf", quarterback_old, {small_ampflow, 0.5625f, 11.50f, 9.00f, 24.00f}}, //* 11: ∞
     {12, "theta", kicker, {small_ampflow, 0.5f, 10.00f, 9.00f, 36.00f}},           //* 12: Θ
+    {13, "delta", swerve, {neo_vortex, 0.5f, 11.50f, 9.00f, 36.00f}},              //* 22: delta (swerve) PLACEHOLDER VALUES
     {14, "qb_base", quarterback_base, {big_ampflow, 0.5f, 11.50f, 9.00f, 36.00f}}, //* 14: unassigned
     {15, "qb_turret", quarterback_turret, {falcon, 0.5f, 11.50f, 9.00f, 36.00f}},  //* 15: unassigned
     {16, "l-man-v1", lineman, {small_12v, 1.0f, 11.00f, 9.00f, 36.00f}},           //* 16: generic lineman V1
@@ -123,8 +124,7 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
     {18, "24", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                 //* 18: 24
     {19, "25", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                 //* 19: 25
     {20, "tau", kicker, {small_ampflow, 0.5f, 9.00f, 9.00f, 36.00f}},              //* 20: tau
-    {21, "1.21", runningback, {neo_vortex, 0.4f, 8.00f, 6.00f, 36.00f}},           //* 21: 1.21 (new RB)
-    {22, "delta", swerve, {neo_vortex, 0.5f, 11.50f, 9.00f, 36.00f}}               //* 22: delta (swerve) PLACEHOLDER VALUES
+    {21, "1.21", runningback, {neo_vortex, 0.4f, 8.00f, 6.00f, 36.00f}}            //* 21: 1.21 (new RB)
 };
 
 //! Do not decrease r_min to less than half of the wheelbase, or the math might break
