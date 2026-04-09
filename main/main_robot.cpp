@@ -208,7 +208,9 @@ extern "C" void main_app(void)
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
-  HWSerial.begin(115200, SERIAL_8N1, 16, 17); // 9600 baudrate default for USBSabertooth
+
+  // Disable RX pin (-1) to prevent floating pin interrupt storm when Sabertooth TX is unconnected
+  HWSerial.begin(115200, SERIAL_8N1, 16, -1); // 9600 baudrate default for USBSabertooth
   {
     ; // wait for serial port to connect
   }
@@ -273,7 +275,7 @@ extern "C" void main_app(void)
         //* Update the motors based on the inputs from the controller
         //* Can change functionality depending on subclass, like robot.action()
         drive->update();
-        drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+        // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
         // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
       }
       //! Performs all special robot actions depending on the instantiated Robot subclass
@@ -282,12 +284,10 @@ extern "C" void main_app(void)
       // DEBUGGING:
       // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
       // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
-
-      delay(5);
     }
     else
     { // no response from PS5 controller within last 300 ms, so stop
-      Serial.println("Controller DC\n");
+      // Serial.println("Controller DC\n");
       if (robotType != quarterback_turret)
       {
         // Emergency stop if the controller disconnects
@@ -298,6 +298,7 @@ extern "C" void main_app(void)
         ((QuarterbackTurret *)robot)->emergencyStop();
       }
     }
+    delay(5);
   }
 
   /**

@@ -75,8 +75,9 @@ public:
      */
     float ramp(float requestedPower, float accelRate)
     {
-        timeElapsed = float(millis() - lastRampTime);
-        lastRampTime = millis();
+        uint32_t currentMillis = millis();
+        timeElapsed = float(currentMillis - lastRampTime);
+        lastRampTime = currentMillis;
 
         if (requestedPower > requestedRPM)
         {
