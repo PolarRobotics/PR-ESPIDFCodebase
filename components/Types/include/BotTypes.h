@@ -100,7 +100,7 @@ typedef struct BotConfig
 #define BOT_1_21 21
 
 // PRESET BOT CONFIGURATIONS, MUST MATCH:
-// https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=0
+// https://docs.google.com/spreadsheets/d/1Jkp-Kpj3Kk7jjbjkZ-UX2VnlHrlXVijnsoHZ04Eygu4/edit
 constexpr bot_config_t botConfigArray[NUM_BOTS] = {
     // idx  bot_name     bot_type              motor_type    gear_ratio wheel_base r_min   r_max
     {0, "i++", lineman, {small_ampflow, 0.6f, 12.25f, 9.00f, 36.00f}},             //* 0:  i++
