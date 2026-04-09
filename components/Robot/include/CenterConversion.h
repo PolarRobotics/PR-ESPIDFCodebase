@@ -14,4 +14,5 @@ public:
     CenterConversion(uint8_t actuatorPin);
     void action() override;
     void actuatorControl(bool raise);
+    void stop();
 };

@@ -13,6 +13,8 @@ void CenterConversion::action()
         actuatorControl(true);
     else if (ps5.Cross())
         actuatorControl(false);
+    else
+        stop(); // Stop the motor when no button is pressed
 }
 
 void CenterConversion::actuatorControl(bool raise)
@@ -21,4 +23,14 @@ void CenterConversion::actuatorControl(bool raise)
         actuatorMotor.write(-0.15);
     else
         actuatorMotor.write(0.15);
+}
+
+/**
+ * @brief Stop Motor
+ *
+ * Stops the motor by writing the actuatorMotor SPECBOT_1 (D18) pin to 0
+ */
+void CenterConversion::stop()
+{
+    actuatorMotor.write(0);
 }
