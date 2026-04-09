@@ -208,9 +208,7 @@ extern "C" void main_app(void)
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
-
-  // Disable RX pin (-1) to prevent floating pin interrupt storm when Sabertooth TX is unconnected
-  HWSerial.begin(115200, SERIAL_8N1, 16, -1); // 9600 baudrate default for USBSabertooth
+  HWSerial.begin(115200, SERIAL_8N1, 16, 17); // 9600 baudrate default for USBSabertooth
   {
     ; // wait for serial port to connect
   }
