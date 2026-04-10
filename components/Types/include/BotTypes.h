@@ -25,7 +25,7 @@
  *  7: Quarterback base
  *  8: Quarterback turret
  *  9: Swerve
- *  10: Strength Linemen
+ *  10: Strength Lineman
  */
 typedef enum
 {

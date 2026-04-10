@@ -65,7 +65,7 @@ Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int t
     }
     else if (botType == strength_lineman)
     {
-        this->BIG_BOOST_PCT = 0.9;
+        this->BIG_BOOST_PCT = 1.0;
         this->BIG_NORMAL_PCT = 0.7;
         this->BIG_SLOW_PCT = 0.3;
     }
