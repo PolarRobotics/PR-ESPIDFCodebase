@@ -13,9 +13,9 @@
 
 // RAMP DEFINES
 // rate of change of power with respect to time when accelerating %power/10th of sec
-#define ACCELERATION_RATE 0.00375f                  // [RPM/ms] possibly change to RPM/s for future
-#define RB_ACCELERATION_RATE 0.0015f                // default: 0.00375f, Runningback old: 0.03f, 0.015f
-#define STRENGTH_LINEMAN_ACCELERATION_RATE 0.00375f // slower acceleration for strength linemen
+#define ACCELERATION_RATE 0.00375f                 // [RPM/ms] possibly change to RPM/s for future
+#define RB_ACCELERATION_RATE 0.0015f               // default: 0.00375f, Runningback old: 0.03f, 0.015f
+#define STRENGTH_LINEMAN_ACCELERATION_RATE 0.0025f // slower acceleration for strength linemen
 // Strength linemen deceleration rate - now uses same rate as acceleration
 // #define STRENGTH_LINEMAN_DECELERATION_RATE 0.0001f // [%/ms] - no longer used
 
