@@ -58,12 +58,13 @@ esp_spp_sec_t sec_mask = ESP_SPP_SEC_NONE; // or ESP_SPP_SEC_ENCRYPT|ESP_SPP_SEC
 esp_spp_role_t role = ESP_SPP_ROLE_SLAVE;  // ESP_SPP_ROLE_MASTER or ESP_SPP_ROLE_SLAVE
 
 // MAC Addresses to match to PS5 Controllers
-const char *macTest = "bc:c7:46:03";                 // length 11
-const char *macTest2 = "bc:c7:46:04";                // length 11
-const char *macTest3 = "14:3a:9a";                   // length 8
-const char *RhysController = "10:18:49:57";          // length 17 "10:18:49:57:49:ef"
-const char *NewCamoController = "90:b6:85:f8:e3:c2"; // length 17 "90:b6:85:f8:e3:c2"
-const char *strengthControllers = "0C:27:56:78";     // length 11
+const char *macTest = "bc:c7:46:03";                    // length 11
+const char *macTest2 = "bc:c7:46:04";                   // length 11
+const char *macTest3 = "14:3a:9a";                      // length 8
+const char *RhysController = "10:18:49:57";             // length 17 "10:18:49:57:49:ef"
+const char *NewCamoController = "90:b6:85:f8:e3:c2";    // length 17 "90:b6:85:f8:e3:c2"
+const char *derivativeController = "0c:27:56:78:a8:5a"; // length 17
+const char *integralController = "0c:27:56:78:aa:db";   // length 17
 
 /// @brief Detects if a given MAC Address is considered a PS5 Controller
 /// @param addrCharPtr the address to test (C string)
@@ -80,7 +81,9 @@ bool addressIsController(const char *addrCharPtr)
     return true;
   else if (strncmp(addrCharPtr, NewCamoController, 17) == 0)
     return true;
-  else if (strncmp(addrCharPtr, strengthControllers, 11) == 0)
+  else if (strncmp(addrCharPtr, integralController, 17) == 0)
+    return true;
+  else if (strncmp(addrCharPtr, derivativeController, 17) == 0)
     return true;
   else
     return false;
