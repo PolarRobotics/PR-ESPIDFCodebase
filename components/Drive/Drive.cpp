@@ -489,6 +489,12 @@ void Drive::update()
     lastRampPower[0] = requestedMotorPower[0];
     lastRampPower[1] = requestedMotorPower[1];
 
+    // this fixes C's funny backwards motor
+    if (botType == runningback && motorType == falcon)
+    {
+        requestedMotorPower[1] = -requestedMotorPower[1];
+    }
+
     // Write output
     if (motorInterfaceType == pwm)
     {
