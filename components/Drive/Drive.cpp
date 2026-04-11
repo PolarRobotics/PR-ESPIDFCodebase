@@ -473,7 +473,7 @@ void Drive::update()
                                                                             : TANK_MODE_PCT;
     const float accelRate = isRunningback ? RB_ACCELERATION_RATE : (isStrengthLineman ? STRENGTH_LINEMAN_ACCELERATION_RATE : ACCELERATION_RATE);
     const float serialAccelRate = 0.002f;
-    const float decelRate = isStrengthLineman ? STRENGTH_LINEMAN_ACCELERATION_RATE : accelRate;
+    const float decelRate = isStrengthLineman ? STRENGTH_LINEMAN_DECELERATION_RATE : accelRate;
 
     // Generate turning motion
     generateMotionValues(tankPct);
