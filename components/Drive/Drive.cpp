@@ -468,7 +468,9 @@ void Drive::update()
 {
     const bool isRunningback = (botType == runningback);
     const bool isStrengthLineman = (botType == strength_lineman);
-    const float tankPct = (isRunningback || motorInterfaceType == serial) ? RB_TANK_MODE_PCT : TANK_MODE_PCT;
+    const float tankPct = isStrengthLineman                                 ? STRENGTH_TANK_MODE_PCT
+                          : (isRunningback || motorInterfaceType == serial) ? RB_TANK_MODE_PCT
+                                                                            : TANK_MODE_PCT;
     const float accelRate = isRunningback ? RB_ACCELERATION_RATE : (isStrengthLineman ? STRENGTH_LINEMAN_ACCELERATION_RATE : ACCELERATION_RATE);
     const float serialAccelRate = 0.002f;
     const float decelRate = isStrengthLineman ? STRENGTH_LINEMAN_ACCELERATION_RATE : accelRate;

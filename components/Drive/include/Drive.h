@@ -30,6 +30,8 @@
 #define TANK_MODE_PCT 0.75
 // Value for the tank mode speed reduction percentage
 #define RB_TANK_MODE_PCT 0.5
+// Value for the tank mode speed reduction percentage for strength linemen
+#define STRENGTH_TANK_MODE_PCT 1.0
 // Value for the Drift Mode Reduction Factor Percentage
 #define DRIFT_MODE_PCT 0.8
 // these should = normal speed, QB needs 0.5 for both
