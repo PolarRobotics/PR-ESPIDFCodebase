@@ -7,6 +7,7 @@ constexpr Pair<MotorType, const char *>
             {small_ampflow, "small_ampflow"},
             {pancake_ampflow, "pancake_ampflow"},
             {falcon, "falcon"},
+            {neo_vortex, "neo_vortex"},
             {small_12v, "small_12v"}};
 
 /**
