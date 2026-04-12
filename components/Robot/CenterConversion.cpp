@@ -20,9 +20,9 @@ void CenterConversion::action()
 void CenterConversion::actuatorControl(bool raise)
 {
     if (raise)
-        actuatorMotor.write(-0.15);
+        actuatorMotor.write(0.5);
     else
-        actuatorMotor.write(0.15);
+        actuatorMotor.write(-0.5);
 }
 
 /**
