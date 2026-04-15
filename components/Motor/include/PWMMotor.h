@@ -31,11 +31,30 @@ public:
     {
         pin = motorPin;
         configureCommon(type, hasEncoder, gearRatio, encAChanPin, encBChanPin);
-        return motor.attach(pin, MIN_PWM_US, MAX_PWM_US);
+        uint8_t channel = motor.attach(pin, MIN_PWM_US, MAX_PWM_US);
+
+        // Setup encoder ISR if encoders are enabled
+        if (hasEncoder && encAChanPin >= 0)
+        {
+            pinMode(encAChanPin, INPUT);
+            attachInterruptArg(encAChanPin, MotorControlCommon::encoderISR, this, RISING);
+        }
+
+        return channel;
     }
 
     void write(float pct)
     {
         motor.write(pct);
+    }
+
+    // Implement virtual applyOutput
+    virtual void applyOutput() override
+    {
+        if (motorMutex != nullptr && xSemaphoreTake(motorMutex, pdMS_TO_TICKS(5)) == pdTRUE)
+        {
+            motor.write(outputPercent);
+            xSemaphoreGive(motorMutex);
+        }
     }
 };

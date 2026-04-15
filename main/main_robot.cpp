@@ -201,7 +201,14 @@ extern "C" void main_app(void)
     drive->setupMotors(DRIVE_M1, DRIVE_M2);
   }
 
-  drive->printSetup();
+  if (drive != nullptr)
+  {
+      if (!drive->createDriveTask("DriveTask", 2, 4096, tskNO_AFFINITY))
+      {
+          Serial.println(F("Drive task creation failed"));
+      }
+      drive->printSetup();
+  }
 
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
@@ -270,9 +277,8 @@ extern "C" void main_app(void)
           switchTackleSensor();
         }
 
-        //* Update the motors based on the inputs from the controller
-        //* Can change functionality depending on subclass, like robot.action()
-        drive->update();
+        //* Motion inputs are now consumed by the RTOS drive task.
+        //* The periodic drive task handles motor ramping, deadband, and writes.
         // drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
         //  drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
       }

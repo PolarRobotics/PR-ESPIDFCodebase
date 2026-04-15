@@ -27,6 +27,13 @@ public:
     {
         mot_idx = motorIndex;
         configureCommon(type, hasEncoder, gearRatio, encAChanPin, encBChanPin);
+
+        // Setup encoder ISR if encoders are enabled
+        if (hasEncoder && encAChanPin >= 0)
+        {
+            pinMode(encAChanPin, INPUT);
+            attachInterruptArg(encAChanPin, MotorControlCommon::encoderISR, this, RISING);
+        }
     }
 
     void writeRaw(int pwr);
@@ -38,4 +45,14 @@ public:
     }
 
     int motorIndex() const { return mot_idx; }
+
+    // Implement virtual applyOutput
+    virtual void applyOutput() override
+    {
+        if (motorMutex != nullptr && xSemaphoreTake(motorMutex, pdMS_TO_TICKS(5)) == pdTRUE)
+        {
+            writeRaw(int(outputPercent * 2047.0f));
+            xSemaphoreGive(motorMutex);
+        }
+    }
 };

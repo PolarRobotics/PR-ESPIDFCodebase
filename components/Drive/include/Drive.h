@@ -73,7 +73,6 @@ private:
   // ISR for collision saftey
   static void IRAM_ATTR collision_ISR(void *arg);
 
-  volatile bool isSafe;
   float speedScalar;
   float wheelBase;
   int omega;
@@ -95,6 +94,7 @@ protected:
   volatile float stickForwardRev, stickTurn;
   volatile float lastTurnPwr;
   volatile float turnPower;
+  volatile bool isSafe;
 
   float requestedMotorPower[NUM_MOTORS];
   int requestedMotorPowerSerial[NUM_MOTORS];
@@ -124,6 +124,9 @@ public:
   void setSpeedValue(float speed_pct);
   float getSpeedScalar();
   void emergencyStop();
+  bool createDriveTask(const char *taskName = "DriveTask", UBaseType_t priority = 1, uint32_t stackDepthWords = 4096, BaseType_t core = tskNO_AFFINITY);
+  void stopDriveTask();
+  bool setupEmergencyStop(uint8_t pin, int mode = RISING);
   void generateMotionValues(float tankModePct = TANK_MODE_PCT);
   virtual void update();
   void printSetup();

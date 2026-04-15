@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 #include <MotorTypes.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
 
 /**
  * @brief Shared logic for motor control implementations (PWM + Packet Serial).
@@ -28,8 +30,8 @@ protected:
     float timeElapsed = 0.0f;
 
     // Encoder state
-    int encoderACount = 0;
-    int b_channel_state = 0;
+    volatile int encoderACount = 0;
+    volatile int b_channel_state = 0;
     int rollover = 0;
 
     int prev_current_count = 0;
@@ -37,6 +39,14 @@ protected:
     uint32_t current_time = 0;
     uint32_t prev_current_time = 0;
     float omega = 0.0f;
+
+    // RTOS synchronization
+    SemaphoreHandle_t motorMutex = nullptr;
+
+    // Motor command state (thread-safe)
+    volatile float requestedPercent = 0.0f;
+    volatile float outputPercent = 0.0f;
+    volatile bool emergencyStopFlag = false;
 
     void configureCommon(MotorType type, bool hasEnc, float gearRatio, int encA, int encB)
     {
@@ -51,10 +61,20 @@ protected:
         // ramp init
         requestedRPM = 0.0f;
         lastRampTime = millis();
+
+        // Initialize mutex
+        motorMutex = xSemaphoreCreateMutex();
     }
 
 public:
     MotorControlCommon() = default;
+    virtual ~MotorControlCommon()
+    {
+        if (motorMutex != nullptr)
+        {
+            vSemaphoreDelete(motorMutex);
+        }
+    }
 
     int getMaxRPM() const { return max_rpm; }
 
@@ -68,6 +88,68 @@ public:
         if (rpm == 0)
             return 0.0f;
         return constrain(rpm, -max_rpm, max_rpm) / float(max_rpm);
+    }
+
+    /**
+     * @brief Set the desired motor power (thread-safe).
+     */
+    void setDesiredPercent(float pct)
+    {
+        if (motorMutex != nullptr && xSemaphoreTake(motorMutex, pdMS_TO_TICKS(5)) == pdTRUE)
+        {
+            requestedPercent = constrain(pct, -1.0f, 1.0f);
+            xSemaphoreGive(motorMutex);
+        }
+    }
+
+    /**
+     * @brief Get the current output power (thread-safe).
+     */
+    float getOutputPercent()
+    {
+        float val = 0.0f;
+        if (motorMutex != nullptr && xSemaphoreTake(motorMutex, pdMS_TO_TICKS(5)) == pdTRUE)
+        {
+            val = outputPercent;
+            xSemaphoreGive(motorMutex);
+        }
+        return val;
+    }
+
+    /**
+     * @brief Emergency stop the motor (thread-safe).
+     */
+    void emergencyStop()
+    {
+        if (motorMutex != nullptr && xSemaphoreTake(motorMutex, pdMS_TO_TICKS(5)) == pdTRUE)
+        {
+            emergencyStopFlag = true;
+            outputPercent = 0.0f;
+            requestedPercent = 0.0f;
+            xSemaphoreGive(motorMutex);
+        }
+        // Immediately apply stop to hardware
+        applyOutput();
+    }
+
+    /**
+     * @brief Process motor updates (ramp and apply output). Call from RTOS task.
+     */
+    void process(float accelRate)
+    {
+        if (motorMutex != nullptr && xSemaphoreTake(motorMutex, pdMS_TO_TICKS(5)) == pdTRUE)
+        {
+            if (emergencyStopFlag)
+            {
+                outputPercent = 0.0f;
+            }
+            else
+            {
+                outputPercent = ramp(requestedPercent, accelRate);
+            }
+            xSemaphoreGive(motorMutex);
+        }
+        applyOutput();
     }
 
     /**
@@ -139,4 +221,14 @@ public:
 
         return int(omega * 156.25f); // 156.25 for 384, 312.5 for 192, 1250 for 48
     }
+
+    // ISR for encoder A channel
+    static void IRAM_ATTR encoderISR(void *arg)
+    {
+        MotorControlCommon *motor = static_cast<MotorControlCommon *>(arg);
+        motor->readEncoder();
+    }
+
+    // Virtual method for hardware-specific output
+    virtual void applyOutput() = 0;
 };

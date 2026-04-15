@@ -93,6 +93,8 @@ Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int t
     // Initialize the Mutex
     driveMutex = xSemaphoreCreateMutex();
     stopSemaphore = xSemaphoreCreateBinary();
+    driveTaskHandle = nullptr;
+    isSafe = true;
 }
 
 void Drive::setupMotors(uint8_t lidx, uint8_t ridx)
@@ -149,8 +151,8 @@ void Drive::setupMotors(uint8_t lidx, uint8_t ridx, uint8_t left_enc_a_pin, uint
  */
 void Drive::setStickPwr(int8_t leftY, int8_t rightX)
 {
-    // Try to take the Mutex. Wait up to 10ms if busy
-    if (xSemaphoreTake(driveMutex, pdMS_TO_TICKS(5)) == pdTRUE)
+    // Take the mutex to protect shared stick state from the drive task.
+    if (driveMutex != nullptr && xSemaphoreTake(driveMutex, pdMS_TO_TICKS(5)) == pdTRUE)
     {
         // left stick all the way forward is 0, backward is 255
         // +: forward, -: backward. needs to be negated so that forward is forward and v.v.; subtracting 1 bumps into correct range
@@ -172,10 +174,9 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX)
             stickTurn = (stickTurn - STICK_DEADZONE) / (1 - STICK_DEADZONE);
         else if (stickTurn < 0)
             stickTurn = (stickTurn + STICK_DEADZONE) / (1 - STICK_DEADZONE);
-    }
 
-    // Release the Mutex so the motor task can see new values
-    xSemaphoreGive(driveMutex);
+        xSemaphoreGive(driveMutex);
+    }
 }
 
 float Drive::getForwardPower()
@@ -197,23 +198,23 @@ void Drive::driveTaskWrapper(void *pvParameters)
 void Drive::driveTask()
 {
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xFrequency = pdMS_TO_TICK(20); // 20ms loop time, adjust as needed
+    const TickType_t xFrequency = pdMS_TO_TICKS(20); // 20ms loop time, adjust as needed
 
     while (true)
     {
-        // Check emergency stop Semaphore
-        if (xSemaphoreTake(stopSemaphore, 0) == pdTRUE)
+        // Immediate emergency stop request from ISR.
+        if (stopSemaphore != nullptr && xSemaphoreTake(stopSemaphore, 0) == pdTRUE)
         {
             this->emergencyStop();
         }
 
-        // Run standard update logic
+        // Run standard update logic in the periodic drive task.
         this->update();
 
-        // Feed the Watchdog
+        // Feed the Watchdog while the task is alive.
         esp_task_wdt_reset();
 
-        // Maintain precise timiing
+        // Maintain precise periodic timing.
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
     }
 }
@@ -380,18 +381,17 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr)
 
 void Drive::emergencyStop()
 {
-    // M1->writelow(), M2->writelow();
-    // M1.writelow(), M2.writelow();
+    isSafe = false;
 
     if (motorInterfaceType == pwm)
     {
-        pwmM1.write(0.0f);
-        pwmM2.write(0.0f);
+        pwmM1.emergencyStop();
+        pwmM2.emergencyStop();
     }
     else
     {
-        serialM1.writeRaw(0);
-        serialM2.writeRaw(0);
+        serialM1.emergencyStop();
+        serialM2.emergencyStop();
     }
 }
 
@@ -501,7 +501,7 @@ void Drive::printCsvInfo()
  */
 void Drive::update()
 {
-    if (xSemaphoreTake(driveMutex, pdMS_TO_TICK(5)) == pdTRUE)
+    if (driveMutex != nullptr && xSemaphoreTake(driveMutex, pdMS_TO_TICKS(5)) == pdTRUE)
     {
         const bool isRunningback = (botType == runningback);
         const float tankPct = isRunningback ? RB_TANK_MODE_PCT : TANK_MODE_PCT;
@@ -510,50 +510,82 @@ void Drive::update()
         // Generate turning motion
         generateMotionValues(tankPct);
 
-        // Ramp in normalized percent space [-1, 1]
-        if (motorInterfaceType == pwm)
-        {
-            requestedMotorPower[0] = pwmM1.ramp(requestedMotorPower[0], accelRate);
-            requestedMotorPower[1] = pwmM2.ramp(requestedMotorPower[1], accelRate);
-        }
-        else
-        {
-            requestedMotorPower[0] = serialM1.ramp(requestedMotorPower[0], accelRate);
-            requestedMotorPower[1] = serialM2.ramp(requestedMotorPower[1], accelRate);
-        }
-
-        // Deadband (percent-space)
+        // Apply deadband (percent-space)
         const float deadbandPct = float(MOTOR_ZERO_OFFST) / 2047.0f;
         requestedMotorPower[0] = (fabs(requestedMotorPower[0]) < deadbandPct) ? 0.0f : requestedMotorPower[0];
         requestedMotorPower[1] = (fabs(requestedMotorPower[1]) < deadbandPct) ? 0.0f : requestedMotorPower[1];
 
-        // Track ramp output for debugging/turn model
-        lastRampPower[0] = requestedMotorPower[0];
-        lastRampPower[1] = requestedMotorPower[1];
-
-        // Write output
+        // Set desired power to motors (thread-safe, ISR-safe)
         if (motorInterfaceType == pwm)
         {
-            pwmM1.write(requestedMotorPower[0]);
-            pwmM2.write(requestedMotorPower[1]);
-
-            requestedMotorPowerSerial[0] = int(requestedMotorPower[0] * 2047.0f);
-            requestedMotorPowerSerial[1] = int(requestedMotorPower[1] * 2047.0f);
+            pwmM1.setDesiredPercent(requestedMotorPower[0]);
+            pwmM2.setDesiredPercent(requestedMotorPower[1]);
+            // Process motors in RTOS task context (ramping and output via semaphore)
+            pwmM1.process(accelRate);
+            pwmM2.process(accelRate);
         }
         else
         {
-            requestedMotorPowerSerial[0] = int(requestedMotorPower[0] * 2047.0f);
-            requestedMotorPowerSerial[1] = int(requestedMotorPower[1] * 2047.0f);
-
-            serialM1.writeRaw(requestedMotorPowerSerial[0]);
-            serialM2.writeRaw(requestedMotorPowerSerial[1]);
+            serialM1.setDesiredPercent(requestedMotorPower[0]);
+            serialM2.setDesiredPercent(requestedMotorPower[1]);
+            // Process motors in RTOS task context (ramping and output via semaphore)
+            serialM1.process(accelRate);
+            serialM2.process(accelRate);
         }
 
         trackingMotorPower[0] = requestedMotorPower[0];
         trackingMotorPower[1] = requestedMotorPower[1];
+
+        xSemaphoreGive(driveMutex);
+    }
+}
+
+bool Drive::createDriveTask(const char *taskName, UBaseType_t priority, uint32_t stackDepthWords, BaseType_t core)
+{
+    if (driveTaskHandle != nullptr)
+    {
+        return true;
     }
 
-    xSemaphoreGive(driveMutex);
+    if (driveMutex == nullptr)
+    {
+        driveMutex = xSemaphoreCreateMutex();
+    }
+    if (stopSemaphore == nullptr)
+    {
+        stopSemaphore = xSemaphoreCreateBinary();
+    }
+
+    if (driveMutex == nullptr || stopSemaphore == nullptr)
+    {
+        return false;
+    }
+
+    BaseType_t result = xTaskCreatePinnedToCore(
+        Drive::driveTaskWrapper,
+        taskName,
+        stackDepthWords,
+        this,
+        priority,
+        &driveTaskHandle,
+        core);
+
+    return (result == pdPASS);
+}
+
+void Drive::stopDriveTask()
+{
+    if (driveTaskHandle != nullptr)
+    {
+        vTaskDelete(driveTaskHandle);
+        driveTaskHandle = nullptr;
+    }
+}
+
+bool Drive::setupEmergencyStop(uint8_t pin, int mode)
+{
+    attachInterruptArg(pin, Drive::collision_ISR, this, mode);
+    return true;
 }
 
 int Drive::getMotorWifiValue(int motorRequested)
@@ -565,22 +597,6 @@ int Drive::getMotorWifiValue(int motorRequested)
         valueToReturn = value;
     }
     return valueToReturn;
-}
-
-void Drive::emergencyStop()
-{
-    isSafe = false; // Set the global abort flag
-
-    if (motorInterfaceType == pwm)
-    {
-        pwmM1.write(0.0f);
-        pwmM2.write(0.0f);
-    }
-    else
-    {
-        serialM1.writeRaw(0);
-        serialM2.writeRaw(0);
-    }
 }
 
 void IRAM_ATTR Drive::collision_ISR(void *arg)
