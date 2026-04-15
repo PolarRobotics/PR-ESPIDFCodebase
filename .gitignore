@@ -5,6 +5,8 @@ sdkconfig.old
 .vscode
 !.vscode/launch.json
 
+# dependencies.lock updates everytime so there is no point tracking it
+dependencies.lock
 
 .config
 *.o
