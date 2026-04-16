@@ -2,23 +2,10 @@
   "configurations": [
     {
       "name": "ESP-IDF",
-      "includePath": [
-        "${config:idf.espIdfPath}/components/**",
-        "${workspaceFolder}/managed_components/**",
-        "${workspaceFolder}/**"
-      ],
-      "browse": {
-        "path": [
-          "${config:idf.espIdfPath}/components",
-          "${workspaceFolder}/managed_components",
-          "${workspaceFolder}"
-        ]
-      },
-      "intelliSenseMode": "linux-gcc-x64",
-      "compilerPath": "/usr/bin/gcc",
+      "compileCommands": "${workspaceFolder}/build/robot/compile_commands.json",
+      "configurationProvider": "idf.espIdf",
       "cStandard": "c17",
-      "cppStandard": "gnu++17",
-      "compileCommands": "/workspaces/PR-ESPIDFCodebase/build/robot/compile_commands.json"
+      "cppStandard": "gnu++17"
     }
   ],
   "version": 4

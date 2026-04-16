@@ -25,9 +25,7 @@
   "git.confirmSync": false,
   "git.autofetch": true,
   "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.organizeImports": "explicit"
-  },
+  "editor.codeActionsOnSave": {},
   "editor.rulers": [
     80,
     120
@@ -49,7 +47,6 @@
     "board/esp32-bridge.cfg"
   ],
   "C_Cpp.intelliSenseEngine": "default",
-  "C_Cpp.default.configurationProvider": "esp-idf",
   "C_Cpp.errorSquiggles": "enabled",
   "C_Cpp.autocompleteAddParentheses": true,
   "C_Cpp.formatting": "clangFormat",
