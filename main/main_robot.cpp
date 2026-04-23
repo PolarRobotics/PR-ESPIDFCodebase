@@ -47,6 +47,7 @@ static const char *TAG = "MainRobot";
 // Utilities Includes
 #include <ConfigManager.h>
 #include <TackleSensor.h>
+#include <PRConsole.h>
 
 // Sabertooth USB Serial Library
 #include <sabertoothinst.h>
@@ -132,6 +133,8 @@ extern "C" void main_app(void)
   ESP_LOGI(TAG, "%s", config.toString().c_str());
   robotType = config.getBotType();
   driveParams = config.getDriveParams();
+
+  startConsole(config);
 
   // Drive motor identifiers:
   // - Packet Serial robots: use Sabertooth motor indices (M1_IDX/M2_IDX)
