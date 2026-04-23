@@ -243,9 +243,6 @@ void QuarterbackTurret::action()
         stickFlywheel = (ps5.LStickY() / 127.5f);
         stickTurret = (ps5.RStickX() / 127.5f);
 
-        // Serial.print(F("stickTurret: "));
-        // Serial.println(stickTurret);
-
         if (mode == combine)
         {
           //* Combine "Macro" Mode
@@ -316,8 +313,6 @@ void QuarterbackTurret::action()
                 manualHeadingIncrementCount++;
                 manualHeadingIncrementCount %= 4;
               }
-              // Serial.print(F("--target abs heading: "));
-              // Serial.println(targetAbsoluteHeading);
               calculateHeadingMag();
               holdTurretStill();
             }
@@ -381,8 +376,6 @@ void QuarterbackTurret::action()
 // positive direction is also positive encoder direction, and vice versa
 void QuarterbackTurret::setTurretSpeed(float absoluteSpeed, bool overrideEncoderTare)
 {
-  // Serial.print(F("setTurretSpeed called with speed = "));
-  // Serial.println(absoluteSpeed);
   if (enabled)
   {
     targetTurretSpeed = constrain(absoluteSpeed, -1.0, 1.0);
@@ -673,14 +666,12 @@ void QuarterbackTurret::moveAssemblySubroutine()
 // should only be called with known good state
 void QuarterbackTurret::moveCradleSubroutine()
 {
-  // Serial.print(F("target neq current  | "));
   if (targetCradleState == forward)
   {
     // move forwards
     cradleActuator.write(1.0);
     cradleStartTime = millis();
     cradleMoving = true;
-    // Serial.print(F("cradle moving forward  | "));
   }
   else if (targetCradleState == back)
   {
@@ -688,7 +679,6 @@ void QuarterbackTurret::moveCradleSubroutine()
     cradleActuator.write(-1.0);
     cradleStartTime = millis();
     cradleMoving = true;
-    // Serial.print(F("cradle moving backward  | "));
   }
 }
 
@@ -699,20 +689,6 @@ void QuarterbackTurret::moveCradle(CradleState state, bool force)
     if (!cradleMoving)
     {
       targetCradleState = state;
-
-      // Serial.print(F("current state: "));
-      // if (currentCradleState == forward) {
-      //   Serial.print(F("forward  | "));
-      // } else if (currentCradleState == back) {
-      //   Serial.print(F("backward  | "));
-      // }
-
-      // Serial.print(F("target state: "));
-      // if (targetCradleState == forward) {
-      //   Serial.print(F("forward  | "));
-      // } else if (targetCradleState == back) {
-      //   Serial.print(F("backward  | "));
-      // }
 
       if (targetCradleState != currentCradleState || force)
       {
@@ -733,25 +709,18 @@ void QuarterbackTurret::moveCradle(CradleState state, bool force)
         cradleMoving = false;
         cradleActuator.write(0);
       }
-
-      // Serial.print(F("past delay? "));
-      // Serial.print((millis() - cradleStartTime) > QB_CRADLE_TRAVEL_DELAY);
-      // Serial.print(F(" | "));
     }
     else if ((millis() - cradleStartTime) > QB_CRADLE_TRAVEL_DELAY)
     {
       currentCradleState = targetCradleState;
       cradleMoving = false;
       cradleActuator.write(0);
-      // Serial.print(F("cradle stopped  | "));
     }
   }
   else
   {
     cradleActuator.write(0);
   }
-
-  // Serial.println();
 }
 #pragma endregion
 
@@ -1127,7 +1096,6 @@ bool QuarterbackTurret::testForDisableOrStop()
   }
   else
   {
-    // Serial.println(F("not disabling or stopping"));
     return false;
   }
 }
@@ -1343,13 +1311,6 @@ void QuarterbackTurret::calibMagnetometer()
     mag_yHalf += abs(mag_yMin);
 
     /*DEBUGGING PRINTOUTS*/
-    // Serial.print("X:  "); Serial.print(lis3mdl.x);
-    // Serial.print("\tY:  "); Serial.print(lis3mdl.y);
-    // Serial.print("\tMinX:  "); Serial.print(mag_xMin);
-    // Serial.print("\tMaxX:  "); Serial.print(mag_xMax);
-    // Serial.print("\tMinY:  "); Serial.print(mag_yMin);
-    // Serial.print("\tMaxY:  "); Serial.print(mag_yMax);
-    // Serial.println();
   }
 
   setTurretSpeed(0, true);
@@ -1467,16 +1428,6 @@ void QuarterbackTurret::calculateHeadingMag()
       headingDeg = ((int)headingDeg) % 360;
 
     /*DEBUGGING PRINTOUTS*/
-    // Serial.print("X:  "); Serial.print(lis3mdl.x);
-    // Serial.print("\tY:  "); Serial.print(lis3mdl.y);
-    // Serial.print("\tMinX:  "); Serial.print(mag_xMin);
-    // Serial.print("\tMaxX:  "); Serial.print(mag_xMax);
-    // Serial.print("\tMinY:  "); Serial.print(mag_yMin);
-    // Serial.print("\tMaxY:  "); Serial.print(mag_yMax);
-    // Serial.print("\txAdapt:  "); Serial.print(mag_xVal);
-    // Serial.print("\tyAdapt:  "); Serial.print(mag_yVal);
-    // Serial.print("\tHeading [deg]:   "); Serial.print(headingDeg);
-    // Serial.println();
   }
 }
 #pragma endregion
@@ -1667,10 +1618,5 @@ void QuarterbackTurret::updateReadMotorValues()
       motor2Value = (recievedMessage.substring(recievedMessage.indexOf('&') + 1)).toInt();
     }
   }
-  // Serial.print("Motor1: ");
-  // Serial.print(motor1Value);
-  // Serial.print("\tMotor2: ");
-  // Serial.print(motor2Value);
-  // Serial.println();
 }
 #pragma endregion
