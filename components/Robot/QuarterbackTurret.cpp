@@ -1,4 +1,7 @@
 #include <QuarterbackTurret.h>
+#include "esp_log.h"
+
+static const char *TAG = "QuarterbackTurret";
 
 // This for some reason has to be declared in the .cpp file and not the .h file so that it does not conflict with the same declaration in other .h files
 HardwareSerial Uart_Turret(1); // UART2
@@ -289,10 +292,7 @@ void QuarterbackTurret::action()
 
           // if (utmsCtr <= UTMS_CTR_MAX) {
           //   utmsCtr = 0;
-          Serial.print(F("combine mode -- ctec = "));
-          Serial.print(currentTurretEncoderCount);
-          Serial.print(F("; ttec = "));
-          Serial.println(targetTurretEncoderCount);
+          ESP_LOGI(TAG, "combine mode -- ctec = %ld; ttec = %ld", (long)currentTurretEncoderCount, (long)targetTurretEncoderCount);
           // } else {
           //   utmsCtr++;
           // }
@@ -414,18 +414,8 @@ void QuarterbackTurret::moveTurret(int16_t heading, float power, bool relativeTo
 
 void QuarterbackTurret::moveTurret(int16_t heading, TurretUnits units, float power, bool relativeToRobot, bool ramp)
 {
-  Serial.print(F("moveTurret called with heading = "));
-  Serial.print(heading);
-  Serial.print(F(", units = "));
-  if (units == degrees)
-  {
-    Serial.print(F("degrees, rel = "));
-  }
-  else
-  {
-    Serial.print(F("counts, rel = "));
-  }
-  Serial.println(relativeToRobot);
+  const char *unitLabel = (units == degrees) ? "degrees" : "counts";
+  ESP_LOGI(TAG, "moveTurret called with heading = %d, units = %s, rel = %d", heading, unitLabel, relativeToRobot);
   if (enabled)
   {
 
@@ -500,12 +490,11 @@ void QuarterbackTurret::updateTurretMotionStatus()
 {
   // if (utmsCtr >= UTMS_CTR_MAX) {
   //   utmsCtr = 0;
-  Serial.print(F("update called with ctec = "));
-  Serial.print(currentTurretEncoderCount);
-  Serial.print(F("; ttec = "));
-  Serial.print(targetTurretEncoderCount);
-  Serial.print(F("; error (ct) = "));
-  Serial.println(fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) - targetTurretEncoderCount));
+  ESP_LOGI(TAG,
+           "update called with ctec = %ld; ttec = %ld; error (ct) = %.2f",
+           (long)currentTurretEncoderCount,
+           (long)targetTurretEncoderCount,
+           fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) - targetTurretEncoderCount));
   // } else {
   //   utmsCtr++;
   // }
@@ -899,21 +888,17 @@ void QuarterbackTurret::handoff()
 void QuarterbackTurret::testRoutine()
 {
   this->runningMacro = true;
-  Serial.println(F("test routine called"));
-  Serial.println(F("initial ctec: "));
-  Serial.println(currentTurretEncoderCount);
+  ESP_LOGI(TAG, "test routine called");
+  ESP_LOGI(TAG, "initial ctec: %ld", (long)currentTurretEncoderCount);
   moveTurretAndWait(90);
   delay(500);
-  Serial.println(F("ctec after turn to 90 deg: "));
-  Serial.println(currentTurretEncoderCount);
+  ESP_LOGI(TAG, "ctec after turn to 90 deg: %ld", (long)currentTurretEncoderCount);
   moveTurretAndWait(-90);
   delay(500);
-  Serial.println(F("ctec after turn to -90 deg: "));
-  Serial.println(currentTurretEncoderCount);
+  ESP_LOGI(TAG, "ctec after turn to -90 deg: %ld", (long)currentTurretEncoderCount);
   moveTurretAndWait(180);
   delay(500);
-  Serial.println(F("ctec after turn to 180 deg: "));
-  Serial.println(currentTurretEncoderCount);
+  ESP_LOGI(TAG, "ctec after turn to 180 deg: %ld", (long)currentTurretEncoderCount);
   this->runningMacro = false;
 }
 
@@ -922,10 +907,9 @@ void QuarterbackTurret::zeroTurret()
   this->runningMacro = true;
 
   // Printouts for starting zeroing
-  Serial.println(F("zero called"));
-  Serial.print(F("STARTING count: "));
-  Serial.println(currentTurretEncoderCount);
-  Serial.println(F("Resetting count to 0"));
+  ESP_LOGI(TAG, "zero called");
+  ESP_LOGI(TAG, "STARTING count: %ld", (long)currentTurretEncoderCount);
+  ESP_LOGI(TAG, "Resetting count to 0");
   currentTurretEncoderCount = 0;
   targetRelativeHeading = 0;
 
@@ -939,14 +923,10 @@ void QuarterbackTurret::zeroTurret()
       !testForDisableOrStop()                                       // routine will exit if emergency stop or disable buttons are triggered
   )
   {
-    Serial.print(F("zeroing, read = "));
-    Serial.print(digitalRead(turretLaserPin));
-    Serial.print(F("; cte_count: "));
-    Serial.println(currentTurretEncoderCount);
+    ESP_LOGI(TAG, "zeroing, read = %d; cte_count: %ld", digitalRead(turretLaserPin), (long)currentTurretEncoderCount);
   }
 
-  Serial.print(F("laser should read high rn: read = "));
-  Serial.println(digitalRead(turretLaserPin));
+  ESP_LOGI(TAG, "laser should read high rn: read = %d", digitalRead(turretLaserPin));
 
   // get values as soon as the laser reads high
   int32_t risingEdgeEncoderCount = currentTurretEncoderCount;
@@ -958,14 +938,10 @@ void QuarterbackTurret::zeroTurret()
       !testForDisableOrStop()                                                                  // exit if emergency stop or disable buttons are triggered
   )
   {
-    Serial.print(F("zeroing (stage 2), read = "));
-    Serial.print(digitalRead(turretLaserPin));
-    Serial.print(F("; cte_count: "));
-    Serial.println(currentTurretEncoderCount);
+    ESP_LOGI(TAG, "zeroing (stage 2), read = %d; cte_count: %ld", digitalRead(turretLaserPin), (long)currentTurretEncoderCount);
   }
 
-  Serial.print(F("laser should read low rn: read = "));
-  Serial.println(digitalRead(turretLaserPin));
+  ESP_LOGI(TAG, "laser should read low rn: read = %d", digitalRead(turretLaserPin));
 
   int32_t fallingEdgeEncoderCount = currentTurretEncoderCount;
   int32_t fallingEdgeTimestamp = millis();
@@ -973,14 +949,8 @@ void QuarterbackTurret::zeroTurret()
   // stop turret
   setTurretSpeed(0);
 
-  Serial.print(F("rising: count: "));
-  Serial.print(risingEdgeEncoderCount);
-  Serial.print(F(", time: "));
-  Serial.println(risingEdgeTimestamp);
-  Serial.print(F("falling: count: "));
-  Serial.print(fallingEdgeEncoderCount);
-  Serial.print(F(", time: "));
-  Serial.println(fallingEdgeTimestamp);
+  ESP_LOGI(TAG, "rising: count: %ld, time: %ld", (long)risingEdgeEncoderCount, (long)risingEdgeTimestamp);
+  ESP_LOGI(TAG, "falling: count: %ld, time: %ld", (long)fallingEdgeEncoderCount, (long)fallingEdgeTimestamp);
 
   // Here lastTurretEncoderCount is used as the value of currentTurretEncoderCount in the previous iteration of the loop
   int32_t lastTurretEncoderCount = -currentTurretEncoderCount; // just something different than current
@@ -1003,12 +973,11 @@ void QuarterbackTurret::zeroTurret()
       stopCounter = 0;
     }
 
-    Serial.print(F("last ct: "));
-    Serial.print(lastTurretEncoderCount);
-    Serial.print(F(", current ct: "));
-    Serial.print(currentTurretEncoderCount);
-    Serial.print(F(", stopCt: "));
-    Serial.println(stopCounter);
+    ESP_LOGI(TAG,
+             "last ct: %ld, current ct: %ld, stopCt: %u",
+             (long)lastTurretEncoderCount,
+             (long)currentTurretEncoderCount,
+             stopCounter);
 
     lastTurretEncoderCount = currentTurretEncoderCount; // update last count
 
@@ -1037,7 +1006,7 @@ void QuarterbackTurret::zeroTurret()
 
   // now, to actually do this, we start moving the motor (which was stopped), but in the opposite direction.
 
-  Serial.println(F("motor stopped, now moving in opposite direction"));
+  ESP_LOGI(TAG, "motor stopped, now moving in opposite direction");
 
   setTurretSpeed(-QB_HOME_PCT);
 
@@ -1054,12 +1023,11 @@ void QuarterbackTurret::zeroTurret()
       !testForDisableOrStop()               // exit if emergency stop or disable buttons are triggered
   )
   {
-    Serial.print(F("zeroing (stage 3), read = "));
-    Serial.print(digitalRead(turretLaserPin));
-    Serial.print(F("; cte_count: "));
-    Serial.print(currentTurretEncoderCount);
-    Serial.print(F("; fall_ct: "));
-    Serial.println(fallingEdgeEncoderCount);
+    ESP_LOGI(TAG,
+             "zeroing (stage 3), read = %d; cte_count: %ld; fall_ct: %ld",
+             digitalRead(turretLaserPin),
+             (long)currentTurretEncoderCount,
+             (long)fallingEdgeEncoderCount);
     delay(5);
   }
 
@@ -1075,10 +1043,7 @@ void QuarterbackTurret::zeroTurret()
   // calculate the error due to slop
   slopError = fallingEdgeEncoderCount - currentTurretEncoderCount;
 
-  Serial.print(F("stop error: "));
-  Serial.print(stopError);
-  Serial.print(F("; slop error: "));
-  Serial.println(slopError);
+  ESP_LOGI(TAG, "stop error: %ld; slop error: %ld", (long)stopError, (long)slopError);
 
   // then, we tare the current count to the third point (falling edge), since we assume it is there
   currentTurretEncoderCount = fallingEdgeEncoderCount;
@@ -1087,8 +1052,7 @@ void QuarterbackTurret::zeroTurret()
   // int32_t targetCount = ((fallingEdgeEncoderCount + risingEdgeEncoderCount) / 2) - stopError; // for if we change directions again
   int32_t targetCount = ((fallingEdgeEncoderCount + risingEdgeEncoderCount) / 2) + (stopError * QB_TURRET_HOME_STOP_FACTOR);
 
-  Serial.print(F("target count: "));
-  Serial.println(targetCount);
+  ESP_LOGI(TAG, "target count: %ld", (long)targetCount);
 
   // finally, move to the target count, then stop
   // setTurretSpeed(QB_HOME_PCT);
@@ -1098,14 +1062,12 @@ void QuarterbackTurret::zeroTurret()
       currentTurretEncoderCount > targetCount &&
       !testForDisableOrStop())
   {
-    Serial.print(F("zeroing (stage 4), read = "));
-    Serial.print(digitalRead(turretLaserPin));
-    Serial.print(F("; cte_count: "));
-    Serial.print(currentTurretEncoderCount);
-    Serial.print(F("; target_ct: "));
-    Serial.print(targetCount);
-    Serial.print(F("; current_ct > target_ct? = "));
-    Serial.println(currentTurretEncoderCount > targetCount);
+    ESP_LOGI(TAG,
+             "zeroing (stage 4), read = %d; cte_count: %ld; target_ct: %ld; current_ct > target_ct? = %d",
+             digitalRead(turretLaserPin),
+             (long)currentTurretEncoderCount,
+             (long)targetCount,
+             currentTurretEncoderCount > targetCount);
     delay(5);
   }
 
@@ -1113,7 +1075,7 @@ void QuarterbackTurret::zeroTurret()
   setTurretSpeed(0);
   currentRelativeHeading = 0;
   currentTurretEncoderCount = 0;
-  Serial.println(F("zeroed"));
+  ESP_LOGI(TAG, "zeroed");
 
   // Now that the encoder is zeroed we can just zero the magnetometer
   if (useMagnetometer)
@@ -1145,7 +1107,7 @@ bool QuarterbackTurret::testForDisableOrStop()
   if (ps5.Touchpad())
   {
     emergencyStop();
-    Serial.println(F("emergency stopping"));
+    ESP_LOGW(TAG, "emergency stopping");
     return true;
   }
   //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
@@ -1154,12 +1116,12 @@ bool QuarterbackTurret::testForDisableOrStop()
     if (!enabled)
     {
       setEnabled(true);
-      Serial.println(F("setting enabled"));
+      ESP_LOGI(TAG, "setting enabled");
     }
     else
     {
       setEnabled(false);
-      Serial.println(F("setting disabled"));
+      ESP_LOGW(TAG, "setting disabled");
     }
     return true;
   }
@@ -1188,22 +1150,18 @@ void QuarterbackTurret::emergencyStop()
 void QuarterbackTurret::printDebug()
 {
   /*
-  Serial.print(F("enabled: "));
-  Serial.print(enabled);
-  Serial.print(F(" | stickTurret: "));
-  Serial.print(stickTurret);
-  Serial.print(F(" | stickFlywheel: "));
-  Serial.print(stickFlywheel);
-  Serial.print(F(" | currentTurretSpeed: "));
-  Serial.println(currentTurretSpeed);
+  ESP_LOGI(TAG, "enabled: %d | stickTurret: %.3f | stickFlywheel: %.3f | currentTurretSpeed: %.3f",
+           enabled,
+           stickTurret,
+           stickFlywheel,
+           currentTurretSpeed);
   */
   if (enabled)
   {
     /*
-    Serial.print(F("turretLaserState: "));
-    Serial.print(digitalRead(turretLaserPin));
-    Serial.print(F("; currentTurretEncoderCount: "));
-    Serial.println(currentTurretEncoderCount);
+    ESP_LOGI(TAG, "turretLaserState: %d; currentTurretEncoderCount: %ld",
+             digitalRead(turretLaserPin),
+             (long)currentTurretEncoderCount);
     */
   }
 }
@@ -1221,102 +1179,98 @@ void QuarterbackTurret::magnetometerSetup()
     // hardware I2C mode, can pass in address & alt Wire
     // if (! lis3mdl.begin_SPI(LIS3MDL_CS)) {  // hardware SPI mode
     // if (! lis3mdl.begin_SPI(LIS3MDL_CS, LIS3MDL_CLK, LIS3MDL_MISO, LIS3MDL_MOSI)) { // soft SPI
-    Serial.println("Failed to find LIS3MDL chip");
+    ESP_LOGE(TAG, "Failed to find LIS3MDL chip");
   }
-  Serial.println("LIS3MDL Found!");
+  ESP_LOGI(TAG, "LIS3MDL Found!");
 
   lis3mdl.setPerformanceMode(LIS3MDL_MEDIUMMODE);
-  Serial.print("Performance mode set to: ");
   switch (lis3mdl.getPerformanceMode())
   {
   case LIS3MDL_LOWPOWERMODE:
-    Serial.println("Low");
+    ESP_LOGI(TAG, "Performance mode set to: Low");
     break;
   case LIS3MDL_MEDIUMMODE:
-    Serial.println("Medium");
+    ESP_LOGI(TAG, "Performance mode set to: Medium");
     break;
   case LIS3MDL_HIGHMODE:
-    Serial.println("High");
+    ESP_LOGI(TAG, "Performance mode set to: High");
     break;
   case LIS3MDL_ULTRAHIGHMODE:
-    Serial.println("Ultra-High");
+    ESP_LOGI(TAG, "Performance mode set to: Ultra-High");
     break;
   }
 
   lis3mdl.setOperationMode(LIS3MDL_CONTINUOUSMODE);
-  Serial.print("Operation mode set to: ");
   // Single shot mode will complete conversion and go into power down
   switch (lis3mdl.getOperationMode())
   {
   case LIS3MDL_CONTINUOUSMODE:
-    Serial.println("Continuous");
+    ESP_LOGI(TAG, "Operation mode set to: Continuous");
     break;
   case LIS3MDL_SINGLEMODE:
-    Serial.println("Single mode");
+    ESP_LOGI(TAG, "Operation mode set to: Single mode");
     break;
   case LIS3MDL_POWERDOWNMODE:
-    Serial.println("Power-down");
+    ESP_LOGI(TAG, "Operation mode set to: Power-down");
     break;
   }
 
   lis3mdl.setDataRate(LIS3MDL_DATARATE_155_HZ);
   // You can check the datarate by looking at the frequency of the DRDY pin
-  Serial.print("Data rate set to: ");
   switch (lis3mdl.getDataRate())
   {
   case LIS3MDL_DATARATE_0_625_HZ:
-    Serial.println("0.625 Hz");
+    ESP_LOGI(TAG, "Data rate set to: 0.625 Hz");
     break;
   case LIS3MDL_DATARATE_1_25_HZ:
-    Serial.println("1.25 Hz");
+    ESP_LOGI(TAG, "Data rate set to: 1.25 Hz");
     break;
   case LIS3MDL_DATARATE_2_5_HZ:
-    Serial.println("2.5 Hz");
+    ESP_LOGI(TAG, "Data rate set to: 2.5 Hz");
     break;
   case LIS3MDL_DATARATE_5_HZ:
-    Serial.println("5 Hz");
+    ESP_LOGI(TAG, "Data rate set to: 5 Hz");
     break;
   case LIS3MDL_DATARATE_10_HZ:
-    Serial.println("10 Hz");
+    ESP_LOGI(TAG, "Data rate set to: 10 Hz");
     break;
   case LIS3MDL_DATARATE_20_HZ:
-    Serial.println("20 Hz");
+    ESP_LOGI(TAG, "Data rate set to: 20 Hz");
     break;
   case LIS3MDL_DATARATE_40_HZ:
-    Serial.println("40 Hz");
+    ESP_LOGI(TAG, "Data rate set to: 40 Hz");
     break;
   case LIS3MDL_DATARATE_80_HZ:
-    Serial.println("80 Hz");
+    ESP_LOGI(TAG, "Data rate set to: 80 Hz");
     break;
   case LIS3MDL_DATARATE_155_HZ:
-    Serial.println("155 Hz");
+    ESP_LOGI(TAG, "Data rate set to: 155 Hz");
     break;
   case LIS3MDL_DATARATE_300_HZ:
-    Serial.println("300 Hz");
+    ESP_LOGI(TAG, "Data rate set to: 300 Hz");
     break;
   case LIS3MDL_DATARATE_560_HZ:
-    Serial.println("560 Hz");
+    ESP_LOGI(TAG, "Data rate set to: 560 Hz");
     break;
   case LIS3MDL_DATARATE_1000_HZ:
-    Serial.println("1000 Hz");
+    ESP_LOGI(TAG, "Data rate set to: 1000 Hz");
     break;
   }
 
   lis3mdl.setRange(LIS3MDL_RANGE_4_GAUSS);
-  Serial.print("Range set to: ");
   switch (lis3mdl.getRange())
   {
   case LIS3MDL_RANGE_4_GAUSS:
-    Serial.println("+-4 gauss");
+    ESP_LOGI(TAG, "Range set to: +-4 gauss");
     break;
   case LIS3MDL_RANGE_8_GAUSS:
-    Serial.println("+-8 gauss");
+    ESP_LOGI(TAG, "Range set to: +-8 gauss");
     break;
   case LIS3MDL_RANGE_12_GAUSS:
-    Serial.println("+-12 gauss");
+    ESP_LOGI(TAG, "Range set to: +-12 gauss");
     break;
   case LIS3MDL_RANGE_16_GAUSS:
-    Serial.println("+-16 gauss");
+    ESP_LOGI(TAG, "Range set to: +-16 gauss");
     break;
   }
 
@@ -1413,10 +1367,10 @@ void QuarterbackTurret::calibMagnetometer()
 
   calculateHeadingMag();
 
-  Serial.print(F("Magnetometer reading after calib: "));
-  Serial.print(headingDeg);
-  Serial.print(F("\tEncoder after calib:"));
-  Serial.println(currentTurretEncoderCount);
+  ESP_LOGI(TAG,
+           "Magnetometer reading after calib: %.2f\tEncoder after calib:%ld",
+           headingDeg,
+           (long)currentTurretEncoderCount);
 
   // delay(5000);
 
@@ -1430,12 +1384,11 @@ void QuarterbackTurret::calibMagnetometer()
 
   calculateHeadingMag(); // calculate current value of magnetometer (headingDeg)
 
-  Serial.print("Target Abs Heading Before 0: ");
-  Serial.print(targetAbsoluteHeading);
-  Serial.print("\tNorth Heading Degrees: ");
   this->northHeadingDegrees = headingDeg; // + 45;
-  Serial.print(northHeadingDegrees);
-  Serial.println();
+  ESP_LOGI(TAG,
+           "Target Abs Heading Before 0: %.2f\tNorth Heading Degrees: %.2f",
+           targetAbsoluteHeading,
+           northHeadingDegrees);
 
   // delay(2000);
 
@@ -1443,7 +1396,7 @@ void QuarterbackTurret::calibMagnetometer()
   // headingDeg = 0;
   targetAbsoluteHeading = 0;
 
-  Serial.println("Magnetometer has been calibrated!");
+  ESP_LOGI(TAG, "Magnetometer has been calibrated!");
   eIntegral = 0;
   previousTime = millis();
 
@@ -1634,23 +1587,16 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
       ePrevious = 0;
     }
 
-    Serial.print("DeltaT: ");
-    Serial.print(deltaT);
-    Serial.print("\tError: [deg]:  ");
-    Serial.print(e);
-    Serial.print("\tP: ");
-    Serial.print((kp * e), 4);
-    Serial.print("\tI: ");
-    Serial.print((ki * eIntegral), 4);
-    Serial.print("\tD:\t");
-    Serial.print((kd * eDerivative), 4);
-    Serial.print("\tPWM Value: ");
-    Serial.print(u, 4);
-    Serial.print("\tCurrent [deg]: ");
-    Serial.print(current, 0);
-    Serial.print("\tTarget [deg]: ");
-    Serial.print(target);
-    Serial.println();
+    ESP_LOGI(TAG,
+             "DeltaT: %.2f\tError: [deg]: %d\tP: %.4f\tI: %.4f\tD:\t%.4f\tPWM Value: %.4f\tCurrent [deg]: %.0f\tTarget [deg]: %.2f",
+             deltaT,
+             e,
+             (kp * e),
+             (ki * eIntegral),
+             (kd * eDerivative),
+             u,
+             current,
+             target);
 
     // Update variables for next iteration
     previousTime = currentTime;
