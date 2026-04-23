@@ -1,5 +1,8 @@
 #include <Arduino.h>
 #include <ConfigManager.h>
+#include "esp_log.h"
+
+static const char *TAG = "WriteBotInfo";
 
 // Preferences preferences;
 ConfigManager config;
@@ -10,8 +13,7 @@ extern "C" void main_app(void)
 {
   initArduino();
 
-  Serial.begin(115200);
-  Serial.println(F("Writing Bot Type\n"));
+  ESP_LOGI(TAG, "Writing Bot Type\n");
 
 //* STANDARD BOT CONFIGURATION
 #ifndef BOT_INDEX
@@ -42,19 +44,19 @@ extern "C" void main_app(void)
 
   if (validConfig)
   {
-    Serial.println(F("Config write successful"));
+    ESP_LOGI(TAG, "Config write successful");
   }
   else
   {
-    Serial.println(F("Error writing bot config"));
+    ESP_LOGI(TAG, "Error writing bot config");
   }
 
   //* Read back for verification
-  Serial.println(F("Readback:"));
-  config.read();                   // read the configuration from eeprom
-  Serial.print(config.toString()); // print the configuration to the serial monitor
+  ESP_LOGI(TAG, "Readback:");
+  config.read();                                  // read the configuration from eeprom
+  ESP_LOGI(TAG, "%s", config.toString().c_str()); // print the configuration to the serial monitor
 
-  Serial.println(F("Done"));
+  ESP_LOGI(TAG, "Done");
 
   // Keep the app alive rather than returning from app_main (which would reboot)
   while (true)

@@ -41,6 +41,9 @@
 #define PREF_KEY "bt-mac" // preferences namespace, limited to 15 characters
 Preferences prefs;
 
+#include "esp_log.h"
+static const char *TAG = "Pairing";
+
 BluetoothSerial SerialBT;
 
 #define LOOP_DELAY 100
@@ -114,8 +117,7 @@ bool startDiscovery()
 {
   return SerialBT.discoverAsync([](BTAdvertisedDevice *pDevice)
                                 {   
-      Serial.print(F("Found a new device asynchronously: "));
-      Serial.println(pDevice->toString().c_str());
+      ESP_LOGI(TAG, "Found a new device asynchronously: %s", pDevice->toString().c_str());
 
       // Tests if the address of the device found is a controller, 
       // or if the device is named 'Wireless Controller'
@@ -143,10 +145,7 @@ void storeAddress(const char *addr, bool clear = false)
 
   // Store MAC Address
   size_t size = prefs.putString(PREF_KEY, str);
-  Serial.print(F("Storing MAC Address: "));
-  Serial.print(str.c_str());
-  Serial.print(F(", of size "));
-  Serial.println(size);
+  ESP_LOGI(TAG, "Storing MAC Address: %s, of size %d", str.c_str(), size);
   prefs.end();
 }
 
@@ -158,8 +157,7 @@ void getAddress(const char *&addr)
   static String storedAddress;
   prefs.begin(PREF_KEY, true); // true is read-only mode
   storedAddress = prefs.getString(PREF_KEY, "");
-  Serial.print(F("Retrieved MAC Address: "));
-  Serial.println(storedAddress.c_str());
+  ESP_LOGI(TAG, "Retrieved MAC Address: %s", storedAddress.c_str());
   prefs.end();
   if (storedAddress == "")
     addr = nullptr;
@@ -172,9 +170,6 @@ void getAddress(const char *&addr)
 /// @param discoverTime the time limit to repair to existing devices, or search for new devices, in milliseconds
 void activatePairing(bool doRePair, int discoverTime)
 {
-  Serial.begin(115200);
-  // pinMode(LED_BUILTIN, OUTPUT);
-
   // if we just returned a char*, it would be deleted and point to nowhere useful
   // so we have to pass in and mutate a (reference to a) char array.
   char discoveredAddr[MAC_ADDR_STR_LEN] = {0};
@@ -186,8 +181,7 @@ void activatePairing(bool doRePair, int discoverTime)
     // see if we have a stored MAC address and try to pair to it
     if (addrCharPtr != nullptr)
     {
-      Serial.print(F("Connecting to PS5 Controller @ "));
-      Serial.println(addrCharPtr);
+      ESP_LOGI(TAG, "Connecting to PS5 Controller @ %s", addrCharPtr);
       ps5.begin(addrCharPtr);
       int timer = 0;
 
@@ -207,7 +201,7 @@ void activatePairing(bool doRePair, int discoverTime)
       // return if we get a connection at this point
       if (ps5.isConnected())
       {
-        Serial.println(F("PS5 Controller Connected!"));
+        ESP_LOGI(TAG, "PS5 Controller Connected!");
         setBuiltInLED(true); // solid blue light when fully paired
         return;
       } // otherwise look for devices to pair with
@@ -217,12 +211,12 @@ void activatePairing(bool doRePair, int discoverTime)
   // begin broadcasting as "ESP32" as master role
   if (!SerialBT.begin("ESP32", true))
   {
-    Serial.println(F("SerialBT failed!")); // function returns false if failed
+    ESP_LOGE(TAG, "SerialBT failed!"); // function returns false if failed
     abort();
   }
   SerialBT.enableSSP(); // according to SRC of this code, doesn't seem to change anything
 
-  Serial.println(F("Searching for devices..."));
+  ESP_LOGI(TAG, "Searching for devices...");
   BTScanResults *btDeviceList = SerialBT.getScanResults(); // may be accessing from different threads!
 
   // Beginning of Asynchronous Discovery Process
@@ -245,16 +239,16 @@ void activatePairing(bool doRePair, int discoverTime)
       setBuiltInLED(inFirstBlink || inSecondBlink);
     }
 
-    Serial.println(F("Stopping discoverAsync... "));
+    ESP_LOGI(TAG, "Stopping discoverAsync... ");
     SerialBT.discoverAsyncStop();
-    Serial.println(F("discoverAsync stopped"));
+    ESP_LOGI(TAG, "discoverAsync stopped");
 
     // If we find devices, list them and try to pair if it is a valid controller.
     if (btDeviceList->getCount() > 0)
     {
       BTAddress addr;
       int channel = 0;
-      Serial.println(F("Found devices:"));
+      ESP_LOGI(TAG, "Found devices:");
       for (int i = 0; i < btDeviceList->getCount(); i++)
       {
         BTAdvertisedDevice *device = btDeviceList->getDevice(i);
@@ -262,37 +256,25 @@ void activatePairing(bool doRePair, int discoverTime)
         copyAddressToBuffer(addr, discoveredAddr, sizeof(discoveredAddr));
         addrCharPtr = discoveredAddr;
 
-        Serial.print("addrCharPtr: ");
-        Serial.println(addrCharPtr);
+        ESP_LOGI(TAG, "addrCharPtr: %s", addrCharPtr);
 
         // print out relevant controller details
-        // reminder that we need to use flash strings whenever possible, so don't try to collapse this
-        Serial.print(i);
-        Serial.print(F(" | "));
-        Serial.print(addrCharPtr);
-        Serial.print(F(" | "));
-        Serial.print(device->getName().c_str());
-        Serial.print(F(" | "));
-        Serial.println(device->getRSSI());
+        ESP_LOGI(TAG, "%d | %s | %s | %d", i, addrCharPtr, device->getName().c_str(), device->getRSSI());
 
-        Serial.print(F("Checking if device is one of our listed MAC addresses... "));
-        Serial.println(addressIsController(addrCharPtr) ? F("YES") : F("NO"));
+        ESP_LOGI(TAG, "Checking if device is one of our listed MAC addresses... %s", addressIsController(addrCharPtr) ? "YES" : "NO");
 
-        Serial.print(F("Checking if device name matches... "));
-        Serial.println((strcmp(device->getName().c_str(), "Wireless Controller") == 0) ? F("YES") : F("NO"));
+        ESP_LOGI(TAG, "Checking if device name matches... %s", (strcmp(device->getName().c_str(), "Wireless Controller") == 0) ? "YES" : "NO");
 
         if (addressIsController(addrCharPtr) || (strcmp(device->getName().c_str(), "Wireless Controller") == 0))
         {
-          Serial.print(F("Connecting to PS5 Controller @ "));
-          Serial.println(addrCharPtr);
+          ESP_LOGI(TAG, "Connecting to PS5 Controller @ %s", addrCharPtr);
           ps5.begin(addrCharPtr);
           while (!ps5.isConnected())
           {
             toggleBuiltInLED(); // fast blinking when hooked into a device but not yet connected
             delay(LOOP_DELAY);
           }
-          Serial.print(F("PS5 Controller Connected: "));
-          Serial.println(ps5.isConnected());
+          ESP_LOGI(TAG, "PS5 Controller Connected: %d", ps5.isConnected());
           storeAddress(addrCharPtr, true);
           setBuiltInLED(true); // solid blue light when fully paired
         }
@@ -304,13 +286,13 @@ void activatePairing(bool doRePair, int discoverTime)
     }
     else
     {
-      Serial.println(F("Found no pairable devices."));
+      ESP_LOGI(TAG, "Found no pairable devices.");
       setBuiltInLED(false);
     }
   }
   else
   {
-    Serial.println(F("Asynchronous discovery failed."));
+    ESP_LOGE(TAG, "Asynchronous discovery failed.");
     setBuiltInLED(false);
   }
 }

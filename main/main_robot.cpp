@@ -9,6 +9,9 @@
 
 #include <Arduino.h>
 #include <ps5Controller.h> // ESP PS5 library, access using global instance `ps5`
+#include "esp_log.h"
+
+static const char *TAG = "MainRobot";
 
 // my dumb code
 
@@ -71,7 +74,7 @@ void onConnection()
 {
   if (ps5.isConnected())
   {
-    Serial.println(F("Controller Connected."));
+    ESP_LOGI(TAG, "Controller Connected.");
     // ps5.setLed(0, 255, 0);   // set LED green
   }
 
@@ -88,7 +91,7 @@ void onConnection()
 
 void onDisconnect()
 {
-  Serial.println(F("Controller Disconnected."));
+  ESP_LOGI(TAG, "Controller Disconnected.");
 
   // TODO: perm sln
   if (robotType != quarterback_turret)
@@ -117,7 +120,6 @@ extern "C" void main_app(void)
   // runs once at the start of the program
 
   // Arduino-like setup()
-  Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(TACKLE_PIN, OUTPUT); // Try INPUT_PULLUP
   digitalWrite(TACKLE_PIN, 0); // Initially sets tackle sensor to home
@@ -127,7 +129,7 @@ extern "C" void main_app(void)
 
   // Read robot info from "EEPROM" (ESP32 Preferences) using ConfigManager
   config.read();
-  Serial.println(config.toString());
+  ESP_LOGI(TAG, "%s", config.toString().c_str());
   robotType = config.getBotType();
   driveParams = config.getDriveParams();
 
@@ -193,11 +195,15 @@ extern "C" void main_app(void)
   case lineman:
   default: // Assume lineman
     robot = new Lineman();
-    String debugMsg = "01: Instantiating Drive Class\n";
-    Serial.print(debugMsg.c_str());
+    {
+      String debugMsg = "01: Instantiating Drive Class\n";
+      ESP_LOGI(TAG, "%s", debugMsg.c_str());
+    }
     drive = new Drive(lineman, driveParams);
-    String debugMsg2 = "03: Call setupMotors\n";
-    Serial.print(debugMsg2.c_str());
+    {
+      String debugMsg2 = "03: Call setupMotors\n";
+      ESP_LOGI(TAG, "%s", debugMsg2.c_str());
+    }
     drive->setupMotors(DRIVE_M1, DRIVE_M2);
   }
 
@@ -230,7 +236,7 @@ extern "C" void main_app(void)
 
     if (ps5.isConnected())
     {
-      // Serial.print(F("\r\nConnected"));
+      // ESP_LOGI(TAG, "\r\nConnected");
       // ps5.setLed(255, 0, 0);   // set LED red
 
       //* QBv3 Turret doesn't have drive, so this is a temporary measure to avoid NPEs and chaos
@@ -285,7 +291,7 @@ extern "C" void main_app(void)
     }
     else
     { // no response from PS5 controller within last 300 ms, so stop
-      // Serial.println("Controller DC\n");
+      // ESP_LOGI(TAG, "Controller DC\n");
       if (robotType != quarterback_turret)
       {
         // Emergency stop if the controller disconnects
