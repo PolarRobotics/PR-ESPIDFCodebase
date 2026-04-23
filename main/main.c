@@ -18,8 +18,6 @@
 
 void app_main(void)
 {
-   /* This will call main_app() either from main_write_bot_info.cpp or
-      main_robot.cpp, depending on the build configuration.
-   */
+   /* main_app() is implemented in main_robot.cpp. */
    main_app();
 }
