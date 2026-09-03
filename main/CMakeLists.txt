@@ -10,6 +10,7 @@ idf_component_register(
         Types
         Utilities
         espressif__arduino-esp32 
+        usbsabertooth
 )
 
 if(CONFIG_ENV_ROBOT)

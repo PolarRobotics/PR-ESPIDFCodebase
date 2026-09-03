@@ -1,9 +1,11 @@
 #pragma once
 
 #include <Arduino.h>
-#include <MotorControl.h>
 #include <BotTypes.h>
-#include <PolarRobotics.h>
+#include <DriveParameters.h>
+#include <PWMMotor.h>
+#include <SerialMotor.h>
+#include <MotorTypes.h>
 
 #ifndef NUM_MOTORS
 #define NUM_MOTORS 2
@@ -36,32 +38,25 @@
 // Motor Percent Defines
 #define FALCON_CALIBRATION_FACTOR 1.0f
 // the minimum power that can be written to the motor, prevents stalling
-#define MOTOR_ZERO_OFFST 0.05f
+#define MOTOR_ZERO_OFFST 103 // originally 0.05 for PWM: multiply by 2047 gives 102.35, round up to 103
 
 // BSN defines for the small 12v motors
-#define SMALL_12V_BOOST_PCT 0.15f
-#define SMALL_12V_NORMAL_PCT 0.1f // 0.5
-#define SMALL_12V_SLOW_PCT 0.05f
+// define SMALL_12V_BOOST_PCT          0.15f
+// define SMALL_12V_NORMAL_PCT         0.1f // 0.5
+// define SMALL_12V_SLOW_PCT           0.05f
 
 #define BRAKE_BUTTON_PCT 0
 
 // !TODO: not sure if this is the correct location for this array
 // This array must follow the same order as MotorType to be used effectively
-constexpr float MOTORTYPE_BNS_ARRAY[NUM_MOTOR_TYPES][3] = {
-    // Boost   Normal  Slow
-    {0.70f, 0.60f, 0.30f}, // index 0: Big Ampflow Motor
-    {0.85f, 0.70f, 0.40f}, // index 1: Small Ampflow Motor
-    {0.70f, 0.60f, 0.30f}, // index 2: Pancake Ampflow Motor
-    {0.80f, 0.60f, 0.40f}, // index 3: Mecanum Motor (Torquenado)
-    {0.60f, 0.40f, 0.15f}, // index 4: Falcon500 motors
-    {0.15f, 0.10f, 0.05f}  // index 5: Small 12v motors (old robots)
-};
+constexpr int SABERTOOTH_MAX_POWER = 2047; // Max power value accepted via USBSabertooth Packetized Serial Protocol
 
 class Drive
 {
 private:
   BotType botType;
   MotorType motorType; // TODO: Why is this private if we have a setter with no input validation? - MP 2023-05-10
+  MotorInterfaceType motorInterfaceType;
   float gearRatio;
   bool hasEncoders;
 
@@ -80,14 +75,16 @@ private:
   void calcTurning(float stickTrn, float fwdLinPwr);
 
 protected:
-  // MotorControl* M1;
-  // MotorControl* M2;
-  MotorControl M1, M2;
+  // Drive can be either PWM or Packet Serial depending on `motorInterfaceType`.
+  PWMMotor pwmM1, pwmM2;
+  SerialMotor serialM1, serialM2;
   float stickForwardRev, stickTurn;
   float lastTurnPwr;
   float turnPower;
 
   float requestedMotorPower[NUM_MOTORS];
+  int requestedMotorPowerSerial[NUM_MOTORS];
+  // Always tracked as normalized percent [-1, 1] for telemetry.
   float trackingMotorPower[NUM_MOTORS];
   float lastRampPower[NUM_MOTORS];
   float turnMotorValues[NUM_MOTORS];
@@ -106,7 +103,6 @@ public:
   Drive(BotType botType, drive_param_t driveParams, bool hasEncoders = false, int turnFunction = 2);
   void setupMotors(uint8_t lpin, uint8_t rpin);
   void setupMotors(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin);
-  void setMotorType(MotorType motorType);
   void setStickPwr(int8_t leftY, int8_t rightX);
   float getForwardPower();
   float getTurnPower();

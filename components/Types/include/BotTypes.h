@@ -20,8 +20,8 @@
  *  1: Receiver
  *  2: Runningback
  *  3: Center
- *  4: Kicker
- *  5: Mecanum Center
+ *  4: Center Conversion
+ *  5: Kicker
  *  6: Old Quarterback
  *  7: Quarterback
  */
@@ -31,8 +31,8 @@ typedef enum
   receiver,
   runningback,
   center,
+  center_conversion,
   kicker,
-  mecanum_center,
   quarterback_old,
   quarterback
 } BotType;
@@ -83,14 +83,12 @@ typedef struct BotConfig
 #define BOT_QB_OLD 11
 #define BOT_THETA 12
 #define BOT_KICKER 12
-#define BOT_MC 13
-#define BOT_MECANUM_CENTER 13
-#define BOT_QB 14
-#define BOT_BETA 14
-#define BOT_LINEMAN_V1 16
-#define BOT_420 17
-#define BOT_24 18
-#define BOT_25 19
+#define BOT_QB 13
+#define BOT_BETA 13
+#define BOT_LINEMAN_V1 14
+#define BOT_420 15
+#define BOT_24 16
+#define BOT_25 17
 
 // PRESET BOT CONFIGURATIONS, MUST MATCH:
 // TODO: bogConfigArray set up for new Quarterback
@@ -100,7 +98,7 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
     {0, "i++", lineman, {small_ampflow, 0.6f, 12.25f, 9.00f, 36.00f}},             //* 0:  i++
     {1, "sqrt(-1)", lineman, {big_ampflow, 0.53333f, 11.25f, 9.00f, 36.00f}},      //* 1:  sqrt(-1)
     {2, "pi", receiver, {small_ampflow, 0.46667f, 11.00f, 6.00f, 36.00f}},         //* 2:  pi
-    {3, "rho", lineman, {big_ampflow, 0.6f, 11.25f, 9.00f, 36.00f}},               //* 3:  ρ
+    {3, "rho", center_conversion, {big_ampflow, 0.6f, 11.25f, 9.00f, 36.00f}},     //* 3:  ρ
     {4, "2.72", lineman, {big_ampflow, 0.4f, 11.25f, 9.00f, 36.00f}},              //* 4:  2.72
     {5, ":)", lineman, {big_ampflow, 1.0f, 9.75f, 9.00f, 36.00f}},                 //* 5:  :)
     {6, ">=", lineman, {small_ampflow, 1.0f, 10.00f, 6.00f, 27.00f}},              //* 6:  >=
@@ -110,12 +108,11 @@ constexpr bot_config_t botConfigArray[NUM_BOTS] = {
     {10, "phi", center, {small_ampflow, 0.6f, 11.50f, 9.00f, 36.00f}},             //* 10: Φ
     {11, "inf", quarterback_old, {small_ampflow, 0.5625f, 11.50f, 9.00f, 24.00f}}, //* 11: ∞
     {12, "theta", kicker, {small_ampflow, 0.5f, 10.00f, 9.00f, 36.00f}},           //* 12: Θ
-    {13, "y=x", mecanum_center, {mecanum, 1.0f, 11.00f, 9.00f, 36.00f}},           //* 13: y=x
-    {14, "beta", quarterback, {big_ampflow, 0.5f, 11.50f, 9.00f, 36.00f}},         //* 14: beta
-    {16, "l-man-v1", lineman, {small_12v, 1.0f, 11.00f, 9.00f, 36.00f}},           //* 16: generic lineman V1
-    {17, "420", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                //* 17: 420
-    {18, "24", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                 //* 18: 24
-    {19, "25", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}}                  //* 19: 25
+    {13, "beta", quarterback, {big_ampflow, 0.5f, 11.50f, 9.00f, 36.00f}},         //* 13: beta
+    {14, "l-man-v1", lineman, {small_12v, 1.0f, 11.00f, 9.00f, 36.00f}},           //* 14: generic lineman V1
+    {15, "420", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                //* 15: 420
+    {16, "24", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                 //* 16: 24
+    {17, "25", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}}                  //* 17: 25
 };
 
 //! Do not decrease r_min to less than half of the wheelbase, or the math might break

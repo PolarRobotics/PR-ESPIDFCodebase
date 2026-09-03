@@ -1,6 +1,4 @@
-#include <Arduino.h>
 #include <Drive.h>
-#include <MotorControl.h>
 
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
@@ -27,8 +25,8 @@
  *  - add mechanium driving code, for the new center, needed next semester (Spring 2023)
  *
  * Default configuration:
- * @param leftmotorpin the arduino pin needed for the left motor, needed for servo
- * @param rightmotorpin the arduino pin needed for the right motor, needed for servo
+ * @param leftmotoridx the arduino pin needed for the left motor, needed for servo
+ * @param rightmotoridx the arduino pin needed for the right motor, needed for servo
  */
 
 Drive::Drive()
@@ -44,6 +42,8 @@ Drive::Drive(BotType botType, MotorType motorType)
 Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int turnFunction)
 {
     this->botType = botType;
+    this->motorType = driveParams.motor_type;
+    this->motorInterfaceType = MOTORTYPE_INTERFACE_ARRAY[driveParams.motor_type];
     this->hasEncoders = hasEncoders;
     this->motorType = driveParams.motor_type;
     this->gearRatio = driveParams.gear_ratio;
@@ -78,35 +78,36 @@ Drive::Drive(BotType botType, drive_param_t driveParams, bool hasEncoders, int t
         turnMotorValues[i] = 0.0f;
     }
 
-    if (botType != mecanum_center)
-    {
-        // initialize parameters for turning model
-        omega = 0;
-        omega_L = 0, omega_R = 0;
-        R = 0.0f;
-        // R_Max = 24.0f;
-        // R_Max = 36.0f;
-        // R_Min = wheelBase/2 + 4;
-        min_RPM = 200;
-        // max_RPM = M1.Percent2RPM(1);
-        // max_RPM = M1.max_rpm;
+    // initialize parameters for turning model
+    omega = 0;
+    omega_L = 0;
+    omega_R = 0;
+    R = 0.0f;
+    min_RPM = 200;
 
-        // initialize turn sensitivity variables
-        enableTurnSensitivity = turnFunction; // 0 for linear, 1 for Rhys's function, 2 for cubic
-        turnSensitivityScalar = 0.49;         // Range: (0, 0.5) really [0.01, 0.49]
-        domainAdjustment = 1 / log((1 - (turnSensitivityScalar + 0.5)) / (turnSensitivityScalar + 0.5));
-    }
+    // initialize turn sensitivity variables
+    enableTurnSensitivity = turnFunction; // 0 for linear, 1 for Rhys's function, 2 for cubic
+    turnSensitivityScalar = 0.49;         // Range: (0, 0.5) really [0.01, 0.49]
+    domainAdjustment = 1 / log((1 - (turnSensitivityScalar + 0.5)) / (turnSensitivityScalar + 0.5));
 }
 
-void Drive::setupMotors(uint8_t lpin, uint8_t rpin)
+void Drive::setupMotors(uint8_t lidx, uint8_t ridx)
 {
-    // this->motorPins[0] = lpin, this->motorPins[1] = rpin;
+    // this->motoridxs[0] = lidx, this->motoridxs[1] = ridx;
     //  this->M1 = new MotorControl(motorType, false, this->gearRatio);
     //  this->M2 = new MotorControl(motorType, false, this->gearRatio);
 
-    // M1->setup(lpin), M2->setup(rpin);
-    M1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio);
-    M2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio);
+    // M1->setup(lidx), M2->setup(ridx);
+    if (motorInterfaceType == pwm)
+    {
+        pwmM1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio);
+        pwmM2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio);
+    }
+    else
+    {
+        serialM1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio);
+        serialM2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio);
+    }
 }
 
 /**
@@ -115,26 +116,29 @@ void Drive::setupMotors(uint8_t lpin, uint8_t rpin)
  *
  *
  */
-void Drive::setupMotors(uint8_t lpin, uint8_t rpin, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin)
+void Drive::setupMotors(uint8_t lidx, uint8_t ridx, uint8_t left_enc_a_pin, uint8_t left_enc_b_pin, uint8_t right_enc_a_pin, uint8_t right_enc_b_pin)
 {
-    // this->motorPins[0] = lpin, this->motorPins[1] = rpin;
+    // this->motoridxs[0] = lidx, this->motoridxs[1] = ridx;
     //  this->M1 = new MotorControl(motorType, true, this->gearRatio);
     //  this->M2 = new MotorControl(motorType, true, this->gearRatio);
 
-    M1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio, left_enc_a_pin, left_enc_b_pin);
-    M2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio, right_enc_a_pin, right_enc_b_pin);
-}
-
-void Drive::setMotorType(MotorType motorType)
-{
-    this->motorType = motorType;
+    if (motorInterfaceType == pwm)
+    {
+        pwmM1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio, left_enc_a_pin, left_enc_b_pin);
+        pwmM2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio, right_enc_a_pin, right_enc_b_pin);
+    }
+    else
+    {
+        serialM1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio, left_enc_a_pin, left_enc_b_pin);
+        serialM2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio, right_enc_a_pin, right_enc_b_pin);
+    }
 }
 
 /**
- * setStickPwr takes the stick values passed in and normalizes them to values between -1 and 1
+ * setStickPwr takes the stick values passed in and normalizes them to values between -2047 and 2047
  * and sets this value to the private variables stickFwdRev and stickTurn respectively
- * @author Rhys Davies
- * Created: 9-12-2022
+ * @author Rhys Davies (Edited by Quentin Osterhage for USBSabertooth)
+ * Created: 9-12-2022 (Edited 10-04-2025)
  *
  * @param leftY the forward backward value from the left stick an unsigned 8-bit float (0 to 255)
  * @param rightX the left right value from the right stick an unsigned 8-bit float (0 to 255)
@@ -145,7 +149,6 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX)
     // +: forward, -: backward. needs to be negated so that forward is forward and v.v.; subtracting 1 bumps into correct range
     stickForwardRev = (leftY / 127.5f);
     stickTurn = (rightX / 127.5f);
-
     // stick deadzones
     // set to zero (no input) if within the set deadzone
     // subtacting STICK_DEADZONE and deviding by 1-STICK_DEADZONE normalize the inputs to use the full 0-1 range
@@ -197,7 +200,7 @@ void Drive::setSpeedScalar(Speed bns)
  */
 void Drive::setSpeedValue(float speed_pct)
 {
-    this->speedScalar = constrain(speed_pct, -1, 1);
+    this->speedScalar = constrain(speed_pct, 0.0f, 1.0f);
 }
 
 float Drive::getSpeedScalar()
@@ -299,6 +302,13 @@ void Drive::generateMotionValues(float tankModePct)
  */
 void Drive::calcTurning(float stickTrn, float fwdLinPwr)
 {
+    MotorControlCommon *leftMotor = (motorInterfaceType == pwm)
+                                        ? static_cast<MotorControlCommon *>(&pwmM1)
+                                        : static_cast<MotorControlCommon *>(&serialM1);
+    MotorControlCommon *rightMotor = (motorInterfaceType == pwm)
+                                         ? static_cast<MotorControlCommon *>(&pwmM2)
+                                         : static_cast<MotorControlCommon *>(&serialM2);
+
     // R_Min = R_Min + abs(stickForwardRev)*(R_High_Min - R_Min); // start of turn scaling
     if (enableTurnSensitivity == 0) // linear
         scaledSensitiveTurn = stickTrn;
@@ -311,7 +321,7 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr)
     R = (1 - scaledSensitiveTurn) * (R_Max - R_Min) + R_Min;
 
     // calculate the requested angular velocity for the robot
-    omega = abs(M1.Percent2RPM(fwdLinPwr));
+    omega = abs(leftMotor->Percent2RPM(fwdLinPwr));
 
     // calculate the rpm for the left wheel
     omega_L = (omega / R) * (R + (wheelBase / 2));
@@ -319,12 +329,12 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr)
     omega_R = (omega / R) * (R - (wheelBase / 2));
 
     // ensure the left wheel RPM doesnt go below the min or above the max RPM
-    omega_L = constrain(omega_L, min_RPM, M1.max_rpm);
+    omega_L = constrain(omega_L, min_RPM, leftMotor->getMaxRPM());
     // ensure the left wheel RPM doesnt go below the min or above the max RPM
-    omega_R = constrain(omega_R, min_RPM, M1.max_rpm);
+    omega_R = constrain(omega_R, min_RPM, leftMotor->getMaxRPM());
 
-    turnMotorValues[0] = M1.RPM2Percent(omega_L);
-    turnMotorValues[1] = M2.RPM2Percent(omega_R);
+    turnMotorValues[0] = leftMotor->RPM2Percent(omega_L);
+    turnMotorValues[1] = rightMotor->RPM2Percent(omega_R);
 }
 
 void Drive::emergencyStop()
@@ -332,12 +342,22 @@ void Drive::emergencyStop()
     // M1->writelow(), M2->writelow();
     // M1.writelow(), M2.writelow();
 
-    M1.write(0);
-    M2.write(0);
+    if (motorInterfaceType == pwm)
+    {
+        pwmM1.write(0.0f);
+        pwmM2.write(0.0f);
+    }
+    else
+    {
+        serialM1.writeRaw(0);
+        serialM2.writeRaw(0);
+    }
 }
 
 void Drive::printSetup()
 {
+    const int maxRpm = (motorInterfaceType == pwm) ? pwmM1.getMaxRPM() : serialM1.getMaxRPM();
+
     Serial.print(F("\nDrive::printSetup():"));
     Serial.print(F("\nMotorType: "));
     Serial.print(getMotorTypeString(this->motorType));
@@ -350,7 +370,7 @@ void Drive::printSetup()
     Serial.print(F("\nMin RPM: "));
     Serial.print(this->min_RPM);
     Serial.print(F("\nMAX RPM: "));
-    Serial.print(M1.max_rpm);
+    Serial.print(maxRpm);
     Serial.print(F("\nTurnSensitivityMode: "));
     Serial.print(enableTurnSensitivity);
     Serial.print(F("\nEncoders: "));
@@ -399,9 +419,9 @@ void Drive::printDebugInfo()
     // Serial.println(requestedPower - currentRampPower[mtr], 10);
 
     Serial.print(F("  Left Motor: "));
-    Serial.print(requestedMotorPower[0]);
+    Serial.print(requestedMotorPowerSerial[0]);
     Serial.print(F("  Right: "));
-    Serial.print(requestedMotorPower[1]);
+    Serial.print(requestedMotorPowerSerial[1]);
 
     // Serial.print(F("  scaledSensitiveTurn: "));
     // Serial.print(scaledSensitiveTurn);
@@ -440,47 +460,50 @@ void Drive::printCsvInfo()
  */
 void Drive::update()
 {
-    // !TODO Clean up when robots are rewired:
-    if (this->botType == runningback)
+    const bool isRunningback = (botType == runningback);
+    const float tankPct = isRunningback ? RB_TANK_MODE_PCT : TANK_MODE_PCT;
+    const float accelRate = isRunningback ? RB_ACCELERATION_RATE : ACCELERATION_RATE;
+
+    // Generate turning motion
+    generateMotionValues(tankPct);
+
+    // Ramp in normalized percent space [-1, 1]
+    if (motorInterfaceType == pwm)
     {
-        // Generate turning motion
-        generateMotionValues();
-        // printDebugInfo();
-
-        // calculate the value to set to the motors to based on the acceleration rate
-        requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], RB_ACCELERATION_RATE);
-        requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], RB_ACCELERATION_RATE);
-
-        // Set the ramp value to a function, needed for generateMotionValues
-        lastRampPower[0] = requestedMotorPower[0];
-        lastRampPower[1] = requestedMotorPower[1];
-
-        // TODO: move to MotorController
-        // Make sure the min values written to the motor are not zero, gives the motor enough to break the deadband
-        requestedMotorPower[0] = fabs(requestedMotorPower[0]) < MOTOR_ZERO_OFFST ? 0 : requestedMotorPower[0];
-        requestedMotorPower[1] = fabs(requestedMotorPower[1]) < MOTOR_ZERO_OFFST ? 0 : requestedMotorPower[1];
-
-        // Write the ramped value to the motor via MotorInterface
-        M1.write(requestedMotorPower[0]);
-        M2.write(-requestedMotorPower[1]);
+        requestedMotorPower[0] = pwmM1.ramp(requestedMotorPower[0], accelRate);
+        requestedMotorPower[1] = pwmM2.ramp(requestedMotorPower[1], accelRate);
     }
     else
-    { // CASE FOR ANY OTHER ROBOT
-        // Generate turning motion
-        generateMotionValues(RB_TANK_MODE_PCT);
-        // printDebugInfo();
+    {
+        requestedMotorPower[0] = serialM1.ramp(requestedMotorPower[0], accelRate);
+        requestedMotorPower[1] = serialM2.ramp(requestedMotorPower[1], accelRate);
+    }
 
-        // calculate the value to set to the motors to based on the acceleration rate
-        requestedMotorPower[0] = M1.ramp(requestedMotorPower[0], ACCELERATION_RATE);
-        requestedMotorPower[1] = M2.ramp(requestedMotorPower[1], ACCELERATION_RATE);
+    // Deadband (percent-space)
+    const float deadbandPct = float(MOTOR_ZERO_OFFST) / 2047.0f;
+    requestedMotorPower[0] = (fabs(requestedMotorPower[0]) < deadbandPct) ? 0.0f : requestedMotorPower[0];
+    requestedMotorPower[1] = (fabs(requestedMotorPower[1]) < deadbandPct) ? 0.0f : requestedMotorPower[1];
 
-        // Set the ramp value to a function, needed for generateMotionValues
-        lastRampPower[0] = requestedMotorPower[0];
-        lastRampPower[1] = requestedMotorPower[1];
+    // Track ramp output for debugging/turn model
+    lastRampPower[0] = requestedMotorPower[0];
+    lastRampPower[1] = requestedMotorPower[1];
 
-        // Write the ramped value to the motor via MotorInterface
-        M1.write(requestedMotorPower[0]);
-        M2.write(requestedMotorPower[1]);
+    // Write output
+    if (motorInterfaceType == pwm)
+    {
+        pwmM1.write(requestedMotorPower[0]);
+        pwmM2.write(requestedMotorPower[1]);
+
+        requestedMotorPowerSerial[0] = int(requestedMotorPower[0] * 2047.0f);
+        requestedMotorPowerSerial[1] = int(requestedMotorPower[1] * 2047.0f);
+    }
+    else
+    {
+        requestedMotorPowerSerial[0] = int(requestedMotorPower[0] * 2047.0f);
+        requestedMotorPowerSerial[1] = int(requestedMotorPower[1] * 2047.0f);
+
+        serialM1.writeRaw(requestedMotorPowerSerial[0]);
+        serialM2.writeRaw(requestedMotorPowerSerial[1]);
     }
 
     trackingMotorPower[0] = requestedMotorPower[0];

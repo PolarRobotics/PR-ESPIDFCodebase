@@ -16,20 +16,24 @@
 #define LED_BUILTIN 2
 #endif
 
+// Debounce for Tacke Sensor Switch
+// 50 ms for default delay (50L)
+#define TACKLE_SENSOR_DELAY 50L
+
 #include <PolarRobotics.h>
 
 // Drive Includes
 #include <Drive.h>
-#include <DriveMecanum.h>
 
 // Pairing Includes
+
 #include <pairing.h>
 
 // Robot Includes
 #include <Robot.h>
 #include <Lineman.h>
 #include <Center.h>
-#include <MecanumCenter.h>
+#include <CenterConversion.h>
 #include <Kicker.h>
 #include <QuarterbackOld.h>
 #include <Quarterback.h>
@@ -39,6 +43,10 @@
 
 // Utilities Includes
 #include <ConfigManager.h>
+#include <TackleSensor.h>
+
+// Sabertooth USB Serial Library
+#include <sabertoothinst.h>
 
 // Primary Parent Component Pointers
 Robot *robot = nullptr; // subclassed if needed
@@ -53,6 +61,9 @@ drive_param_t driveParams;
 
 // Config
 ConfigManager config;
+
+// Input Debouncer
+Debouncer *dbOptions;
 
 // Prototypes for Controller Callbacks
 // Implementations located at the bottom of this file
@@ -85,20 +96,33 @@ extern "C" void main_app(void)
     |____/  |_____|   |_|    \___/  |_|
 
   */
+  bool sabertoothReady = false;
 
   // runs once at the start of the program
 
   // Arduino-like setup()
   Serial.begin(115200);
-
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(TACKLE_PIN, INPUT); // Try INPUT_PULLUP
+  pinMode(TACKLE_PIN, OUTPUT); // Try INPUT_PULLUP
+  digitalWrite(TACKLE_PIN, 0); // Initially sets tackle sensor to home
+  digitalWrite(LED_BUILTIN, LOW);
+  // digitalMode(LED_BUILTIN, OUTPUT);
+
+  // Initialize debouncer
+  dbOptions = new Debouncer(TACKLE_SENSOR_DELAY);
 
   // Read robot info from "EEPROM" (ESP32 Preferences) using ConfigManager
   config.read();
   Serial.println(config.toString());
   robotType = config.getBotType();
   driveParams = config.getDriveParams();
+
+  // Drive motor identifiers:
+  // - Packet Serial robots: use Sabertooth motor indices (M1_IDX/M2_IDX)
+  // - PWM robots: use GPIO pins (M1_PWM/M2_PWM)
+  const bool driveUsesPwmPins = (MOTORTYPE_INTERFACE_ARRAY[driveParams.motor_type] == pwm);
+  const uint8_t DRIVE_M1 = driveUsesPwmPins ? M1_PWM : M1_IDX;
+  const uint8_t DRIVE_M2 = driveUsesPwmPins ? M2_PWM : M2_IDX;
 
   // work backwards from highest ordinal enum since lineman should be default case
   switch (robotType)
@@ -110,34 +134,35 @@ extern "C" void main_app(void)
   case kicker:
     robot = new Kicker(SPECBOT_PIN1, SPECBOT_PIN2, ENC1_CHA, ENC1_CHB);
     drive = new Drive(kicker, driveParams);
-    drive->setupMotors(M1_PIN, M2_PIN);
+    drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
   case quarterback_old:
     robot = new QuarterbackOld(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
     drive = new Drive(quarterback_old, driveParams);
-    drive->setupMotors(M1_PIN, M2_PIN);
-    break;
-  case mecanum_center:
-    robot = new MecanumCenter(SPECBOT_PIN1, SPECBOT_PIN2);
-    drive = new DriveMecanum();
-    ((DriveMecanum *)drive)->setupMotors(M1_PIN, M2_PIN, M3_PIN, M4_PIN);
+    drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
   case center:
     robot = new Center(SPECBOT_PIN1, SPECBOT_PIN2);
     drive = new Drive(center, driveParams);
-    drive->setupMotors(M1_PIN, M2_PIN);
+    drive->setupMotors(DRIVE_M1, DRIVE_M2);
+    break;
+  case center_conversion:
+    robot = new CenterConversion(SPECBOT_PIN1);
+    drive = new Drive(center_conversion, driveParams);
+    drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
   case runningback:
     robot = new Lineman();
     drive = new Drive(runningback, driveParams);
-    drive->setupMotors(M1_PIN, M2_PIN);
+    drive->setupMotors(DRIVE_M1, DRIVE_M2);
     break;
   case quarterback:
     drive = new Drive(quarterback, driveParams);
-    drive->setupMotors(M1_PIN, M2_PIN);
+    /* USE SPECIFIC PINS FOR QUARTERBACK */
+    drive->setupMotors(M1_IDX, M2_IDX);
     robot = new Quarterback(
-        M1_PIN,       // left flywheel
-        M2_PIN,       // right flywheel
+        M1_PWM,       // left flywheel
+        M2_PWM,       // right flywheel
         M3_PIN,       // cradle
         M4_PIN,       // turret
         SPECBOT_PIN1, // assembly motor
@@ -152,19 +177,21 @@ extern "C" void main_app(void)
   case lineman:
   default: // Assume lineman
     robot = new Lineman();
+    String debugMsg = "01: Instantiating Drive Class\n";
+    Serial.print(debugMsg.c_str());
     drive = new Drive(lineman, driveParams);
-    drive->setupMotors(M1_PIN, M2_PIN);
+    String debugMsg2 = "03: Call setupMotors\n";
+    Serial.print(debugMsg2.c_str());
+    drive->setupMotors(DRIVE_M1, DRIVE_M2);
   }
 
-  // drive->printSetup();
-
+  drive->printSetup();
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
-
-  while (!Serial)
+  HWSerial.begin(115200, SERIAL_8N1, 16, 17); // 9600 baudrate default for USBSabertooth
   {
     ; // wait for serial port to connect
   }
@@ -189,49 +216,64 @@ extern "C" void main_app(void)
       // Serial.print(F("\r\nConnected"));
       // ps5.setLed(255, 0, 0);   // set LED red
 
-      if (robotType == mecanum_center)
+      // Drive controls for non-QB
+      if (robotType != quarterback)
       {
-        ((DriveMecanum *)drive)->setStickPwr(ps5.LStickX(), ps5.LStickY(), ps5.RStickX());
-      }
-      else
-      {
+        // Do all normal drive functions as usual
         drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
+        // determine BSN percentage (boost, slow, or normal)
+        if (ps5.Touchpad())
+        {
+          drive->emergencyStop();
+          drive->setSpeedScalar(Drive::BRAKE);
+        }
+        else if (ps5.R1())
+        {
+          drive->setSpeedScalar(Drive::BOOST);
+          // ps5.setLed(0, 255, 0);   // set LED red
+        }
+        else if (ps5.L1())
+        {
+          drive->setSpeedScalar(Drive::SLOW);
+        }
+        else if (ps5.R2() && driveParams.motor_type == falcon)
+        {
+          // used to calibrate the max pwm signal for the falcon 500 motors
+          drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
+        }
+        else
+        {
+          drive->setSpeedScalar(Drive::NORMAL);
+        }
+
+        //* Update the motors based on the inputs from the controller
+        //* Can change functionality depending on subclass, like robot.action()
+        drive->update();
+        drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+        // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
       }
 
-      // determine BSN percentage (boost, slow, or normal)
-      if (ps5.Touchpad())
+      // Drive controls for QB only in drive mode (i.e. when not enabled)
+      // Should only get to this point if the robot is a QB, so we can cast robot as a Quarterback without issue
+      else if (!((Quarterback *)robot)->isEnabled())
       {
-        drive->emergencyStop();
-        drive->setSpeedScalar(Drive::BRAKE);
-      }
-      else if (ps5.R1())
-      {
-        drive->setSpeedScalar(Drive::BOOST);
-        // ps5.setLed(0, 255, 0);   // set LED red
-      }
-      else if (ps5.L1())
-      {
-        drive->setSpeedScalar(Drive::SLOW);
-      }
-      else if (ps5.R2() && driveParams.motor_type == falcon)
-      {
-        // used to calibrate the max pwm signal for the falcon 500 motors
-        drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
-      }
-      else
-      {
+        // If the QB is not enabled, allow driving but not manual turret or flywheel movement
+        drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
+
+        // avoid using R1, L1, touchpad, etc. as they are used in Quarterback control scheme
+        // for different functions like changing recievers
         drive->setSpeedScalar(Drive::NORMAL);
-      }
+
+        //* Update the motors based on the inputs from the controller
+        //* Can change functionality depending on subclass, like robot.action()
+        drive->update();
+        drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
+        // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
+      } // else robot is quarterback and also drive is disbled! SO DO NOTHING!
 
       // Manual Home / Away Position Setting
       // if (ps5.Options())
       //   ;
-
-      //* Update the motors based on the inputs from the controller
-      //* Can change functionality depending on subclass, like robot.action()
-      drive->update();
-      drive->printDebugInfo(); // comment this line out to reduce compile time and memory usage
-      // drive->printCsvInfo(); // prints info to serial monitor in a csv (comma separated value) format
 
       //! Performs all special robot actions depending on the instantiated Robot subclass
       robot->action();
