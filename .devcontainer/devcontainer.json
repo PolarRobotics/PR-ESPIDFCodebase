@@ -1,5 +1,5 @@
 {
-	"name": "ESP-IDF QEMU",
+	"name": "PR ESP-IDF",
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
@@ -52,26 +52,20 @@
 				"git.confirmSync": false,
 				"git.autofetch": true,
 				// Editor improvements
-				"editor.formatOnSave": true,
 				"editor.codeActionsOnSave": {
 					"source.organizeImports": "explicit"
 				},
 				"editor.rulers": [
-					80,
-					120
+					80
 				],
 				"editor.renderWhitespace": "boundary",
 				"editor.bracketPairColorization.enabled": true,
 				"editor.guides.bracketPairs": true,
-				// C/C++ specific settings
-				"C_Cpp.default.configurationProvider": "esp-idf",
-				"C_Cpp.intelliSenseEngine": "default",
-				"C_Cpp.errorSquiggles": "enabled",
-				"C_Cpp.autocompleteAddParentheses": true,
-				"C_Cpp.formatting": "clangFormat",
-				// CMake settings
-				"cmake.configureOnOpen": false,
-				"cmake.showOptionsMovedNotification": false,
+				// Clangd stuff, formatting
+				// Disable IntelliSense completely
+				"C_Cpp.intelliSenseEngine": "disabled",
+				"editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+				"editor.formatOnSave": true,
 				// Search exclusions for better performance
 				"search.exclude": {
 					"**/build": true,
@@ -87,8 +81,8 @@
 			"extensions": [
 				// Core ESP-IDF extensions
 				"espressif.esp-idf-extension",
-				// C/C++ development
-				"ms-vscode.cpptools",
+				// Installs the clangd LSP, etc
+				"llvm-vs-code-extensions.vscode-clangd",
 				// Git and version control
 				"github.vscode-pull-request-github",
 				"mhutchie.git-graph",
@@ -114,5 +108,6 @@
 		3000,
 		8080,
 		8888
-	]
+	],
+    "remoteUser": "root"
 }
