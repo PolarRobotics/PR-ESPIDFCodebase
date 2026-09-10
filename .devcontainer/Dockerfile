@@ -13,7 +13,10 @@ RUN apt-get update -y && apt-get install -y \
     picocom \
     zsh \
     git \
-    curl
+    curl \
+    clangd \
+    clang-format \
+    clang-tidy
 
 # Install Starship prompt and zsh plugins (I promise this is important for productivity)
 RUN curl -sS https://starship.rs/install.sh | sh -s -- -y

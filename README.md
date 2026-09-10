@@ -18,7 +18,7 @@ Key capabilities include:
 
 The project is structured following the standard ESP-IDF component-based architecture:
 
-- `main/` - The entry point of the application. Contains specific execution targets like `main_robot.cpp` and `main_write_bot_info.cpp`.
+- `main/` - The entry point of the application. Contains the main startup code.
 - `components/` - Core internal libraries and modules:
   - `Drive/` - High-level drivetrain logic and kinematics.
   - `Motor/` - Low-level motor control (`PWMMotor.cpp`, `SerialMotor.cpp`).
