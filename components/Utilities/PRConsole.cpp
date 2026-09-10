@@ -3,11 +3,11 @@
 static const char *TAG = "Console";
 static ConfigManager *sConfig = nullptr;
 
-int console_write_bot_info(int argc, char **argv)
+int console_write_bot_config(int argc, char **argv)
 {
     if (argc != 2)
     {
-        printf("Usage: write_bot_info <index>\\n");
+        printf("Usage: write <index>\\n");
         return 1;
     }
 
@@ -37,14 +37,14 @@ int console_write_bot_info(int argc, char **argv)
 
 esp_err_t register_console_commands(void)
 {
-    esp_console_cmd_t writeBotInfoCmd = {};
-    writeBotInfoCmd.command = "write_bot_info";
-    writeBotInfoCmd.help = "Write bot configuration by index from BotTypes table: write_bot_info <index>";
-    writeBotInfoCmd.hint = nullptr;
-    writeBotInfoCmd.func = &console_write_bot_info;
-    writeBotInfoCmd.argtable = nullptr;
+    esp_console_cmd_t writeCmd = {};
+    writeCmd.command = "write";
+    writeCmd.help = "Write bot configuration by index from BotTypes table: write <index>";
+    writeCmd.hint = nullptr;
+    writeCmd.func = &console_write_bot_config;
+    writeCmd.argtable = nullptr;
 
-    return esp_console_cmd_register(&writeBotInfoCmd);
+    return esp_console_cmd_register(&writeCmd);
 }
 
 void console_task(void *pvParameters)
@@ -83,7 +83,7 @@ void console_task(void *pvParameters)
     linenoiseSetMultiLine(true);
     linenoiseAllowEmpty(false);
 
-    ESP_LOGI(TAG, "Console ready on UART%d. Run 'help' or 'write_bot_info <index>'.", CONFIG_ESP_CONSOLE_UART_NUM);
+    ESP_LOGI(TAG, "Console ready on UART%d. Run 'help' or 'write <index>'.", CONFIG_ESP_CONSOLE_UART_NUM);
     while (true)
     {
         char *line = linenoise("robot> ");

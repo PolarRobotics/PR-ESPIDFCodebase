@@ -16,7 +16,7 @@
 #define CONSOLE_MAX_CMDLINE_LEN 128
 #define CONSOLE_MAX_ARGS 8
 
-int console_write_bot_info(int argc, char **argv);
+int console_write_bot_config(int argc, char **argv);
 esp_err_t register_console_commands(void);
 void console_task(void *pvParameters);
 void startConsole(ConfigManager &config);
