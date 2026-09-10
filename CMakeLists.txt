@@ -16,3 +16,9 @@ set(CMAKE_CXX_EXTENSIONS ON)
 idf_build_set_property(MINIMAL_BUILD ON)
 
 project(PR-ESPIDFCodebase)
+
+# Suppress the stringop-truncation warning for esp-modbus
+idf_component_get_property(modbus_lib espressif__esp-modbus COMPONENT_LIB)
+if(TARGET ${modbus_lib})
+    target_compile_options(${modbus_lib} PRIVATE -Wno-stringop-truncation)
+endif()
