@@ -11,14 +11,15 @@
 
 #include <Arduino.h>
 #include <BotTypes.h>
-#include <MotorTypes.h>
 #include <DriveParameters.h>
-#include <USBSabertooth.h>
 #include <HardwareSerial.h>
+#include <MotorTypes.h>
+#include <USBSabertooth.h>
 
 // #define PR_CODEBASE_VERSION "2.4.5 @ production"
 
-// PR_CODEBASE_VERSION is now defined dynamically at the start of the build process
+// PR_CODEBASE_VERSION is now defined dynamically at the start of the build
+// process
 #ifndef PR_CODEBASE_VERSION
 #define PR_CODEBASE_VERSION "PR_CODEBASE_VERSION not defined!"
 #endif
@@ -30,15 +31,15 @@
 //  Motor and Pin #  |     Configurations     |
 //     | mot# |##|   |  2 wheels  |  4 wheels  |
 // ____|______|__|___|____________|____________|
-#define M1_IDX 1 // | leftMotor  | leftFront  |
-#define M2_IDX 2 // | rightMotor | rightFront |
+#define M1_IDX 1  // | leftMotor  | leftFront  |
+#define M2_IDX 2  // | rightMotor | rightFront |
 
 // PWM drive pins (GPIO) for PWM-based robots
-#define M1_PWM 32 // left motor PWM pin
-#define M2_PWM 33 // right motor PWM pin
+#define M1_PWM 32  // left motor PWM pin
+#define M2_PWM 33  // right motor PWM pin
 
-#define M3_PIN 26 // |    N/A     | leftRear   |
-#define M4_PIN 27 // |    N/A     | rightRear  |
+#define M3_PIN 26  // |    N/A     | leftRear   |
+#define M4_PIN 27  // |    N/A     | rightRear  |
 
 // Pins for special bot features, conveyor, flywheels, etc...
 #define SPECBOT_PIN1 18
@@ -49,8 +50,11 @@
 // Encoder pin definitions
 #define ENC1_CHA 35
 #define ENC1_CHB 34
-#define ENC2_CHA 36 // VP
-#define ENC2_CHB 39 // VN
+#define ENC2_CHA 36  // VP
+#define ENC2_CHB 39  // VN
+
+// Laser pin definition for QB
+#define LASER_PIN 25
 
 // pin for ws2812 LEDs to indicate positions
 #define LED_PIN 4
@@ -71,4 +75,4 @@ extern HardwareSerial HWSerial;
 extern USBSabertoothSerial STSerial;
 extern USBSabertooth ST;
 
-#endif // POLAR_ROBOTICS_H
+#endif  // POLAR_ROBOTICS_H
