@@ -2,6 +2,7 @@
   Question: Why are there so many #defines commented out?
   Answer: Documentation purposes.
 
+
   Question: Why not just use the #defines as they are written to generate the
   values? Answer: I don't trust the preprocessor. -MP
 */
@@ -95,9 +96,6 @@ const float QB_DECLINATION = -6.5;
 #define QB_TURRET_INTERPOLATION_DELAY 5L
 #define QB_TURRET_THRESHOLD 35
 #define QB_TURRET_STICK_SCALE_FACTOR 0.15  // was 0.25, turned down for combine
-#define QB_CCW_SPEED_BOOST \
-  0.05f  // ← start with 0.18f, increase to 0.22f if still too slow, decrease to
-         // 0.14f if too fast
 
 //================================//
 //        Speed Constants         //
@@ -193,6 +191,7 @@ const unsigned long long RECEIVER_0_ID = 0xDECA4B5BCBB00FA3;
 #endif
 #define RX2 16
 #define TX2 17
+#define NUM_CHARS 1000
 
 /**
  * @brief Quarterback Turret Subclass Header
@@ -207,21 +206,31 @@ class QuarterbackTurret : public Robot
   //|                          |//
   //============================//
  private:
+  // EMA variables for smoothing
+  float emaAlpha = 0.6;    // Weight for new readings (0.0-1.0; higher = more
+                           // responsive, less smoothing)
+  double avgRx = 0;        // Smoothed receiver x position
+  double avgRy = 0;        // Smoothed receiver y position
+  int posBufferCount = 0;  // Initialization flag for position EMA
+  float headingDegSmoothed = 0;          // Smoothed heading
+  int headingBufferCount = 0;            // Initialization flag for heading EMA
+  unsigned long lastFlywheelUpdate = 0;  // Timer for 1s flywheel updates
+
   //==============================//
   //    MotorControl Instances    //
   //==============================//
-  PWMMotor cradleActuator;
-  PWMMotor turretMotor;
-  PWMMotor assemblyMotor;
-  PWMMotor flywheelLeftMotor;
-  PWMMotor flywheelRightMotor;
+  MotorControl cradleActuator;
+  MotorControl turretMotor;
+  MotorControl assemblyMotor;
+  MotorControl flywheelLeftMotor;
+  MotorControl flywheelRightMotor;
 
   //==============================//
   //       Pin Declarations       //
   //==============================//
   static uint8_t turretEncoderPinA;
   static uint8_t turretEncoderPinB;
-  uint8_t turretLaserPin;
+  static uint8_t turretLaserPin;
 
   //===============================//
   //        Joystick Inputs        //
@@ -236,9 +245,33 @@ class QuarterbackTurret : public Robot
   //==============================//
   // mode: manual or autonomous (or combine)
   // target: reciever1 or reciever2
+  // position: [x,y] coordinates of the qb
+  // targetPosition: [x,y] coordinates of the target
   TurretMode mode;
   TargetReceiver target;
   CombinePosition combinePosition;
+  double position[2] = {0, 0};
+  double targetPosition[2] = {6, 6};
+  float x;
+  int changeInPos = 1;  // used to change the x position in auto mode
+
+  // Variable used for UART communication, receiving targeting data
+  char receivedChars[NUM_CHARS];  // an array to store the received data
+  char tempChars[NUM_CHARS];
+  bool newData = false;
+  String s;
+  String prev;
+
+  // Generate Struct for Receivers
+  struct Receiver
+  {
+    double position[2];
+    double distance;
+    double angle;
+  };
+#define NUM_RECEIVERS 4
+  Receiver receivers[NUM_RECEIVERS];
+  int currReceiver;
 
   //==============================//
   //  Setup and Status Variables  //
@@ -369,11 +402,12 @@ class QuarterbackTurret : public Robot
   //|                        |//
   //==========================//
   Adafruit_LIS3MDL lis3mdl;  // magnetometer object
+
   bool useMagnetometer =
-      false;  // set 'false' to disable the magnetometer and its functions
+      true;  // set 'false' to disable the magnetometer and its functions
   bool holdTurretStillEnabled =
-      true;  // set 'false' if you only want to use the magnetometer for the
-             // handoff and not the hold steady
+      false;  // set 'false' if you only want to use the magnetometer for the
+              // handoff and not the hold steady
 
   //============================//
   //  Magnetometer Calibration  //
@@ -439,12 +473,13 @@ class QuarterbackTurret : public Robot
   int prevErrorVals[PID_ERROR_AVG_ARRAY_LENGTH] = {0, 0, 0, 0, 0};
   int prevErrorIndex = 0;
   bool firstAverage = true;
+  bool firstCombine;
   long previousTime = 0;
   float ePrevious = 0;
   float eIntegral = 0;
-  float kp = 0.005;
-  float ki = 0.0012;
-  float kd = 0.0;
+  float kp = 0.005;  // 0.003 we had 0.005
+  float ki = 0.000;  // 0.0008 we had 0.000
+  float kd = 0.000;  // 0.004 was last value
   float turretPIDSpeed = 0;
   float minMagSpeed = .075;
 
@@ -503,6 +538,8 @@ class QuarterbackTurret : public Robot
   int16_t findNearestHeading(int16_t targetHeading);
   int NormalizeAngle(int angle);
   int CalculateRotation(float currentAngle, float targetAngle);
+  int angleToTarget(Receiver receiver);
+  float distanceToTarget(Receiver receiver);
 #pragma endregion
 
 #pragma region Public
@@ -581,6 +618,7 @@ class QuarterbackTurret : public Robot
   void aimAssembly(AssemblyAngle angle, bool force = false);
   void moveCradle(CradleState state, bool force = false);
   void setFlywheelSpeed(float absoluteSpeed);
+  float setAutoFlywheelSpeed(float distance = 0);
   void setFlywheelSpeedStage(FlywheelSpeed stage);
   void adjustFlywheelSpeedStage(SpeedStatus speed);
 
@@ -593,6 +631,8 @@ class QuarterbackTurret : public Robot
   void switchMode(TurretMode mode);
   void switchMode();
   void switchTarget(TargetReceiver target);
+  void moveToTarget(int targetHeading);
+  void readTargetingInfo();
 
   //==================================//
   //   Quarterback Strategic Macros   //
@@ -601,6 +641,8 @@ class QuarterbackTurret : public Robot
   // center handoff                    Hands the ball to the runningback
   void loadFromCenter();
   void handoff();
+  void combineMoveRight();
+  void combineMoveLeft();
 
   //==========================================//
   //  Public Encoder State Variables for ISR  //
@@ -633,7 +675,7 @@ class QuarterbackTurret : public Robot
   //===================================//
   int motor1Value = 0;
   int motor2Value = 0;
-  void updateReadMotorValues();
+  // void updateReadMotorValues();
 
 #pragma endregion
 };
