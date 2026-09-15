@@ -50,4 +50,12 @@ dependencies:
   usbsabertooth:
     version: '*'
     git: https://github.com/PolarRobotics/PR-Lib.git
-    path: components/USBSabertooth
+    path: components/USBSabertooth 
+
+  # Motor Autowp_mcp2515 Library 
+  autowp_mcp2515: 
+    version: '*' 
+    git: hhtps://github.com/PolarRobotics/PR-Lib.git
+    path: components/autowp_mcp2515
+
+    # 
