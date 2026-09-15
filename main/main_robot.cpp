@@ -13,7 +13,7 @@
 
 #include "esp_log.h"
 
-static const char *TAG = "MainRobot";
+static const char* TAG = "MainRobot";
 
 // my dumb code
 
@@ -56,8 +56,8 @@ static const char *TAG = "MainRobot";
 #include <sabertoothinst.h>
 
 // Primary Parent Component Pointers
-Robot *robot = nullptr;  // subclassed if needed
-Drive *drive = nullptr;  // subclassed if needed
+Robot* robot = nullptr;  // subclassed if needed
+Drive* drive = nullptr;  // subclassed if needed
 
 //* How to use subclasses: ((SubclassName*) robot)->function()
 //! You must downcast each time you use a special function
@@ -70,7 +70,7 @@ drive_param_t driveParams;
 ConfigManager config;
 
 // Input Debouncer
-Debouncer *dbOptions;
+Debouncer* dbOptions;
 
 // Prototypes for Controller Callbacks
 // Implementations located at the bottom of this file
@@ -86,7 +86,7 @@ void onConnection()
   if (robotType != quarterback_turret)
     drive->emergencyStop();
   else
-    ((QuarterbackTurret *)robot)->emergencyStop();
+    ((QuarterbackTurret*)robot)->emergencyStop();
 }
 
 void onDisconnect()
@@ -97,7 +97,7 @@ void onDisconnect()
   if (robotType != quarterback_turret)
     drive->emergencyStop();
   else
-    ((QuarterbackTurret *)robot)->emergencyStop();
+    ((QuarterbackTurret*)robot)->emergencyStop();
 }
 
 extern "C" void main_app(void)
@@ -174,16 +174,16 @@ extern "C" void main_app(void)
       break;
     case quarterback_turret:
       robot = new QuarterbackTurret(
-        M1_IDX,        // left flywheel
-        M2_IDX,        // right flywheel
-        M3_PIN,        // cradle
-        M4_PIN,        // turret
-        SPECBOT_PIN1,  // assembly motor
-        SPECBOT_PIN3,  // magnetometer sda
-        SPECBOT_PIN4,  // magnetometer scl
-        ENC1_CHA,      // turret encoder
-        ENC1_CHB,      // turret encoder
-        ENC2_CHB       // zeroing laser
+          M1_IDX,        // left flywheel
+          M2_IDX,        // right flywheel
+          M3_PIN,        // cradle
+          M4_PIN,        // turret
+          SPECBOT_PIN1,  // assembly motor
+          SPECBOT_PIN3,  // magnetometer sda
+          SPECBOT_PIN4,  // magnetometer scl
+          ENC1_CHA,      // turret encoder
+          ENC1_CHB,      // turret encoder
+          LASER_PIN      // zeroing laser
       );
       break;
     case quarterback_base:
@@ -217,8 +217,11 @@ extern "C" void main_app(void)
   ps5.attachOnDisconnect(onDisconnect);
 
   ESP_LOGI(TAG, "Initializing hardware serial...");
-  HWSerial.begin(115200, SERIAL_8N1, 16,
-                 17);  // 9600 baudrate default for USBSabertooth
+  HWSerial.begin(
+      115200,
+      SERIAL_8N1,
+      16,
+      17);  // 9600 baudrate default for USBSabertooth
   {
     ;  // wait for serial port to connect
   }
@@ -247,7 +250,7 @@ extern "C" void main_app(void)
       // avoid NPEs and chaos
       // TODO: find better solution
       if (robotType != quarterback_turret)
-     {
+      {
         // ESP_LOGI(TAG, "Setting stick power...");
         drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
 
@@ -293,7 +296,7 @@ extern "C" void main_app(void)
       }
       //! Performs all special robot actions depending on the instantiated Robot
       //! subclass
-      
+
       // ESP_LOGI(TAG, "Performing robot actions...");
       robot->action();
 
@@ -313,8 +316,9 @@ extern "C" void main_app(void)
       }
       else
       {
-        // ESP_LOGI(TAG, "Emergency stop due to controller disconnect for quarterback turret.");
-        ((QuarterbackTurret *)robot)->emergencyStop();
+        // ESP_LOGI(TAG, "Emergency stop due to controller disconnect for
+        // quarterback turret.");
+        ((QuarterbackTurret*)robot)->emergencyStop();
       }
     }
     delay(5);
