@@ -690,6 +690,19 @@ void QuarterbackTurret::moveCradle(CradleState state, bool force)
     {
       targetCradleState = state;
 
+      /* Serial.print(F("current state: "));
+      // if (currentCradleState == forward) {
+      //   Serial.print(F("forward | "));
+      // } else if (currentCradleState == back) {
+      //   Serial.print(F("backward | "));
+      // }
+      // Serial.print(F("target state: "));
+      // if (targetCradleState == forward) {
+      //   Serial.print(F("forward | "));
+      // } else if (targetCradleState == back) {
+         Serial.print(F("backward | "));
+       } */
+
       if (targetCradleState != currentCradleState || force)
       {
         moveCradleSubroutine();
@@ -709,18 +722,23 @@ void QuarterbackTurret::moveCradle(CradleState state, bool force)
         cradleMoving = false;
         cradleActuator.write(0);
       }
+      // Serial.print(F("past delay? "));
+      // Serial.print((millis() - cradleStartTime) > QB_CRADLE_TRAVEL_DELAY);
+      // Serial.print(F(" | "));
     }
     else if ((millis() - cradleStartTime) > QB_CRADLE_TRAVEL_DELAY)
     {
       currentCradleState = targetCradleState;
       cradleMoving = false;
       cradleActuator.write(0);
+       // Serial.print(F("cradle stopped | "));
     }
   }
   else
   {
     cradleActuator.write(0);
   }
+   // Serial.println();
 }
 #pragma endregion
 
@@ -751,6 +769,17 @@ void QuarterbackTurret::setFlywheelSpeed(float absoluteSpeed)
 
 void QuarterbackTurret::setFlywheelSpeedStage(FlywheelSpeed stage)
 {
+    // If in combine, use different preset flywheel speeds, which are set for combine distances
+ // if(mode == combine){
+ //   targetFlywheelStage = stage;
+ //   setFlywheelSpeed(combineSpeeds[static_cast<int>(targetFlywheelStage)]);
+   // currentFlywheelStage = targetFlywheelStage;
+  //} else{
+  //  targetFlywheelStage = stage;
+   // setFlywheelSpeed(flywheelSpeeds[static_cast<int>(targetFlywheelStage)]);
+  .//  currentFlywheelStage = targetFlywheelStage;
+  //}
+//}
   targetFlywheelStage = stage;
   setFlywheelSpeed(flywheelSpeeds[static_cast<uint8_t>(targetFlywheelStage)]);
   currentFlywheelStage = targetFlywheelStage;
@@ -1618,5 +1647,10 @@ void QuarterbackTurret::updateReadMotorValues()
       motor2Value = (recievedMessage.substring(recievedMessage.indexOf('&') + 1)).toInt();
     }
   }
+// Serial.print("Motor1: ");
+// Serial.print(motor1Value);
+// Serial.print("\tMotor2: ");
+// Serial.print(motor2Value);
+// Serial.println();
 }
 #pragma endregion
