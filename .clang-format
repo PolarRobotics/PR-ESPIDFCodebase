@@ -3,3 +3,8 @@ IndentWidth: 2
 
 BreakBeforeBraces: Allman
 RemoveBracesLLVM: true
+BinPackArguments: false   # Forces each argument to be on its own line if line is too long
+BinPackParameters: false  # Forces parameters in declarations to be one per line
+AlignAfterOpenBracket: AlwaysBreak  # Breaks after '(' for function calls
+AllowAllArgumentsOnNextLine: false  # Prevents putting all arguments on the next line
+PenaltyBreakBeforeFirstCallParameter: 100  # High penalty to avoid breaking before first arg
