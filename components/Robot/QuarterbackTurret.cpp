@@ -1,10 +1,12 @@
 #include <QuarterbackTurret.h>
+
 #include "esp_log.h"
 
 static const char *TAG = "QuarterbackTurret";
 
-// This for some reason has to be declared in the .cpp file and not the .h file so that it does not conflict with the same declaration in other .h files
-HardwareSerial Uart_Turret(1); // UART2
+// This for some reason has to be declared in the .cpp file and not the .h file
+// so that it does not conflict with the same declaration in other .h files
+HardwareSerial Uart_Turret(1);  // UART2
 
 // "define" static members to satisfy linker
 uint8_t QuarterbackTurret::turretEncoderPinA;
@@ -17,62 +19,68 @@ void QuarterbackTurret::turretEncoderISR()
   turretEncoderStateB = digitalRead(turretEncoderPinB);
 
   if (turretEncoderStateB == 1)
-  {
     currentTurretEncoderCount--;
-  }
   else if (turretEncoderStateB == 0)
-  {
     currentTurretEncoderCount++;
-  }
 }
 
 #pragma region Constructor
-QuarterbackTurret::QuarterbackTurret(
-    uint8_t flywheelLeftPin,    // M1
-    uint8_t flywheelRightPin,   // M2
-    uint8_t cradlePin,          // M3
-    uint8_t turretPin,          // M4
-    uint8_t assemblyPin,        // S1
-    uint8_t magnetometerSdaPin, // S3
-    uint8_t magnetometerSclPin, // S4
-    uint8_t turretEncoderPinA,  // E1A
-    uint8_t turretEncoderPinB,  // E1B
-    uint8_t turretLaserPin      // E2A
+QuarterbackTurret::QuarterbackTurret(uint8_t flywheelLeftPin,     // M1
+                                     uint8_t flywheelRightPin,    // M2
+                                     uint8_t cradlePin,           // M3
+                                     uint8_t turretPin,           // M4
+                                     uint8_t assemblyPin,         // S1
+                                     uint8_t magnetometerSdaPin,  // S3
+                                     uint8_t magnetometerSclPin,  // S4
+                                     uint8_t turretEncoderPinA,   // E1A
+                                     uint8_t turretEncoderPinB,   // E1B
+                                     uint8_t turretLaserPin       // E2A
 )
 {
-
   // set all state variables to default values,
-  // except currentAssemblyAngle, currentRelativeHeading, currentRelativeTurretCount
-  // the positions of these mechanisms are initially unknown and assigned upon reset/homing
+  // except currentAssemblyAngle, currentRelativeHeading,
+  // currentRelativeTurretCount the positions of these mechanisms are initially
+  // unknown and assigned upon reset/homing
 
-  this->enabled = false; // initially disable robot for safety
+  this->enabled = false;  // initially disable robot for safety
   this->initialized = false;
   this->runningMacro = false;
   this->currentAssemblyAngle = unknownAngle;
-  this->targetAssemblyAngle = straight; // while the initial state is unknown, we want it to be straight
-  this->assemblyMoving = false;         // it is safe to assume the assembly is not moving
+  this->targetAssemblyAngle = straight;  // while the initial state is unknown,
+                                         // we want it to be straight
+  this->assemblyMoving =
+      false;  // it is safe to assume the assembly is not moving
   this->assemblyTriggerToggled = false;
 
-  this->currentCradleState = forward; // in case the startup state is strange, force the cradle to move back once on startup
+  this->currentCradleState =
+      forward;  // in case the startup state is strange, force the cradle to
+                // move back once on startup
   this->targetCradleState = back;
   this->cradleMoving = false;
   this->cradleStartTime = 0;
 
-  this->mode = manual;       // start in manual mode by default, auto mode can be enabled by selecting a target
-  this->target = receiver_1; // the default target is receiver 1, but this has no effect until the mode is switched to automatic
+  this->mode = manual;  // start in manual mode by default, auto mode can be
+                        // enabled by selecting a target
+  this->target =
+      receiver_1;  // the default target is receiver 1, but this has no effect
+                   // until the mode is switched to automatic
 
-  this->currentFlywheelStage = stopped; // it is safe to assume the flywheels are stopped
+  this->currentFlywheelStage =
+      stopped;  // it is safe to assume the flywheels are stopped
   this->targetFlywheelStage = stopped;
 
-  this->currentFlywheelSpeed = 0; // it is safe to assume the flywheels are stopped
+  this->currentFlywheelSpeed =
+      0;  // it is safe to assume the flywheels are stopped
   this->targetFlywheelSpeed = 0;
 
-  this->flywheelManualOverride = false; // until/unless the left stick is active, this is false
+  this->flywheelManualOverride =
+      false;  // until/unless the left stick is active, this is false
 
-  this->currentTurretSpeed = 0; // it is safe to assume the turret is stopped
+  this->currentTurretSpeed = 0;  // it is safe to assume the turret is stopped
   this->targetTurretSpeed = 0;
 
-  this->targetRelativeHeading = 0; // while the initial heading is unknown, we want the heading to be zero
+  this->targetRelativeHeading = 0;  // while the initial heading is unknown, we
+                                    // want the heading to be zero
   this->targetTurretEncoderCount = 0;
 
   this->turretMoving = false;
@@ -88,7 +96,9 @@ QuarterbackTurret::QuarterbackTurret(
   // turret laser setup
   this->turretLaserPin = turretLaserPin;
   this->turretLaserState = 0;
-  pinMode(turretLaserPin, INPUT_PULLUP); //! will be 1 when at home position or main power is off (the latter is electrically unavoidable)
+  pinMode(turretLaserPin,
+          INPUT_PULLUP);  //! will be 1 when at home position or main power is
+                          //! off (the latter is electrically unavoidable)
 
   // encoder setup
   QuarterbackTurret::turretEncoderPinA = turretEncoderPinA;
@@ -100,8 +110,9 @@ QuarterbackTurret::QuarterbackTurret(
 
   // initiate motor objects
   // TODO: initiate assembly/tilter stepper motor with lib
-  cradleActuator.setup(cradlePin, big_ampflow); // TODO: change to MotorInterface when merged
-  turretMotor.setup(turretPin, falcon);         // TODO: add encoder
+  cradleActuator.setup(
+      cradlePin, big_ampflow);  // TODO: change to MotorInterface when merged
+  turretMotor.setup(turretPin, falcon);  // TODO: add encoder
   assemblyMotor.setup(assemblyPin, small_12v);
   flywheelLeftMotor.setup(flywheelLeftPin, falcon);
   flywheelRightMotor.setup(flywheelRightPin, falcon);
@@ -133,7 +144,8 @@ void QuarterbackTurret::action()
   //! Control Schema
   //* Touchpad: Emergency Stop
   //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
-  // above two inputs are registered in `testForDisableOrStop()` since this is re-used in blocking routines
+  // above two inputs are registered in `testForDisableOrStop()` since this is
+  // re-used in blocking routines
   //! Ignore non-emergency inputs if running a macro
 
   if (!testForDisableOrStop() && !runningMacro)
@@ -142,13 +154,9 @@ void QuarterbackTurret::action()
     if (dbCircle->debounceAndPressed(ps5.Circle()))
     {
       if (!initialized)
-      {
         reset();
-      }
       else
-      {
         zeroTurret();
-      }
     }
     //* Triangle: Macro 1 - load from center
     else if (dbTriangle->debounceAndPressed(ps5.Triangle()))
@@ -167,23 +175,22 @@ void QuarterbackTurret::action()
     else
     {
       //* Right Trigger (R2): Fire (cradle/grabber forward)
-      // Do not fire unless moving forward (do not fire when intaking or stopped)
+      // Do not fire unless moving forward (do not fire when intaking or
+      // stopped)
       if (currentFlywheelSpeed > STICK_DEADZONE && ps5.R2())
-      {
         moveCradle(forward);
-      }
       else
-      {
         moveCradle(back);
-      }
 
       //* Left Trigger (L2): Toggle Assembly Angle
       if (ps5.L2() && !assemblyTriggerToggled)
       {
         assemblyTriggerToggled = true;
 
-        // if angled or unknown, move to straight angle. else, move to firing angle.
-        if (currentAssemblyAngle == unknownAngle || currentAssemblyAngle == angled)
+        // if angled or unknown, move to straight angle. else, move to firing
+        // angle.
+        if (currentAssemblyAngle == unknownAngle ||
+            currentAssemblyAngle == angled)
         {
           aimAssembly(straight);
         }
@@ -248,7 +255,8 @@ void QuarterbackTurret::action()
           //* Combine "Macro" Mode
           // Overrides turret control
           // Allows switching between 3 different angles (left, straight, right)
-          // Flywheel control is available as normal (set powers with override via stick)
+          // Flywheel control is available as normal (set powers with override
+          // via stick)
 
           //* D-Pad Left: Move left one position
           if (dbDpadLeft->debounceAndPressed(ps5.Left()))
@@ -284,12 +292,16 @@ void QuarterbackTurret::action()
           }
 
           // Run the PID loop
-          turretPIDSpeed = turretPIDController((float)getCurrentHeading(), (float)targetRelativeHeading, kp, kd, ki, .3);
+          turretPIDSpeed =
+              turretPIDController((float)getCurrentHeading(),
+                                  (float)targetRelativeHeading, kp, kd, ki, .3);
           setTurretSpeed(turretPIDSpeed);
 
           // if (utmsCtr <= UTMS_CTR_MAX) {
           //   utmsCtr = 0;
-          ESP_LOGI(TAG, "combine mode -- ctec = %ld; ttec = %ld", (long)currentTurretEncoderCount, (long)targetTurretEncoderCount);
+          ESP_LOGI(TAG, "combine mode -- ctec = %ld; ttec = %ld",
+                   (long)currentTurretEncoderCount,
+                   (long)targetTurretEncoderCount);
           // } else {
           //   utmsCtr++;
           // }
@@ -299,7 +311,8 @@ void QuarterbackTurret::action()
           // Left = CCW, Right = CW
           if (fabs(stickTurret) > STICK_DEADZONE)
           {
-            //* Use absolute positioning and position-based control iff. magnetometer functionality is enabled
+            //* Use absolute positioning and position-based control iff.
+            // magnetometer functionality is enabled
             if (useMagnetometer && holdTurretStillEnabled)
             {
               // only change position every 4 loops
@@ -348,18 +361,12 @@ void QuarterbackTurret::action()
         {
           //* D-Pad Up: Increase flywheel speed by one stage
           if (dbDpadUp->debounceAndPressed(ps5.Up()))
-          {
             adjustFlywheelSpeedStage(INCREASE);
-          }
           //* D-Pad Down: Decrease flywheel speed by one stage
           else if (dbDpadDown->debounceAndPressed(ps5.Down()))
-          {
             adjustFlywheelSpeedStage(DECREASE);
-          }
           else
-          {
             setFlywheelSpeedStage(currentFlywheelStage);
-          }
         }
       }
     }
@@ -371,22 +378,26 @@ void QuarterbackTurret::action()
 }
 #pragma endregion
 
-// note that because the direction is flipped to be more intuitive for the driver,
-// the "positive" direction is reversal/red on the falcon, and the "negative" direction is forwards/green
-// positive direction is also positive encoder direction, and vice versa
-void QuarterbackTurret::setTurretSpeed(float absoluteSpeed, bool overrideEncoderTare)
+// note that because the direction is flipped to be more intuitive for the
+// driver, the "positive" direction is reversal/red on the falcon, and the
+// "negative" direction is forwards/green positive direction is also positive
+// encoder direction, and vice versa
+void QuarterbackTurret::setTurretSpeed(float absoluteSpeed,
+                                       bool overrideEncoderTare)
 {
   if (enabled)
   {
     targetTurretSpeed = constrain(absoluteSpeed, -1.0, 1.0);
-    turretMotor.write(-targetTurretSpeed); // flip direction so that + is CW and - is CCW
+    turretMotor.write(
+        -targetTurretSpeed);  // flip direction so that + is CW and - is CCW
 
     // handle mechanical slop when changing directions
     // if (!overrideEncoderTare) {
     //   turretDirectionChanged();
     // }
 
-    currentTurretSpeed = targetTurretSpeed; //! for now, will probably need to change later, like an interrupt
+    currentTurretSpeed = targetTurretSpeed;  //! for now, will probably need to
+                                             //! change later, like an interrupt
   }
   else
   {
@@ -395,23 +406,26 @@ void QuarterbackTurret::setTurretSpeed(float absoluteSpeed, bool overrideEncoder
 }
 
 #pragma region Old Rel Turret
-void QuarterbackTurret::moveTurret(int16_t heading, bool relativeToRobot, bool ramp)
+void QuarterbackTurret::moveTurret(int16_t heading, bool relativeToRobot,
+                                   bool ramp)
 {
   moveTurret(heading, degrees, QB_HOME_PCT, relativeToRobot, ramp);
 }
 
-void QuarterbackTurret::moveTurret(int16_t heading, float power, bool relativeToRobot, bool ramp)
+void QuarterbackTurret::moveTurret(int16_t heading, float power,
+                                   bool relativeToRobot, bool ramp)
 {
   moveTurret(heading, degrees, power, relativeToRobot, ramp);
 }
 
-void QuarterbackTurret::moveTurret(int16_t heading, TurretUnits units, float power, bool relativeToRobot, bool ramp)
+void QuarterbackTurret::moveTurret(int16_t heading, TurretUnits units,
+                                   float power, bool relativeToRobot, bool ramp)
 {
   const char *unitLabel = (units == degrees) ? "degrees" : "counts";
-  ESP_LOGI(TAG, "moveTurret called with heading = %d, units = %s, rel = %d", heading, unitLabel, relativeToRobot);
+  ESP_LOGI(TAG, "moveTurret called with heading = %d, units = %s, rel = %d",
+           heading, unitLabel, relativeToRobot);
   if (enabled)
   {
-
     // todo
     if (relativeToRobot)
     {
@@ -427,39 +441,46 @@ void QuarterbackTurret::moveTurret(int16_t heading, TurretUnits units, float pow
         // currentTurretEncoderCount %= 360;
         // currentTurretEncoderCount *= sign;
 
-        targetTurretEncoderCount = (int)round((double)heading * QB_COUNTS_PER_TURRET_DEGREE);
+        targetTurretEncoderCount =
+            (int)round((double)heading * QB_COUNTS_PER_TURRET_DEGREE);
         turretMoving = true;
         // sign now used for target instead of current
-        sign = 1; // 1 when positive, -1 when negative
-        // if the current turret encoder count is over halfway to a full rotation in either direction
-        // if (abs(currentTurretEncoderCount) > (QB_COUNTS_PER_TURRET_REV / 2)) {
-        //   // ensure that the target and current counts are as close as possible
+        sign = 1;  // 1 when positive, -1 when negative
+        // if the current turret encoder count is over halfway to a full
+        // rotation in either direction if (abs(currentTurretEncoderCount) >
+        // (QB_COUNTS_PER_TURRET_REV / 2)) {
+        //   // ensure that the target and current counts are as close as
+        //   possible
         //   // if adding one rotation's worth of counts would help, do so
-        //   if (currentTurretEncoderCount - (targetTurretEncoderCount + QB_COUNTS_PER_TURRET_REV) < currentTurretEncoderCount - targetTurretEncoderCount) {
+        //   if (currentTurretEncoderCount - (targetTurretEncoderCount +
+        //   QB_COUNTS_PER_TURRET_REV) < currentTurretEncoderCount -
+        //   targetTurretEncoderCount) {
         //     targetTurretEncoderCount += QB_COUNTS_PER_TURRET_REV;
         //   }
         // }
 
-        if (targetTurretEncoderCount < currentTurretEncoderCount)
-        {
-          sign = -1;
-        }
+        if (targetTurretEncoderCount < currentTurretEncoderCount) sign = -1;
 
-        setTurretSpeed(QB_HANDOFF / 4 * sign); //! temp constant, implement P loop soon
+        setTurretSpeed(QB_HANDOFF / 4 *
+                       sign);  //! temp constant, implement P loop soon
         delay(100);
-        setTurretSpeed(QB_HANDOFF / 3 * sign); //! temp constant, implement P loop soon
+        setTurretSpeed(QB_HANDOFF / 3 *
+                       sign);  //! temp constant, implement P loop soon
         delay(100);
-        setTurretSpeed(QB_HANDOFF / 2 * sign); //! temp constant, implement P loop soon
+        setTurretSpeed(QB_HANDOFF / 2 *
+                       sign);  //! temp constant, implement P loop soon
         delay(100);
-        setTurretSpeed(QB_HANDOFF * sign); //! temp constant, implement P loop soon
+        setTurretSpeed(QB_HANDOFF *
+                       sign);  //! temp constant, implement P loop soon
 
-        // currentTurretEncoderCount = targetTurretEncoderCount; // currentTurretEncoderCount is updated by interrupt
+        // currentTurretEncoderCount = targetTurretEncoderCount; //
+        // currentTurretEncoderCount is updated by interrupt
       }
       // currentRelativeHeading = targetRelativeHeading;
     }
     else
-    { // relative to field
-      // todo: use magnetometer
+    {  // relative to field
+       // todo: use magnetometer
     }
   }
   else
@@ -468,7 +489,8 @@ void QuarterbackTurret::moveTurret(int16_t heading, TurretUnits units, float pow
   }
 }
 
-void QuarterbackTurret::moveTurretAndWait(int16_t heading, float power, bool relativeToRobot, bool ramp)
+void QuarterbackTurret::moveTurretAndWait(int16_t heading, float power,
+                                          bool relativeToRobot, bool ramp)
 {
   moveTurret(heading, power, relativeToRobot, ramp);
   while (turretMoving && !testForDisableOrStop())
@@ -483,16 +505,17 @@ void QuarterbackTurret::updateTurretMotionStatus()
 {
   // if (utmsCtr >= UTMS_CTR_MAX) {
   //   utmsCtr = 0;
-  ESP_LOGI(TAG,
-           "update called with ctec = %ld; ttec = %ld; error (ct) = %.2f",
-           (long)currentTurretEncoderCount,
-           (long)targetTurretEncoderCount,
-           fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) - targetTurretEncoderCount));
+  ESP_LOGI(TAG, "update called with ctec = %ld; ttec = %ld; error (ct) = %.2f",
+           (long)currentTurretEncoderCount, (long)targetTurretEncoderCount,
+           fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) -
+                targetTurretEncoderCount));
   // } else {
   //   utmsCtr++;
   // }
   // determines if encoder is within "spec"
-  if (turretMoving && fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) - targetTurretEncoderCount) < QB_TURRET_THRESHOLD)
+  if (turretMoving &&
+      fabs((currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) -
+           targetTurretEncoderCount) < QB_TURRET_THRESHOLD)
   {
     turretMoving = false;
     setTurretSpeed(0);
@@ -503,12 +526,12 @@ void QuarterbackTurret::updateTurretMotionStatus()
 void QuarterbackTurret::turretDirectionChanged()
 {
   if (currentTurretSpeed > 0 && targetTurretSpeed < 0)
-  { // going CW, trying to go CCW
+  {  // going CW, trying to go CCW
     currentTurretEncoderCount -= slopError;
     targetTurretEncoderCount -= slopError;
   }
   else if (currentTurretSpeed < 0 && targetTurretSpeed > 0)
-  { // going CCW, trying to go CW
+  {  // going CCW, trying to go CW
     currentTurretEncoderCount += slopError;
     targetTurretEncoderCount += slopError;
   }
@@ -517,17 +540,16 @@ void QuarterbackTurret::turretDirectionChanged()
 //* get current heading in degrees
 int16_t QuarterbackTurret::getCurrentHeading()
 {
-  return (int)((double)currentTurretEncoderCount / QB_COUNTS_PER_TURRET_DEGREE) % 360;
+  return (int)((double)currentTurretEncoderCount /
+               QB_COUNTS_PER_TURRET_DEGREE) %
+         360;
 }
 
 // Function to normalize an angle to the range [0, 360)
 int QuarterbackTurret::NormalizeAngle(int angle)
 {
-  while (angle < 0)
-  {
-    angle += 360;
-  }
-  angle %= 360; // Ensure angle is within [0, 360) range
+  while (angle < 0) angle += 360;
+  angle %= 360;  // Ensure angle is within [0, 360) range
   return angle;
 }
 
@@ -542,7 +564,8 @@ int QuarterbackTurret::CalculateRotation(float currentAngle, float targetAngle)
   int negativeDegreeCount = currentAngle;
   int iter = 0;
 
-  while (NormalizeAngle(negativeDegreeCount) != targetAngle && NormalizeAngle(positiveDegreeCount) != targetAngle)
+  while (NormalizeAngle(negativeDegreeCount) != targetAngle &&
+         NormalizeAngle(positiveDegreeCount) != targetAngle)
   {
     positiveDegreeCount++;
     negativeDegreeCount--;
@@ -550,41 +573,34 @@ int QuarterbackTurret::CalculateRotation(float currentAngle, float targetAngle)
   }
 
   if (iter == 0)
-  {
     return 0;
-  }
   else if (NormalizeAngle(negativeDegreeCount) == targetAngle)
-  {
     return iter;
-  }
   else
-  {
     return iter * -1;
-  }
 }
 
 // not currently used
-int16_t QuarterbackTurret::findNearestHeading(int16_t targetHeading, int16_t currentHeading)
+int16_t QuarterbackTurret::findNearestHeading(int16_t targetHeading,
+                                              int16_t currentHeading)
 {
   // assuming targetHeading is positive
   int16_t positiveHeading = targetHeading;
 
   // if targetHeading is negative, convert to a positive heading
-  if (targetHeading < 0)
-  {
-    positiveHeading = targetHeading + 360;
-  }
+  if (targetHeading < 0) positiveHeading = targetHeading + 360;
 
   // properly constrain headings to be within (-360, +360)
   positiveHeading %= 360;
   int16_t negativeHeading = positiveHeading - 360;
-  if (negativeHeading == -360) // same as if (positiveHeading == 0)
+  if (negativeHeading == -360)  // same as if (positiveHeading == 0)
     negativeHeading = 0;
 
   // calculate which heading is closer to the current heading
   int16_t adjustedCurrentHeading = currentHeading % 360;
 
-  if (abs(adjustedCurrentHeading - positiveHeading) < abs(adjustedCurrentHeading - negativeHeading))
+  if (abs(adjustedCurrentHeading - positiveHeading) <
+      abs(adjustedCurrentHeading - negativeHeading))
   {
     // negative heading is closer
     return (adjustedCurrentHeading - positiveHeading);
@@ -612,9 +628,7 @@ void QuarterbackTurret::aimAssembly(AssemblyAngle angle, bool force)
       targetAssemblyAngle = angle;
 
       if (targetAssemblyAngle != currentAssemblyAngle || force)
-      {
         moveAssemblySubroutine();
-      }
 
       //* force is a blocking routine to ensure it works without interruption
       //* do not use force frequently as it can strain the motor
@@ -622,7 +636,8 @@ void QuarterbackTurret::aimAssembly(AssemblyAngle angle, bool force)
       if (force)
       {
         // also allow emergency stop
-        while ((millis() - assemblyStartTime) <= QB_ASSEMBLY_TILT_DELAY && !testForDisableOrStop())
+        while ((millis() - assemblyStartTime) <= QB_ASSEMBLY_TILT_DELAY &&
+               !testForDisableOrStop())
         {
           NOP();
         }
@@ -649,13 +664,9 @@ void QuarterbackTurret::aimAssembly(AssemblyAngle angle, bool force)
 void QuarterbackTurret::moveAssemblySubroutine()
 {
   if (targetAssemblyAngle == straight)
-  {
     assemblyMotor.write(QB_ASM_SPEED);
-  }
   else if (targetAssemblyAngle == angled)
-  {
     assemblyMotor.write(-1.25 * QB_ASM_SPEED);
-  }
   assemblyStartTime = millis();
   assemblyMoving = true;
 }
@@ -691,9 +702,7 @@ void QuarterbackTurret::moveCradle(CradleState state, bool force)
       targetCradleState = state;
 
       if (targetCradleState != currentCradleState || force)
-      {
         moveCradleSubroutine();
-      }
 
       //* force is a blocking routine to ensure it works without interruption
       //* do not use force frequently as it can strain the actuator
@@ -701,7 +710,8 @@ void QuarterbackTurret::moveCradle(CradleState state, bool force)
       if (force)
       {
         // also allow emergency stop
-        while ((millis() - cradleStartTime) <= QB_CRADLE_TRAVEL_DELAY && !testForDisableOrStop())
+        while ((millis() - cradleStartTime) <= QB_CRADLE_TRAVEL_DELAY &&
+               !testForDisableOrStop())
         {
           NOP();
         }
@@ -730,16 +740,21 @@ void QuarterbackTurret::setFlywheelSpeed(float absoluteSpeed)
   // update the motors so they are spinning at the new speed
   if (enabled)
   {
-    // if current speed is not the passed speed, change the motor speed. this is only to avoid unnecessary writes
+    // if current speed is not the passed speed, change the motor speed. this is
+    // only to avoid unnecessary writes
     if (fabs(currentFlywheelSpeed - absoluteSpeed) > STICK_DEADZONE)
     {
       // constrain to the first and last values of the flywheel speed array.
-      // the first value should be the slow intake speed -- the flywheels should NEVER spin more quickly *inwards* than this.
-      // the last value should be the maximum speed (ordinarily 1, but we may change this).
-      targetFlywheelSpeed = constrain(absoluteSpeed, flywheelSpeeds[0], flywheelSpeeds[QB_TURRET_NUM_SPEEDS - 1]);
+      // the first value should be the slow intake speed -- the flywheels should
+      // NEVER spin more quickly *inwards* than this. the last value should be
+      // the maximum speed (ordinarily 1, but we may change this).
+      targetFlywheelSpeed = constrain(absoluteSpeed, flywheelSpeeds[0],
+                                      flywheelSpeeds[QB_TURRET_NUM_SPEEDS - 1]);
       flywheelLeftMotor.write(targetFlywheelSpeed);
       flywheelRightMotor.write(-targetFlywheelSpeed);
-      currentFlywheelSpeed = targetFlywheelSpeed; //! for now, will probably need to change later, like an interrupt
+      currentFlywheelSpeed =
+          targetFlywheelSpeed;  //! for now, will probably need to change later,
+                                //! like an interrupt
     }
   }
   else
@@ -760,15 +775,12 @@ void QuarterbackTurret::adjustFlywheelSpeedStage(SpeedStatus speed)
 {
   uint8_t idx = static_cast<uint8_t>(currentFlywheelStage);
 
-  // Change the speed stage based on whether the user wants to increase or decrease
+  // Change the speed stage based on whether the user wants to increase or
+  // decrease
   if (speed == INCREASE && idx < QB_TURRET_NUM_SPEEDS - 1)
-  {
     idx++;
-  }
   else if (speed == DECREASE && idx > 0)
-  {
     idx--;
-  }
 
   setFlywheelSpeedStage(static_cast<FlywheelSpeed>(idx));
 }
@@ -778,19 +790,12 @@ void QuarterbackTurret::adjustFlywheelSpeedStage(SpeedStatus speed)
 void QuarterbackTurret::switchMode()
 {
   if (mode == manual)
-  {
     switchMode(automatic);
-  }
   else if (mode == automatic)
-  {
     switchMode(manual);
-  }
 }
 
-void QuarterbackTurret::switchMode(TurretMode mode)
-{
-  this->mode = mode;
-}
+void QuarterbackTurret::switchMode(TurretMode mode) { this->mode = mode; }
 
 void QuarterbackTurret::switchTarget(TargetReceiver target)
 {
@@ -832,7 +837,8 @@ void QuarterbackTurret::handoff()
     while ((currentTime + 4000) > millis())
     {
       calculateHeadingMag();
-      turretPIDSpeed = turretPIDController(headingDeg, (float)targetAbsoluteHeading, .01, 0, 0, .25);
+      turretPIDSpeed = turretPIDController(
+          headingDeg, (float)targetAbsoluteHeading, .01, 0, 0, .25);
       setTurretSpeed(turretPIDSpeed, true);
     }
     cradleActuator.write(1.0);
@@ -861,13 +867,16 @@ void QuarterbackTurret::testRoutine()
   ESP_LOGI(TAG, "initial ctec: %ld", (long)currentTurretEncoderCount);
   moveTurretAndWait(90);
   delay(500);
-  ESP_LOGI(TAG, "ctec after turn to 90 deg: %ld", (long)currentTurretEncoderCount);
+  ESP_LOGI(TAG, "ctec after turn to 90 deg: %ld",
+           (long)currentTurretEncoderCount);
   moveTurretAndWait(-90);
   delay(500);
-  ESP_LOGI(TAG, "ctec after turn to -90 deg: %ld", (long)currentTurretEncoderCount);
+  ESP_LOGI(TAG, "ctec after turn to -90 deg: %ld",
+           (long)currentTurretEncoderCount);
   moveTurretAndWait(180);
   delay(500);
-  ESP_LOGI(TAG, "ctec after turn to 180 deg: %ld", (long)currentTurretEncoderCount);
+  ESP_LOGI(TAG, "ctec after turn to 180 deg: %ld",
+           (long)currentTurretEncoderCount);
   this->runningMacro = false;
 }
 
@@ -885,32 +894,44 @@ void QuarterbackTurret::zeroTurret()
   // set speed
   setTurretSpeed(QB_HOME_PCT);
 
-  // pin will only read high if the main power is off or the laser sensor is triggered
+  // pin will only read high if the main power is off or the laser sensor is
+  // triggered
   while (
-      digitalRead(turretLaserPin) == LOW &&                         // routine will exit when the laser sensor is triggered
-      currentTurretEncoderCount < (2 * QB_COUNTS_PER_TURRET_REV) && // routine will exit if it spins around twice without triggering
-      !testForDisableOrStop()                                       // routine will exit if emergency stop or disable buttons are triggered
+      digitalRead(turretLaserPin) ==
+          LOW &&  // routine will exit when the laser sensor is triggered
+      currentTurretEncoderCount <
+          (2 * QB_COUNTS_PER_TURRET_REV) &&  // routine will exit if it spins
+                                             // around twice without triggering
+      !testForDisableOrStop()  // routine will exit if emergency stop or disable
+                               // buttons are triggered
   )
   {
-    ESP_LOGI(TAG, "zeroing, read = %d; cte_count: %ld", digitalRead(turretLaserPin), (long)currentTurretEncoderCount);
+    ESP_LOGI(TAG, "zeroing, read = %d; cte_count: %ld",
+             digitalRead(turretLaserPin), (long)currentTurretEncoderCount);
   }
 
-  ESP_LOGI(TAG, "laser should read high rn: read = %d", digitalRead(turretLaserPin));
+  ESP_LOGI(TAG, "laser should read high rn: read = %d",
+           digitalRead(turretLaserPin));
 
   // get values as soon as the laser reads high
   int32_t risingEdgeEncoderCount = currentTurretEncoderCount;
   int32_t risingEdgeTimestamp = millis();
 
-  while (
-      digitalRead(turretLaserPin) == HIGH &&                                                   // exit when the laser sensor goes low
-      (currentTurretEncoderCount - risingEdgeEncoderCount) < (QB_COUNTS_PER_TURRET_REV / 2) && // exit if traveled half a rotation without triggering
-      !testForDisableOrStop()                                                                  // exit if emergency stop or disable buttons are triggered
+  while (digitalRead(turretLaserPin) ==
+             HIGH &&  // exit when the laser sensor goes low
+         (currentTurretEncoderCount - risingEdgeEncoderCount) <
+             (QB_COUNTS_PER_TURRET_REV /
+              2) &&  // exit if traveled half a rotation without triggering
+         !testForDisableOrStop()  // exit if emergency stop or disable buttons
+                                  // are triggered
   )
   {
-    ESP_LOGI(TAG, "zeroing (stage 2), read = %d; cte_count: %ld", digitalRead(turretLaserPin), (long)currentTurretEncoderCount);
+    ESP_LOGI(TAG, "zeroing (stage 2), read = %d; cte_count: %ld",
+             digitalRead(turretLaserPin), (long)currentTurretEncoderCount);
   }
 
-  ESP_LOGI(TAG, "laser should read low rn: read = %d", digitalRead(turretLaserPin));
+  ESP_LOGI(TAG, "laser should read low rn: read = %d",
+           digitalRead(turretLaserPin));
 
   int32_t fallingEdgeEncoderCount = currentTurretEncoderCount;
   int32_t fallingEdgeTimestamp = millis();
@@ -918,108 +939,127 @@ void QuarterbackTurret::zeroTurret()
   // stop turret
   setTurretSpeed(0);
 
-  ESP_LOGI(TAG, "rising: count: %ld, time: %ld", (long)risingEdgeEncoderCount, (long)risingEdgeTimestamp);
-  ESP_LOGI(TAG, "falling: count: %ld, time: %ld", (long)fallingEdgeEncoderCount, (long)fallingEdgeTimestamp);
+  ESP_LOGI(TAG, "rising: count: %ld, time: %ld", (long)risingEdgeEncoderCount,
+           (long)risingEdgeTimestamp);
+  ESP_LOGI(TAG, "falling: count: %ld, time: %ld", (long)fallingEdgeEncoderCount,
+           (long)fallingEdgeTimestamp);
 
-  // Here lastTurretEncoderCount is used as the value of currentTurretEncoderCount in the previous iteration of the loop
-  int32_t lastTurretEncoderCount = -currentTurretEncoderCount; // just something different than current
+  // Here lastTurretEncoderCount is used as the value of
+  // currentTurretEncoderCount in the previous iteration of the loop
+  int32_t lastTurretEncoderCount =
+      -currentTurretEncoderCount;  // just something different than current
   uint16_t stopCounter = 0;
 
   // wait until turret is stopped
-  while (
-      stopCounter < (QB_TURRET_STOP_THRESHOLD_MS / QB_TURRET_STOP_LOOP_DELAY_MS) &&
-      !testForDisableOrStop())
+  while (stopCounter <
+             (QB_TURRET_STOP_THRESHOLD_MS / QB_TURRET_STOP_LOOP_DELAY_MS) &&
+         !testForDisableOrStop())
   {
-    // run a counter for how many loop iterations that the last and current are the same.
-    // if they are the same for a predetermined amount of time (QB_TURRET_STOP_THRESHOLD_MS),
-    // we assume that the motor has actually stopped.
+    // run a counter for how many loop iterations that the last and current are
+    // the same. if they are the same for a predetermined amount of time
+    // (QB_TURRET_STOP_THRESHOLD_MS), we assume that the motor has actually
+    // stopped.
     if (lastTurretEncoderCount == currentTurretEncoderCount)
-    {
       stopCounter++;
-    }
     else
-    {
       stopCounter = 0;
-    }
 
-    ESP_LOGI(TAG,
-             "last ct: %ld, current ct: %ld, stopCt: %u",
-             (long)lastTurretEncoderCount,
-             (long)currentTurretEncoderCount,
+    ESP_LOGI(TAG, "last ct: %ld, current ct: %ld, stopCt: %u",
+             (long)lastTurretEncoderCount, (long)currentTurretEncoderCount,
              stopCounter);
 
-    lastTurretEncoderCount = currentTurretEncoderCount; // update last count
+    lastTurretEncoderCount = currentTurretEncoderCount;  // update last count
 
-    delay(QB_TURRET_STOP_LOOP_DELAY_MS); // then delay to wait for encoder to update
+    delay(QB_TURRET_STOP_LOOP_DELAY_MS);  // then delay to wait for encoder to
+                                          // update
   }
 
   int32_t restEncoderCount = currentTurretEncoderCount;
   int32_t restTimestamp = millis();
 
-  // at this point, there should be 3 points of data, in increasing order as follows:
-  //  - the point at which the laser was first triggered (when it first went high)
-  //  - the point at which the laser stopped being triggered (when it went low after being high)
-  //  - the point at which the motor stopped moving after being commanded to stop
+  // at this point, there should be 3 points of data, in increasing order as
+  // follows:
+  //  - the point at which the laser was first triggered (when it first went
+  //  high)
+  //  - the point at which the laser stopped being triggered (when it went low
+  //  after being high)
+  //  - the point at which the motor stopped moving after being commanded to
+  //  stop
 
   // the first point is the point of reference.
-  // the middle of the first and second points is the target point, where we assume the true zero is.
-  // the third point tells us how far we are from the second point, i.e., the error caused by the motor not stopping perfectly.
-  //  - this is not needed between the first and second points because the motor does not stop moving.
+  // the middle of the first and second points is the target point, where we
+  // assume the true zero is. the third point tells us how far we are from the
+  // second point, i.e., the error caused by the motor not stopping perfectly.
+  //  - this is not needed between the first and second points because the motor
+  //  does not stop moving.
 
-  // the third point also helps us overcome the mechanical slop issue when changing directions on the turret,
-  // since we assume that the turret rotates outside the laser triggering range when it is told to stop.
-  // so, we start rotating in the other direction, then when the laser triggers again, we can account for the slop
-  // near-perfectly by forcing the current encoder count to the second point when the laser first triggered,
-  // then continue moving until reaching the halfway point PLUS the difference between the second and third point,
-  // the latter of which is the number of counts the motor took to stop, so that it should stop exactly on the halfway mark.
+  // the third point also helps us overcome the mechanical slop issue when
+  // changing directions on the turret, since we assume that the turret rotates
+  // outside the laser triggering range when it is told to stop. so, we start
+  // rotating in the other direction, then when the laser triggers again, we can
+  // account for the slop near-perfectly by forcing the current encoder count to
+  // the second point when the laser first triggered, then continue moving until
+  // reaching the halfway point PLUS the difference between the second and third
+  // point, the latter of which is the number of counts the motor took to stop,
+  // so that it should stop exactly on the halfway mark.
 
-  // now, to actually do this, we start moving the motor (which was stopped), but in the opposite direction.
+  // now, to actually do this, we start moving the motor (which was stopped),
+  // but in the opposite direction.
 
   ESP_LOGI(TAG, "motor stopped, now moving in opposite direction");
 
   setTurretSpeed(-QB_HOME_PCT);
 
-  // moving with a positive power increases the current encoder count, and vice versa
-  // since we are moving with a negative power, the encoder count will be decreasing
+  // moving with a positive power increases the current encoder count, and vice
+  // versa since we are moving with a negative power, the encoder count will be
+  // decreasing
 
   // wait for the laser to trigger (go high) again, then measure the difference
   // between the current encoder count and the known falling edge count.
   // this value represents the mechanical slop, which can be used later.
-  // after that, tare the value of the current encoder count to the falling edge count.
+  // after that, tare the value of the current encoder count to the falling edge
+  // count.
 
-  while (
-      digitalRead(turretLaserPin) == LOW && // exit when the laser sensor is triggered
-      !testForDisableOrStop()               // exit if emergency stop or disable buttons are triggered
+  while (digitalRead(turretLaserPin) ==
+             LOW &&               // exit when the laser sensor is triggered
+         !testForDisableOrStop()  // exit if emergency stop or disable buttons
+                                  // are triggered
   )
   {
-    ESP_LOGI(TAG,
-             "zeroing (stage 3), read = %d; cte_count: %ld; fall_ct: %ld",
-             digitalRead(turretLaserPin),
-             (long)currentTurretEncoderCount,
+    ESP_LOGI(TAG, "zeroing (stage 3), read = %d; cte_count: %ld; fall_ct: %ld",
+             digitalRead(turretLaserPin), (long)currentTurretEncoderCount,
              (long)fallingEdgeEncoderCount);
     delay(5);
   }
 
-  // at this point, we will record the difference between the current count (physically, at the second point or falling edge)
-  // and the rest count (third point or stopping point). the current encoder count should be less than the falling edge count
-  // (past it, if it were to be physically translated) due to the mechanical slop
-  // int32_t reEntryEncoderCount = currentTurretEncoderCount;
-  // int32_t reEntryTimestamp = millis();
+  // at this point, we will record the difference between the current count
+  // (physically, at the second point or falling edge) and the rest count (third
+  // point or stopping point). the current encoder count should be less than the
+  // falling edge count (past it, if it were to be physically translated) due to
+  // the mechanical slop int32_t reEntryEncoderCount =
+  // currentTurretEncoderCount; int32_t reEntryTimestamp = millis();
 
-  // the error only due to the motor not stopping perfectly is then found by the difference between the first and third points
+  // the error only due to the motor not stopping perfectly is then found by the
+  // difference between the first and third points
   stopError = restEncoderCount - risingEdgeEncoderCount;
 
   // calculate the error due to slop
   slopError = fallingEdgeEncoderCount - currentTurretEncoderCount;
 
-  ESP_LOGI(TAG, "stop error: %ld; slop error: %ld", (long)stopError, (long)slopError);
+  ESP_LOGI(TAG, "stop error: %ld; slop error: %ld", (long)stopError,
+           (long)slopError);
 
-  // then, we tare the current count to the third point (falling edge), since we assume it is there
+  // then, we tare the current count to the third point (falling edge), since we
+  // assume it is there
   currentTurretEncoderCount = fallingEdgeEncoderCount;
 
-  // find the theoretical midpoint, then add the stop error to get the target count
-  // int32_t targetCount = ((fallingEdgeEncoderCount + risingEdgeEncoderCount) / 2) - stopError; // for if we change directions again
-  int32_t targetCount = ((fallingEdgeEncoderCount + risingEdgeEncoderCount) / 2) + (stopError * QB_TURRET_HOME_STOP_FACTOR);
+  // find the theoretical midpoint, then add the stop error to get the target
+  // count int32_t targetCount = ((fallingEdgeEncoderCount +
+  // risingEdgeEncoderCount) / 2) - stopError; // for if we change directions
+  // again
+  int32_t targetCount =
+      ((fallingEdgeEncoderCount + risingEdgeEncoderCount) / 2) +
+      (stopError * QB_TURRET_HOME_STOP_FACTOR);
 
   ESP_LOGI(TAG, "target count: %ld", (long)targetCount);
 
@@ -1028,15 +1068,13 @@ void QuarterbackTurret::zeroTurret()
 
   while (
       // currentTurretEncoderCount < targetCount &&
-      currentTurretEncoderCount > targetCount &&
-      !testForDisableOrStop())
+      currentTurretEncoderCount > targetCount && !testForDisableOrStop())
   {
     ESP_LOGI(TAG,
-             "zeroing (stage 4), read = %d; cte_count: %ld; target_ct: %ld; current_ct > target_ct? = %d",
-             digitalRead(turretLaserPin),
-             (long)currentTurretEncoderCount,
-             (long)targetCount,
-             currentTurretEncoderCount > targetCount);
+             "zeroing (stage 4), read = %d; cte_count: %ld; target_ct: %ld; "
+             "current_ct > target_ct? = %d",
+             digitalRead(turretLaserPin), (long)currentTurretEncoderCount,
+             (long)targetCount, currentTurretEncoderCount > targetCount);
     delay(5);
   }
 
@@ -1060,10 +1098,10 @@ void QuarterbackTurret::reset()
 {
   this->enabled = true;
   this->runningMacro = true;
-  moveCradle(back, true); // force
+  moveCradle(back, true);  // force
   aimAssembly(straight);
   // loadFromCenter();
-  zeroTurret(); // temp: just zero
+  zeroTurret();  // temp: just zero
   this->initialized = true;
   this->runningMacro = false;
 }
@@ -1080,6 +1118,21 @@ bool QuarterbackTurret::testForDisableOrStop()
     return true;
   }
   //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
+  //   (Touchpad emergency stop has been disabled)
+  //  if (dbSquare->debounceAndPressed(ps5.Square())) {
+  /*if (!enabled) {
+    setEnabled(true);
+    Serial.println(F("setting enabled"));
+  } else {
+    setEnabled(false);
+    Serial.println(F("setting disabled"));
+  }
+  return true;
+} else {
+  // Serial.println(F("not disabling or stopping"));
+  return false;
+}
+}*/
   else if (dbSquare->debounceAndPressed(ps5.Square()))
   {
     if (!enabled)
@@ -1100,15 +1153,13 @@ bool QuarterbackTurret::testForDisableOrStop()
   }
 }
 
-void QuarterbackTurret::setEnabled(bool enabled)
-{
-  this->enabled = enabled;
-}
+void QuarterbackTurret::setEnabled(bool enabled) { this->enabled = enabled; }
 
 void QuarterbackTurret::emergencyStop()
 {
   this->enabled = false;
-  setFlywheelSpeed(0); // this will not change the state variables since the bot is disabled
+  setFlywheelSpeed(
+      0);  // this will not change the state variables since the bot is disabled
   setTurretSpeed(0);
   cradleActuator.write(0);
   // TODO: stop assembly stepper motor
@@ -1118,10 +1169,8 @@ void QuarterbackTurret::emergencyStop()
 void QuarterbackTurret::printDebug()
 {
   /*
-  ESP_LOGI(TAG, "enabled: %d | stickTurret: %.3f | stickFlywheel: %.3f | currentTurretSpeed: %.3f",
-           enabled,
-           stickTurret,
-           stickFlywheel,
+  ESP_LOGI(TAG, "enabled: %d | stickTurret: %.3f | stickFlywheel: %.3f |
+  currentTurretSpeed: %.3f", enabled, stickTurret, stickFlywheel,
            currentTurretSpeed);
   */
   if (enabled)
@@ -1146,7 +1195,8 @@ void QuarterbackTurret::magnetometerSetup()
   {
     // hardware I2C mode, can pass in address & alt Wire
     // if (! lis3mdl.begin_SPI(LIS3MDL_CS)) {  // hardware SPI mode
-    // if (! lis3mdl.begin_SPI(LIS3MDL_CS, LIS3MDL_CLK, LIS3MDL_MISO, LIS3MDL_MOSI)) { // soft SPI
+    // if (! lis3mdl.begin_SPI(LIS3MDL_CS, LIS3MDL_CLK, LIS3MDL_MISO,
+    // LIS3MDL_MOSI)) { // soft SPI
     ESP_LOGE(TAG, "Failed to find LIS3MDL chip");
   }
   ESP_LOGI(TAG, "LIS3MDL Found!");
@@ -1154,109 +1204,109 @@ void QuarterbackTurret::magnetometerSetup()
   lis3mdl.setPerformanceMode(LIS3MDL_MEDIUMMODE);
   switch (lis3mdl.getPerformanceMode())
   {
-  case LIS3MDL_LOWPOWERMODE:
-    ESP_LOGI(TAG, "Performance mode set to: Low");
-    break;
-  case LIS3MDL_MEDIUMMODE:
-    ESP_LOGI(TAG, "Performance mode set to: Medium");
-    break;
-  case LIS3MDL_HIGHMODE:
-    ESP_LOGI(TAG, "Performance mode set to: High");
-    break;
-  case LIS3MDL_ULTRAHIGHMODE:
-    ESP_LOGI(TAG, "Performance mode set to: Ultra-High");
-    break;
+    case LIS3MDL_LOWPOWERMODE:
+      ESP_LOGI(TAG, "Performance mode set to: Low");
+      break;
+    case LIS3MDL_MEDIUMMODE:
+      ESP_LOGI(TAG, "Performance mode set to: Medium");
+      break;
+    case LIS3MDL_HIGHMODE:
+      ESP_LOGI(TAG, "Performance mode set to: High");
+      break;
+    case LIS3MDL_ULTRAHIGHMODE:
+      ESP_LOGI(TAG, "Performance mode set to: Ultra-High");
+      break;
   }
 
   lis3mdl.setOperationMode(LIS3MDL_CONTINUOUSMODE);
   // Single shot mode will complete conversion and go into power down
   switch (lis3mdl.getOperationMode())
   {
-  case LIS3MDL_CONTINUOUSMODE:
-    ESP_LOGI(TAG, "Operation mode set to: Continuous");
-    break;
-  case LIS3MDL_SINGLEMODE:
-    ESP_LOGI(TAG, "Operation mode set to: Single mode");
-    break;
-  case LIS3MDL_POWERDOWNMODE:
-    ESP_LOGI(TAG, "Operation mode set to: Power-down");
-    break;
+    case LIS3MDL_CONTINUOUSMODE:
+      ESP_LOGI(TAG, "Operation mode set to: Continuous");
+      break;
+    case LIS3MDL_SINGLEMODE:
+      ESP_LOGI(TAG, "Operation mode set to: Single mode");
+      break;
+    case LIS3MDL_POWERDOWNMODE:
+      ESP_LOGI(TAG, "Operation mode set to: Power-down");
+      break;
   }
 
   lis3mdl.setDataRate(LIS3MDL_DATARATE_155_HZ);
   // You can check the datarate by looking at the frequency of the DRDY pin
   switch (lis3mdl.getDataRate())
   {
-  case LIS3MDL_DATARATE_0_625_HZ:
-    ESP_LOGI(TAG, "Data rate set to: 0.625 Hz");
-    break;
-  case LIS3MDL_DATARATE_1_25_HZ:
-    ESP_LOGI(TAG, "Data rate set to: 1.25 Hz");
-    break;
-  case LIS3MDL_DATARATE_2_5_HZ:
-    ESP_LOGI(TAG, "Data rate set to: 2.5 Hz");
-    break;
-  case LIS3MDL_DATARATE_5_HZ:
-    ESP_LOGI(TAG, "Data rate set to: 5 Hz");
-    break;
-  case LIS3MDL_DATARATE_10_HZ:
-    ESP_LOGI(TAG, "Data rate set to: 10 Hz");
-    break;
-  case LIS3MDL_DATARATE_20_HZ:
-    ESP_LOGI(TAG, "Data rate set to: 20 Hz");
-    break;
-  case LIS3MDL_DATARATE_40_HZ:
-    ESP_LOGI(TAG, "Data rate set to: 40 Hz");
-    break;
-  case LIS3MDL_DATARATE_80_HZ:
-    ESP_LOGI(TAG, "Data rate set to: 80 Hz");
-    break;
-  case LIS3MDL_DATARATE_155_HZ:
-    ESP_LOGI(TAG, "Data rate set to: 155 Hz");
-    break;
-  case LIS3MDL_DATARATE_300_HZ:
-    ESP_LOGI(TAG, "Data rate set to: 300 Hz");
-    break;
-  case LIS3MDL_DATARATE_560_HZ:
-    ESP_LOGI(TAG, "Data rate set to: 560 Hz");
-    break;
-  case LIS3MDL_DATARATE_1000_HZ:
-    ESP_LOGI(TAG, "Data rate set to: 1000 Hz");
-    break;
+    case LIS3MDL_DATARATE_0_625_HZ:
+      ESP_LOGI(TAG, "Data rate set to: 0.625 Hz");
+      break;
+    case LIS3MDL_DATARATE_1_25_HZ:
+      ESP_LOGI(TAG, "Data rate set to: 1.25 Hz");
+      break;
+    case LIS3MDL_DATARATE_2_5_HZ:
+      ESP_LOGI(TAG, "Data rate set to: 2.5 Hz");
+      break;
+    case LIS3MDL_DATARATE_5_HZ:
+      ESP_LOGI(TAG, "Data rate set to: 5 Hz");
+      break;
+    case LIS3MDL_DATARATE_10_HZ:
+      ESP_LOGI(TAG, "Data rate set to: 10 Hz");
+      break;
+    case LIS3MDL_DATARATE_20_HZ:
+      ESP_LOGI(TAG, "Data rate set to: 20 Hz");
+      break;
+    case LIS3MDL_DATARATE_40_HZ:
+      ESP_LOGI(TAG, "Data rate set to: 40 Hz");
+      break;
+    case LIS3MDL_DATARATE_80_HZ:
+      ESP_LOGI(TAG, "Data rate set to: 80 Hz");
+      break;
+    case LIS3MDL_DATARATE_155_HZ:
+      ESP_LOGI(TAG, "Data rate set to: 155 Hz");
+      break;
+    case LIS3MDL_DATARATE_300_HZ:
+      ESP_LOGI(TAG, "Data rate set to: 300 Hz");
+      break;
+    case LIS3MDL_DATARATE_560_HZ:
+      ESP_LOGI(TAG, "Data rate set to: 560 Hz");
+      break;
+    case LIS3MDL_DATARATE_1000_HZ:
+      ESP_LOGI(TAG, "Data rate set to: 1000 Hz");
+      break;
   }
 
   lis3mdl.setRange(LIS3MDL_RANGE_4_GAUSS);
   switch (lis3mdl.getRange())
   {
-  case LIS3MDL_RANGE_4_GAUSS:
-    ESP_LOGI(TAG, "Range set to: +-4 gauss");
-    break;
-  case LIS3MDL_RANGE_8_GAUSS:
-    ESP_LOGI(TAG, "Range set to: +-8 gauss");
-    break;
-  case LIS3MDL_RANGE_12_GAUSS:
-    ESP_LOGI(TAG, "Range set to: +-12 gauss");
-    break;
-  case LIS3MDL_RANGE_16_GAUSS:
-    ESP_LOGI(TAG, "Range set to: +-16 gauss");
-    break;
+    case LIS3MDL_RANGE_4_GAUSS:
+      ESP_LOGI(TAG, "Range set to: +-4 gauss");
+      break;
+    case LIS3MDL_RANGE_8_GAUSS:
+      ESP_LOGI(TAG, "Range set to: +-8 gauss");
+      break;
+    case LIS3MDL_RANGE_12_GAUSS:
+      ESP_LOGI(TAG, "Range set to: +-12 gauss");
+      break;
+    case LIS3MDL_RANGE_16_GAUSS:
+      ESP_LOGI(TAG, "Range set to: +-16 gauss");
+      break;
   }
 
   lis3mdl.setIntThreshold(500);
-  lis3mdl.configInterrupt(false, false, true, // enable z axis
-                          true,               // polarity
-                          false,              // don't latch
-                          true);              // enabled!
+  lis3mdl.configInterrupt(false, false, true,  // enable z axis
+                          true,                // polarity
+                          false,               // don't latch
+                          true);               // enabled!
 }
 
 /**
- * @brief Spins the turret 360 degrees slowly to allow magnetometer to calibrate itself on startup
+ * @brief Spins the turret 360 degrees slowly to allow magnetometer to calibrate
+ * itself on startup
  * @author George Rak
  * @date 4-9-2024
  */
 void QuarterbackTurret::calibMagnetometer()
 {
-
   mag_yVal = 0;
   mag_xVal = 0;
   mag_xMax = -1000000;
@@ -1268,27 +1318,34 @@ void QuarterbackTurret::calibMagnetometer()
   mag_xSign = false;
   mag_ySign = false;
 
+  // northHeadingDegrees = 7.0f;
+
   northHeadingDegrees = 0;
 
+  /*long startTime = millis();
+  setTurretSpeed(QB_HOME_MAG, true);
+
+  while (millis() - startTime < 5000 && !testForDisableOrStop()){
+    // get X Y and Z data all at once
+    lis3mdl.read();*/
+
   int degreesMove = 360;
-  targetTurretEncoderCount = (int)round((double)degreesMove * QB_COUNTS_PER_TURRET_DEGREE);
+  targetTurretEncoderCount =
+      (int)round((double)degreesMove * QB_COUNTS_PER_TURRET_DEGREE);
   turretMoving = true;
   setTurretSpeed(QB_HOME_MAG * copysign(1, degreesMove), true);
   // Loop until the target encoder count has been achieved
-  while (currentTurretEncoderCount < targetTurretEncoderCount && !testForDisableOrStop())
+  while (currentTurretEncoderCount < targetTurretEncoderCount &&
+         !testForDisableOrStop())
   {
     // get X Y and Z data all at once
     lis3mdl.read();
 
     // Constantly looking for min and max values of X
     if (lis3mdl.x < mag_xMin && lis3mdl.x != -1 && lis3mdl.x != 0)
-    {
       mag_xMin = lis3mdl.x;
-    }
     else if (lis3mdl.x > mag_xMax && lis3mdl.x != -1 && lis3mdl.x != 0)
-    {
       mag_xMax = lis3mdl.x;
-    }
 
     // Adjusting X values to range from + or - values rather than all positive
     mag_xHalf = abs(mag_xMax) - abs(mag_xMin);
@@ -1296,11 +1353,13 @@ void QuarterbackTurret::calibMagnetometer()
     mag_xHalf += abs(mag_xMin);
 
     // Constantly looking for min and max values of Y
-    if (lis3mdl.y < mag_yMin && lis3mdl.y != -1 && lis3mdl.y != 0 && lis3mdl.y != 10)
+    if (lis3mdl.y < mag_yMin && lis3mdl.y != -1 && lis3mdl.y != 0 &&
+        lis3mdl.y != 10)
     {
       mag_yMin = lis3mdl.y;
     }
-    else if (lis3mdl.y > mag_yMax && lis3mdl.y != -1 && lis3mdl.y != 0 && lis3mdl.y != 10)
+    else if (lis3mdl.y > mag_yMax && lis3mdl.y != -1 && lis3mdl.y != 0 &&
+             lis3mdl.y != 10)
     {
       mag_yMax = lis3mdl.y;
     }
@@ -1310,52 +1369,52 @@ void QuarterbackTurret::calibMagnetometer()
     mag_yHalf /= 2;
     mag_yHalf += abs(mag_yMin);
 
-    /*DEBUGGING PRINTOUTS*/
+    /*DEBUGGING PRINTOUTS
+    //Serial.print("X: "); Serial.print(lis3mdl.x);
+    //Serial.print("\tY: "); Serial.print(lis3mdl.y);
+    //Serial.print("\tMinX: "); Serial.print(mag_xMin);
+    //Serial.print("\tMaxX: "); Serial.print(mag_xMax);
+    //Serial.print("\tMinY: "); Serial.print(mag_yMin);
+    //Serial.print("\tMaxY: "); Serial.print(mag_yMax);
+    //Serial.println(); */
   }
 
   setTurretSpeed(0, true);
 
-  // Updating variables that will be used to handle other two possible sign cases for each value
-  if ((mag_xMax + mag_xMin) < 0)
-  {
-    mag_xSign = true;
-  }
-  if ((mag_yMax + mag_yMin) < 0)
-  {
-    mag_ySign = true;
-  }
+  // Updating variables that will be used to handle other two possible sign
+  // cases for each value
+  if ((mag_xMax + mag_xMin) < 0) mag_xSign = true;
+  if ((mag_yMax + mag_yMin) < 0) mag_ySign = true;
   //
 
   calculateHeadingMag();
 
   ESP_LOGI(TAG,
            "Magnetometer reading after calib: %.2f\tEncoder after calib:%ld",
-           headingDeg,
-           (long)currentTurretEncoderCount);
+           headingDeg, (long)currentTurretEncoderCount);
 
   // delay(5000);
 
   currentTurretEncoderCount = 0;
   targetTurretEncoderCount = 0;
-
+  // turretMoving = false;
   turretMoving = true;
-  moveTurretAndWait(0, true); // go to zero of the encoder
+  moveTurretAndWait(0, true);  // go to zero of the encoder
 
   magnetometerCalibrated = true;
 
-  calculateHeadingMag(); // calculate current value of magnetometer (headingDeg)
+  calculateHeadingMag();  // calculate current value of magnetometer
+                          // (headingDeg)
 
-  this->northHeadingDegrees = headingDeg; // + 45;
+  this->northHeadingDegrees = headingDeg;  // + 45;
   ESP_LOGI(TAG,
            "Target Abs Heading Before 0: %.2f\tNorth Heading Degrees: %.2f",
-           targetAbsoluteHeading,
-           northHeadingDegrees);
+           targetAbsoluteHeading, northHeadingDegrees);
 
   // delay(2000);
 
-  // from here on out, headingDeg and targetAbsoluteHeading are offset by northHeadingDegrees
-  // headingDeg = 0;
-  targetAbsoluteHeading = 0;
+  // from here on out, headingDeg and targetAbsoluteHeading are offset by
+  // northHeadingDegrees headingDeg = 0; targetAbsoluteHeading = 0;
 
   ESP_LOGI(TAG, "Magnetometer has been calibrated!");
   eIntegral = 0;
@@ -1367,74 +1426,77 @@ void QuarterbackTurret::calibMagnetometer()
 }
 
 /**
- * @brief Uses the data collected at calibration to calculate the current heading relative to magnetic north
+ * @brief Uses the data collected at calibration to calculate the current
+ * heading relative to magnetic north
  * @author George Rak
  * @date 4-9-2024
  */
 void QuarterbackTurret::calculateHeadingMag()
 {
-  // Only run the code in here if the calibration has been done to the magnetometer
+  // Only run the code in here if the calibration has been done to the
+  // magnetometer
   if (magnetometerCalibrated)
   {
     lis3mdl.read();
     // Calculate the current angle of the turret based on the calibration data
     if (mag_xSign)
-    {
       mag_xVal = lis3mdl.x + mag_xHalf;
-    }
     else
-    {
       mag_xVal = lis3mdl.x - mag_xHalf;
-    }
 
     if (mag_ySign)
-    {
       mag_yVal = lis3mdl.y + mag_yHalf;
-    }
     else
-    {
       mag_yVal = lis3mdl.y - mag_yHalf;
-    }
 
-    // Evaluate both ranges of X and Y then scale the smaller value to be within the same range as the larger
+    // Evaluate both ranges of X and Y then scale the smaller value to be within
+    // the same range as the larger
     if (mag_yHalf > mag_xHalf)
     {
-      mag_xVal = (double)((double)mag_xVal / ((double)mag_xHalf)) * (double)mag_yHalf;
+      mag_xVal =
+          (double)((double)mag_xVal / ((double)mag_xHalf)) * (double)mag_yHalf;
     }
     else if (mag_xHalf > mag_yHalf)
     {
-      mag_yVal = (double)((double)mag_yVal / ((double)mag_yHalf)) * (double)mag_xHalf;
+      mag_yVal =
+          (double)((double)mag_yVal / ((double)mag_yHalf)) * (double)mag_xHalf;
     }
 
     // Calculate angle in radians
     if (mag_xVal != -1 && mag_xVal != 0 && mag_yVal != 0 && mag_yVal != -1)
-    {
       headingRad = atan2(mag_yVal, mag_xVal);
-    }
 
     // Convert to degrees
     headingDeg = headingRad * 180 / M_PI;
 
     // If the degrees are negative then they just need inversed plus 180
-    if (headingDeg < 0)
-    {
-      headingDeg += 360;
-    }
+    if (headingDeg < 0) headingDeg += 360;
 
     // integrate offset into measurement
     // + 180 - QB_NORTH_OFFSET
     headingDeg = ((int)headingDeg) + northHeadingDegrees;
-    if (headingDeg > 360)
-      headingDeg = ((int)headingDeg) % 360;
+    if (headingDeg > 360) headingDeg = ((int)headingDeg) % 360;
 
     /*DEBUGGING PRINTOUTS*/
+    // Serial.print("X: "); Serial.print(lis3mdl.x);
+    // Serial.print("\tY: "); Serial.print(lis3mdl.y);
+    // Serial.print("\tMinX: "); Serial.print(mag_xMin);
+    // Serial.print("\tMaxX: "); Serial.print(mag_xMax);
+    // Serial.print("\tMinY: "); Serial.print(mag_yMin);
+    // Serial.print("\tMaxY: "); Serial.print(mag_yMax);
+    // Serial.print("\txAdapt: "); Serial.print(mag_xVal);
+    // Serial.print("\tyAdapt: "); Serial.print(mag_yVal);
+    // Serial.print("\tHeading [deg]: "); Serial.print(headingDeg);
+    // Serial.println();
   }
 }
+
 #pragma endregion
 
 #pragma region PID
 /**
- * @brief Checks if the turret should be held still and runs the PID loop setting turret speed equal to PWM value calculated
+ * @brief Checks if the turret should be held still and runs the PID loop
+ * setting turret speed equal to PWM value calculated
  * @author George Rak
  * @date 4-9-2024
  */
@@ -1442,15 +1504,19 @@ void QuarterbackTurret::holdTurretStill()
 {
   if (magnetometerCalibrated)
   {
+    // float maxSpeed = 0.2f;
     int maxSpeed = .2;
     if (motor1Value > 25 || motor2Value > 25)
     {
-      // We should limit the rotation rate of the turret since the base is moving as well and we don't want the robot to flip
+      // We should limit the rotation rate of the turret since the base is
+      // moving as well and we don't want the robot to flip
       maxSpeed = .125;
+      // maxSpeed = 0.1f;
     }
 
     // Run the PID loop
-    turretPIDSpeed = turretPIDController(headingDeg, (float)targetAbsoluteHeading, kp, kd, ki, .2);
+    turretPIDSpeed = turretPIDController(
+        headingDeg, (float)targetAbsoluteHeading, kp, kd, ki, .2);
     setTurretSpeed(turretPIDSpeed, true);
   }
 }
@@ -1460,29 +1526,30 @@ void QuarterbackTurret::holdTurretStill()
  * @author George Rak
  * @date 4-9-2024
  */
-float QuarterbackTurret::turretPIDController(float current, float target, float kp, float kd, float ki, float maxSpeed)
+float QuarterbackTurret::turretPIDController(float current, float target,
+                                             float kp, float kd, float ki,
+                                             float maxSpeed)
 {
   if (maxSpeed > .5)
-  {
     maxSpeed = .5;
-  }
   else if (maxSpeed < -.5)
-  {
     maxSpeed = -.5;
-  }
 
   // Measure the time elapsed since last iteration
   long currentTime = millis();
-  float deltaT = ((float)(currentTime - previousTime));
+  float deltaT =
+      ((float)(currentTime - previousTime));  /// 1000.0f;  // Convert to
+                                              /// seconds for proper scaling
 
-  // PID loops should update as fast as possible but if it waits too long this could be a problem
+  // PID loops should update as fast as possible but if it waits too long this
+  // could be a problem
   if (deltaT > QB_TURRET_PID_MIN_DELTA_T && deltaT < QB_TURRET_PID_MAX_DELTA_T)
   {
-
     // Find which direction will be closer to requested angle
     int e = CalculateRotation(current, target);
 
-    // Taking the average of the error
+    // Taking the average of the error (removed the initial fill loop to avoid
+    // resetting the array every time)
     prevErrorVals[prevErrorIndex] = e;
     prevErrorIndex++;
     prevErrorIndex %= PID_ERROR_AVG_ARRAY_LENGTH;
@@ -1490,44 +1557,52 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
     // For the first one populate the average so it does not freak out
     if (firstAverage)
     {
-      for (int i = 0; i < PID_ERROR_AVG_ARRAY_LENGTH; i++)
-      {
-        prevErrorVals[i] = e;
-      }
+      for (int i = 0; i < PID_ERROR_AVG_ARRAY_LENGTH; i++) prevErrorVals[i] = e;
       firstAverage = false;
     }
 
     // Taking the avergage for error
     int avgError = 0;
     for (int i = 0; i < PID_ERROR_AVG_ARRAY_LENGTH; i++)
-    {
       avgError += prevErrorVals[i];
-    }
     avgError /= PID_ERROR_AVG_ARRAY_LENGTH;
+    // Serial.println("e before:");
+    // Serial.println(e);
     e = avgError;
+
+    // Add deadband: If error < 3 degrees, stop motor and zero integral to
+    // prevent sway
+    /*if (abs(e - 180) < 3) {
+      float u = 0.0f;  // Declare and set to zero here
+      eIntegral = 0;   // Prevent windup
+      // Optional: Log for debugging (comment out if too spammy)
+      Serial.println("Deadband applied: error < 3 deg, u=0");
+      Serial.println("e after:");
+      Serial.println(abs(e - 180));
+      return u;
+    }*/
 
     // Calculate the derivative and integral values
     float eDerivative = (e - ePrevious);
     eIntegral = eIntegral + e * .01;
+    // eIntegral += e * deltaT;
+
+    // Anti-windup: Clamp integral to prevent excessive buildup
+    // const float integralLimit = 10.0f;  // Adjust based on testing; prevents
+    // windup if (eIntegral > integralLimit) eIntegral = integralLimit; if
+    // (eIntegral < -integralLimit) eIntegral = -integralLimit;
 
     // Compute the PID control signal
     float u = (kp * e) + (ki * eIntegral) + (kd * eDerivative);
 
     // Constrain output PWM values to -.2 to .2
     if (u > maxSpeed)
-    {
       u = maxSpeed;
-    }
     else if (u < -maxSpeed)
-    {
       u = -maxSpeed;
-    }
 
     // If PWM value is less than the minimum PWM value needed to move the robot,
-    if (abs(u) < QB_MIN_PWM_VALUE)
-    {
-      u = 0.0;
-    }
+    if (abs(u) < QB_MIN_PWM_VALUE) u = 0.0;  // u = 0.0f
 
     // If the robot gets within an acceptable range then send error etc to 0
     if (abs(e) < QB_TURRET_PID_THRESHOLD)
@@ -1537,40 +1612,53 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
       eIntegral = 0;
       ePrevious = 0;
     }
+    // Serial.print("\tCurrent [deg]: "); Serial.print(current, 0);
+    /*target = (target - 180) + 360;
+    if(target >= 360)
+    {
+      target = target - 360;
+    }
 
-    ESP_LOGI(TAG,
-             "DeltaT: %.2f\tError: [deg]: %d\tP: %.4f\tI: %.4f\tD:\t%.4f\tPWM Value: %.4f\tCurrent [deg]: %.0f\tTarget [deg]: %.2f",
-             deltaT,
-             e,
-             (kp * e),
-             (ki * eIntegral),
-             (kd * eDerivative),
-             u,
-             current,
-             target);
+    Serial.print("\tTarget [deg]: "); Serial.print(target);
+    Serial.print("\tQuarterback:"); Serial.print("x=");
+    Serial.print(position[0]); Serial.print(", y="); Serial.print(position[1]);
+    Serial.print("\tReceiver:"); Serial.print("x=");
+    Serial.print(receivers[0].position[0]); Serial.print(", y=");
+    Serial.print(receivers[0].position[1]); Serial.println();
+    */
 
     // Update variables for next iteration
-    previousTime = currentTime;
-    ePrevious = e;
+    // previousTime = currentTime;
+    // ePrevious = e;
+
+    // Removed asymmetric bias: if(u > 0){ u *= 1.1; } – this can cause
+    // directional preference
+
+    ESP_LOGI(TAG,
+             "DeltaT: %.2f\tError: [deg]: %d\tP: %.4f\tI: %.4f\tD:\t%.4f\tPWM "
+             "Value: %.4f\tCurrent [deg]: %.0f\tTarget [deg]: %.2f",
+             deltaT, e, (kp * e), (ki * eIntegral), (kd * eDerivative), u,
+             current, target);
 
     // Constrain the values that are sent to the motor while keeping sign
-    u = copysign(constrain(abs(u), 0, 1), u); // TODO: maybe not necessary?
-    if (e == 0)
-    {
-      u = 0.0;
-    }
+    u = copysign(constrain(abs(u), 0, 1), u);  // TODO: maybe not necessary?
+    if (e == 0) u = 0.0;                       // u = 0.0f
 
     return -u;
   }
-  else if (deltaT > QB_TURRET_PID_BAD_DELTA_T)
+  else if (deltaT >
+           QB_TURRET_PID_BAD_DELTA_T)  // else if (deltaT >
+                                       // QB_TURRET_PID_BAD_DELTA_T / 1000.0f)
   {
-    // Drop the value if the time since last loop is too high so that errors don't spike
+    // Drop the value if the time since last loop is too high so that errors
+    // don't spike
     previousTime = currentTime;
     return turretPIDSpeed;
   }
   else
   {
-    // If the loop runs faster than the minimum time just return the last value and wait for next loop
+    // If the loop runs faster than the minimum time just return the last value
+    // and wait for next loop
     return turretPIDSpeed;
   }
 }
@@ -1578,32 +1666,37 @@ float QuarterbackTurret::turretPIDController(float current, float target, float 
 
 #pragma region Stabilization
 /**
- * @brief Reads a UART communication from the other ESP mounted to the turret. This ESP currently provides the speed of both motors on the drivetrain so we know if the robot is moving
+ * @brief Reads a UART communication from the other ESP mounted to the turret.
+ * This ESP currently provides the speed of both motors on the drivetrain so we
+ * know if the robot is moving
  * @author George Rak
  * @date 5-14-2024
  */
 void QuarterbackTurret::updateReadMotorValues()
 {
   recievedMessage = "";
-  // While there are characters available in the buffer read each one individually
+  // While there are characters available in the buffer read each one
+  // individually
   while (Uart_Turret.available())
   {
     char character = Uart_Turret.read();
-    // Added a delimeter between messages since loop times are different and multiple messages might come in before they are read and the buffer is cleared
-    // Since they are coming so fast and there is no need to remember past values only the most recent is kept
+    // Added a delimeter between messages since loop times are different and
+    // multiple messages might come in before they are read and the buffer is
+    // cleared Since they are coming so fast and there is no need to remember
+    // past values only the most recent is kept
     if (character == '~')
     {
-      if (Uart_Turret.available())
-      {
-        recievedMessage = "";
-      }
+      if (Uart_Turret.available()) recievedMessage = "";
     }
     else
     {
       recievedMessage += character;
     }
   }
-  // The Server client relationship between the ESPs knows if they disconnect so it is possible that they might send DISCONNECTED over the communication instead of values, in this case set the value to the max so that the turret spins slower
+  // The Server client relationship between the ESPs knows if they disconnect so
+  // it is possible that they might send DISCONNECTED over the communication
+  // instead of values, in this case set the value to the max so that the turret
+  // spins slower
   if (recievedMessage != "")
   {
     if (recievedMessage == "DISCONNECTED")
@@ -1613,9 +1706,12 @@ void QuarterbackTurret::updateReadMotorValues()
     }
     else
     {
-      // Doing some string formatting here, a delimiter was added between the data to help keep them separate for motor #1 and motor #2
-      motor1Value = (recievedMessage.substring(0, recievedMessage.indexOf('&'))).toInt();
-      motor2Value = (recievedMessage.substring(recievedMessage.indexOf('&') + 1)).toInt();
+      // Doing some string formatting here, a delimiter was added between the
+      // data to help keep them separate for motor #1 and motor #2
+      motor1Value =
+          (recievedMessage.substring(0, recievedMessage.indexOf('&'))).toInt();
+      motor2Value =
+          (recievedMessage.substring(recievedMessage.indexOf('&') + 1)).toInt();
     }
   }
 }
