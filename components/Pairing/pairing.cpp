@@ -68,6 +68,8 @@ const char *RhysController = "10:18:49:57";             // length 17 "10:18:49:5
 const char *NewCamoController = "90:b6:85:f8:e3:c2";    // length 17 "90:b6:85:f8:e3:c2"
 const char *derivativeController = "0c:27:56:78:a8:5a"; // length 17
 const char *integralController = "0c:27:56:78:aa:db";   // length 17
+const char *harryWhiteController = "50:ee:32:0a:01:69"; // Length 17
+// TODO: convert this to an array (or multiple since there are diff. length strings)
 
 /// @brief Detects if a given MAC Address is considered a PS5 Controller
 /// @param addrCharPtr the address to test (C string)
@@ -87,6 +89,8 @@ bool addressIsController(const char *addrCharPtr)
   else if (strncmp(addrCharPtr, integralController, 17) == 0)
     return true;
   else if (strncmp(addrCharPtr, derivativeController, 17) == 0)
+    return true;
+  else if (strncmp(addrCharPtr, harryWhiteController, 17) == 0)
     return true;
   else
     return false;
