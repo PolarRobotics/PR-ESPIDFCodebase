@@ -11,4 +11,5 @@ idf_component_register(
         espressif__arduino-esp32 
         pr-lib-motor
         usbsabertooth
+        autowp_mcp2515
 )

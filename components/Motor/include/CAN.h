@@ -5,7 +5,7 @@
 #include <SPI.h>
 #include <mcp2515.h>
 #include <HardwareSerial.h>
-#include "Drive/inverseKin.h"
+#include <inverseKin.h>
 
 #define SPI_CS_PIN 5
 #define HALT_BUTTON 4
