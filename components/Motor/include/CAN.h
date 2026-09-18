@@ -2,10 +2,10 @@
 // #define LOOPBACK
 #define debug 1
 
-#include <SPI.h>
-#include <mcp2515.h>
 #include <HardwareSerial.h>
+#include <SPI.h>
 #include <inverseKin.h>
+#include <mcp2515.h>
 
 #define SPI_CS_PIN 5
 #define HALT_BUTTON 4
@@ -21,38 +21,40 @@ extern struct can_frame param_set;
 extern uint8_t set_break_mode[5];
 extern uint8_t set_coast_mode[5];
 
-// Control packets to send (info obtained by datasheet in non-frc-spark-example/)
+// Control packets to send (info obtained by datasheet in
+// non-frc-spark-example/)
 extern struct can_frame heartbeat;
 #define heartbeat_id 0x2052C80
 #define heartbeat_dlc 8
 extern uint8_t heartbeat_data[8];
 
-extern struct can_frame voltage_set; // -14V to 14V
+extern struct can_frame voltage_set;  // -14V to 14V
 #define voltage_set_id 0x2051080
 #define voltage_set_dlc 4
 
-extern struct can_frame velocity_set; // -1000 to 1000
+extern struct can_frame velocity_set;  // -1000 to 1000
 #define velocity_set_id 0x2050480
 #define velocity_set_dlc 8
 
-extern struct can_frame position_set; // 0 to 360
+extern struct can_frame position_set;  // 0 to 360
 #define position_set_id 0x2050C80
 #define position_set_dlc 8
 
-extern struct can_frame halt; // No data field
+extern struct can_frame halt;  // No data field
 #define halt_id 0x0000040
 #define halt_dlc 0
 
-extern struct can_frame status_frame_1; // Contains voltage data
+extern struct can_frame status_frame_1;  // Contains voltage data
 #define status_frame_1_id 0x2051840
 
 enum endianness
 {
-    little,
-    big
+  little,
+  big
 };
 
-/// @brief Initializes the CAN driver by resetting the MCP2515, setting the bitrate, and setting the mode (loopback for testing, normal for actual use).
+/// @brief Initializes the CAN driver by resetting the MCP2515, setting the
+/// bitrate, and setting the mode (loopback for testing, normal for actual use).
 void initalizeCANDriver();
 
 /// @brief Sets up a CAN packet with the given parameters
@@ -61,9 +63,15 @@ void initalizeCANDriver();
 /// @param target_id The target ID for the packet
 /// @param dlc The data length code (number of bytes in the data field)
 /// @param data Pointer to the data to include in the packet
-void setupPacket(can_frame *packet, uint32_t packet_id, uint32_t target_id, uint8_t dlc, uint8_t *data);
+void setupPacket(
+    can_frame *packet,
+    uint32_t packet_id,
+    uint32_t target_id,
+    uint8_t dlc,
+    uint8_t *data);
 
-/// @brief Helper function to pack a float into an 8-byte array in either big-endian or little-endian format, with the remaining bytes set to 0
+/// @brief Helper function to pack a float into an 8-byte array in either
+/// big-endian or little-endian format, with the remaining bytes set to 0
 void packFloatIntoArray(double value, uint8_t *data, endianness endianness);
 
 /// @brief Creates a CAN data packet from wheel data
@@ -80,7 +88,8 @@ void updateMotors(uint8_t *data);
 /// @param msg The CAN message associated with the error
 void printError(MCP2515::ERROR err, can_frame *msg);
 
-/// @brief Updates motor parameters *currently only kIdleMode to change brake/coast mode (for driving motors only) based on a toggle input
+/// @brief Updates motor parameters *currently only kIdleMode to change
+/// brake/coast mode (for driving motors only) based on a toggle input
 void updateParameters(bool toggle);
 
 /// @brief Reads a SPARK Status frame containing voltage data
