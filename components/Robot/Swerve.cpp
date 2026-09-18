@@ -2,14 +2,20 @@
 #include <HardwareSerial.h>
 #include <ps5Controller.h>
 
+// Standard
 #include "esp_bt_main.h"
 #include "esp_bt_device.h"
-
-#include "Drive/inverseKin.h"
-#include "Motor_Communication/CAN.h"
-#include "Pairing/pairing.h"
-
 #include <cstring>
+
+// Motor
+#include <CAN.h>
+
+// Drive
+#include <inverseKin.h>
+
+// Pairing
+#include <pairing.h>
+
 
 #define SPI_CS_PIN 5
 #define HALT_BUTTON 4
