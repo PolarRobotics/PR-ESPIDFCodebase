@@ -1,7 +1,9 @@
 # THIS IS WHERE YOU UPDATE ESP-IDF!!!
-# Ensure version v5.5 to work with Arduino-ESP32 core (for now....)
-ARG DOCKER_TAG=release-v5.5
-FROM espressif/idf:${DOCKER_TAG}
+# Ensure version v5.5.5 to work with Arduino-ESP32 core (for now....)
+# Follow releases of arduino-esp32 core here: https://github.com/espressif/arduino-esp32/releases
+# sha256 hash of versions can be found here: https://hub.docker.com/r/espressif/idf/tags
+
+FROM espressif/idf:v5.5.5@sha256:642e9fb2f5acfb900ef67ddea82b825755d8ab7e939fc1c9a988c35c70c991a7
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
