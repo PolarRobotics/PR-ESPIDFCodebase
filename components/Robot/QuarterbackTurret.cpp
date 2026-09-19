@@ -975,7 +975,7 @@ void QuarterbackTurret::moveTurret(
               moveAssemblySubroutine();
 
             //* force is a blocking routine to ensure it works without
-            //interruption
+            // interruption
             //* do not use force frequently as it can strain the motor
             //* this should only be used on startup
             if (force)
@@ -1074,11 +1074,9 @@ void QuarterbackTurret::moveTurret(
               // also allow emergency stop
               while ((millis() - cradleStartTime) <= QB_CRADLE_TRAVEL_DELAY &&
                      !testForDisableOrStop())
-                while ((millis() - cradleStartTime) <= QB_CRADLE_TRAVEL_DELAY &&
-                       !testForDisableOrStop())
-                {
-                  NOP();
-                }
+              {
+                NOP();
+              }
               currentCradleState = targetCradleState;
               cradleMoving = false;
               cradleActuator.write(0);
@@ -1139,21 +1137,22 @@ void QuarterbackTurret::moveTurret(
       void QuarterbackTurret::setFlywheelSpeedStage(FlywheelSpeed stage)
       {
         // If in combine, use different preset flywheel speeds, which are set
-        // for combine distances
-        // if(mode == combine){
+        // for combine distances if(mode == combine){
         //   targetFlywheelStage = stage;
         //   setFlywheelSpeed(combineSpeeds[static_cast<int>(targetFlywheelStage)]);
         // currentFlywheelStage = targetFlywheelStage;
         //} else{
         //  targetFlywheelStage = stage;
         // setFlywheelSpeed(flywheelSpeeds[static_cast<int>(targetFlywheelStage)]);
-        .  //  currentFlywheelStage = targetFlywheelStage;
-            //}
-            //}
-            targetFlywheelStage = stage;
+        //  currentFlywheelStage = targetFlywheelStage;
+        //}
+        //} ugyuhijougyjhuiouighugycf
+        targetFlywheelStage = stage;
         setFlywheelSpeed(
             flywheelSpeeds[static_cast<uint8_t>(targetFlywheelStage)]);
         currentFlywheelStage = targetFlywheelStage;
+
+        int foo = 0;
       }
 
       void QuarterbackTurret::adjustFlywheelSpeedStage(SpeedStatus speed)
@@ -2285,8 +2284,7 @@ void QuarterbackTurret::moveTurret(
         // delay(2000);
 
         // from here on out, headingDeg and targetAbsoluteHeading are offset by
-        // northHeadingDegrees headingDeg = 0;
-        targetAbsoluteHeading = 0;
+        // northHeadingDegrees headingDeg = 0; targetAbsoluteHeading = 0;
 
         ESP_LOGI(TAG, "Magnetometer has been calibrated!");
         eIntegral = 0;
@@ -2555,14 +2553,15 @@ void QuarterbackTurret::moveTurret(
           // Constrain the values that are sent to the motor while keeping sign
           u = copysign(
               constrain(abs(u), 0, 1),
-              u);  // TODO: maybe not necessary?
-          if (e == 0) u = 0.0;
+              u);               // TODO: maybe not necessary?
+          if (e == 0) u = 0.0;  // u = 0.0f
 
           return -u;
         }
-        else if (deltaT > QB_TURRET_PID_BAD_DELTA_T)  // else if (deltaT >
-                                                      // QB_TURRET_PID_BAD_DELTA_T
-                                                      // / 1000.0f)
+        else if (
+            deltaT > QB_TURRET_PID_BAD_DELTA_T)  // else if (deltaT >
+                                                 // QB_TURRET_PID_BAD_DELTA_T
+                                                 // / 1000.0f)
         {
           // Drop the value if the time since last loop is too high so that
           // errors don't spike Drop the value if the time since last loop is
@@ -2592,22 +2591,15 @@ void QuarterbackTurret::moveTurret(
         recievedMessage = "";
         // While there are characters available in the buffer read each one
         // individually
-        // While there are characters available in the buffer read each one
-        // individually
         while (Uart_Turret.available())
         {
           char character = Uart_Turret.read();
           // Added a delimeter between messages since loop times are different
           // and multiple messages might come in before they are read and the
           // buffer is cleared Since they are coming so fast and there is no
-          // need to remember past values only the most recent is kept Added a
-          // delimeter between messages since loop times are different and
-          // multiple messages might come in before they are read and the buffer
-          // is cleared Since they are coming so fast and there is no need to
-          // remember past values only the most recent is kept
+          // need to remember past values only the most recent is kept
           if (character == '~')
           {
-            if (Uart_Turret.available()) recievedMessage = "";
             if (Uart_Turret.available()) recievedMessage = "";
           }
           else
@@ -2636,20 +2628,7 @@ void QuarterbackTurret::moveTurret(
             motor2Value =
                 (recievedMessage.substring(recievedMessage.indexOf('&') + 1))
                     .toInt();
-            // Doing some string formatting here, a delimiter was added between
-            // the data to help keep them separate for motor #1 and motor #2
-            motor1Value =
-                (recievedMessage.substring(0, recievedMessage.indexOf('&')))
-                    .toInt();
-            motor2Value =
-                (recievedMessage.substring(recievedMessage.indexOf('&') + 1))
-                    .toInt();
           }
         }
-        // Serial.print("Motor1: ");
-        // Serial.print(motor1Value);
-        // Serial.print("\tMotor2: ");
-        // Serial.print(motor2Value);
-        // Serial.println();
       }
 #pragma endregion
