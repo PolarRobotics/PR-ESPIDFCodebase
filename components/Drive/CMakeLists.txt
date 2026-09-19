@@ -6,7 +6,7 @@ idf_component_register(
     INCLUDE_DIRS 
         "include"
         "../../main"
-    REQUIRES 
+    REQUIRES  
         Motor
         Types
         espressif__arduino-esp32
