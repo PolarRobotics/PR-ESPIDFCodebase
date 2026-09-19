@@ -1064,12 +1064,14 @@ void QuarterbackTurret::setFlywheelSpeedStage(FlywheelSpeed stage)
   //} else{
   //  targetFlywheelStage = stage;
   // setFlywheelSpeed(flywheelSpeeds[static_cast<int>(targetFlywheelStage)]);
-  .  //  currentFlywheelStage = targetFlywheelStage;
-      //}
-      //}
-      targetFlywheelStage = stage;
+  //  currentFlywheelStage = targetFlywheelStage;
+  //}
+  //} ugyuhijougyjhuiouighugycf
+  targetFlywheelStage = stage;
   setFlywheelSpeed(flywheelSpeeds[static_cast<uint8_t>(targetFlywheelStage)]);
   currentFlywheelStage = targetFlywheelStage;
+
+  int foo = 0;
 }
 
 void QuarterbackTurret::adjustFlywheelSpeedStage(SpeedStatus speed)
