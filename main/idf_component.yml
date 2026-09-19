@@ -53,7 +53,7 @@ dependencies:
   # Motor Autowp_mcp2515 Library 
   autowp_mcp2515: 
     version: '*' 
-    git: hhtps://github.com/PolarRobotics/PR-Lib.git
+    git: https://github.com/PolarRobotics/PR-Lib.git
     path: components/autowp_mcp2515
 
 # Force transitive mdns (pulled in by arduino-esp32 as ^1.11.2) to stay on
