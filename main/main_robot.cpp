@@ -13,7 +13,7 @@
 
 #include "esp_log.h"
 
-static const char *TAG = "MainRobot";
+static const char* TAG = "MainRobot";
 
 // my dumb code
 
@@ -31,6 +31,7 @@ static const char *TAG = "MainRobot";
 #include <Drive.h>
 
 // Pairing Includes
+
 #include <pairing.h>
 
 // Robot Includes
@@ -39,8 +40,7 @@ static const char *TAG = "MainRobot";
 #include <Kicker.h>
 #include <Lineman.h>
 #include <Quarterback.h>
-#include <QuarterbackBase.h>
-#include <QuarterbackTurret.h>
+#include <QuarterbackOld.h>
 #include <Robot.h>
 
 // Types Includes
@@ -55,8 +55,8 @@ static const char *TAG = "MainRobot";
 #include <sabertoothinst.h>
 
 // Primary Parent Component Pointers
-Robot *robot = nullptr;  // subclassed if needed
-Drive *drive = nullptr;  // subclassed if needed
+Robot* robot = nullptr;  // subclassed if needed
+Drive* drive = nullptr;  // subclassed if needed
 
 //* How to use subclasses: ((SubclassName*) robot)->function()
 //! You must downcast each time you use a special function
@@ -69,7 +69,7 @@ drive_param_t driveParams;
 ConfigManager config;
 
 // Input Debouncer
-Debouncer *dbOptions;
+Debouncer* dbOptions;
 
 // Prototypes for Controller Callbacks
 // Implementations located at the bottom of this file
@@ -81,22 +81,14 @@ void onConnection()
     // ps5.setLed(0, 255, 0);   // set LED green
   }
 
-  // TODO: perm sln
-  if (robotType != quarterback_turret)
-    drive->emergencyStop();
-  else
-    ((QuarterbackTurret *)robot)->emergencyStop();
+  drive->emergencyStop();
 }
 
 void onDisconnect()
 {
   ESP_LOGI(TAG, "Controller Disconnected.");
 
-  // TODO: perm sln
-  if (robotType != quarterback_turret)
-    drive->emergencyStop();
-  else
-    ((QuarterbackTurret *)robot)->emergencyStop();
+  drive->emergencyStop();
 }
 
 extern "C" void main_app(void)
@@ -173,16 +165,16 @@ extern "C" void main_app(void)
       break;
     case quarterback_turret:
       robot = new QuarterbackTurret(
-        M1_IDX,        // left flywheel
-        M2_IDX,        // right flywheel
-        M3_PIN,        // cradle
-        M4_PIN,        // turret
-        SPECBOT_PIN1,  // assembly motor
-        SPECBOT_PIN3,  // magnetometer sda
-        SPECBOT_PIN4,  // magnetometer scl
-        ENC1_CHA,      // turret encoder
-        ENC1_CHB,      // turret encoder
-        ENC2_CHB       // zeroing laser
+          M1_IDX,        // left flywheel
+          M2_IDX,        // right flywheel
+          M3_PIN,        // cradle
+          M4_PIN,        // turret
+          SPECBOT_PIN1,  // assembly motor
+          SPECBOT_PIN3,  // magnetometer sda
+          SPECBOT_PIN4,  // magnetometer scl
+          ENC1_CHA,      // turret encoder
+          ENC1_CHB,      // turret encoder
+          ENC2_CHB       // zeroing laser
       );
       break;
     case quarterback_base:
@@ -207,14 +199,16 @@ extern "C" void main_app(void)
   }
 
   drive->printSetup();
-
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
-  HWSerial.begin(115200, SERIAL_8N1, 16,
-                 17);  // 9600 baudrate default for USBSabertooth
+  HWSerial.begin(
+      115200,
+      SERIAL_8N1,
+      16,
+      17);  // 9600 baudrate default for USBSabertooth
   {
     ;  // wait for serial port to connect
   }
@@ -239,13 +233,11 @@ extern "C" void main_app(void)
       // ESP_LOGI(TAG, "\r\nConnected");
       // ps5.setLed(255, 0, 0);   // set LED red
 
-      //* QBv3 Turret doesn't have drive, so this is a temporary measure to
-      // avoid NPEs and chaos
-      // TODO: find better solution
-      if (robotType != quarterback_turret)
+      // Drive controls for non-QB
+      if (robotType != quarterback)
       {
+        // Do all normal drive functions as usual
         drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
-
         // determine BSN percentage (boost, slow, or normal)
         if (ps5.Touchpad())
         {
@@ -270,17 +262,31 @@ extern "C" void main_app(void)
         {
           drive->setSpeedScalar(Drive::NORMAL);
         }
-
-        // Manual Home / Away Position Setting
-        if (dbOptions->debounceAndPressed(ps5.Options())) switchTackleSensor();
-
-        //* Update the motors based on the inputs from the controller
-        //* Can change functionality depending on subclass, like robot.action()
-        drive->update();
-        // drive->printDebugInfo(); // comment this line out to reduce compile
-        // time and memory usage drive->printCsvInfo(); // prints info to serial
-        // monitor in a csv (comma separated value) format
       }
+
+      // Drive controls for QB only in drive mode (i.e. when not enabled)
+      // Should only get to this point if the robot is a QB, so we can cast
+      // robot as a Quarterback without issue
+      else if (!((Quarterback*)robot)->isEnabled())
+      {
+        // If the QB is not enabled, allow driving but not manual turret or
+        // flywheel movement
+        drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
+
+        // avoid using R1, L1, touchpad, etc. as they are used in Quarterback
+        // control scheme for different functions like changing recievers
+        drive->setSpeedScalar(Drive::NORMAL);
+      }  // else robot is quarterback and also drive is disbled! SO DO NOTHING!
+
+      // Manual Home / Away Position Setting
+      if (dbOptions->debounceAndPressed(ps5.Options())) switchTackleSensor();
+
+      //* Update the motors based on the inputs from the controller
+      //* Can change functionality depending on subclass, like robot.action()
+      drive->update();
+      // drive->printDebugInfo(); // comment this line out to reduce compile
+      // time and memory usage drive->printCsvInfo(); // prints info to serial
+      // monitor in a csv (comma separated value) format
       //! Performs all special robot actions depending on the instantiated Robot
       //! subclass
       robot->action();
@@ -292,16 +298,10 @@ extern "C" void main_app(void)
     }
     else
     {  // no response from PS5 controller within last 300 ms, so stop
-      // ESP_LOGI(TAG, "Controller DC\n");
-      if (robotType != quarterback_turret)
-      {
-        // Emergency stop if the controller disconnects
-        drive->emergencyStop();
-      }
-      else
-      {
-        ((QuarterbackTurret *)robot)->emergencyStop();
-      }
+       // ESP_LOGI(TAG, "Controller DC\n");
+
+      // Emergency stop if the controller disconnects
+      drive->emergencyStop();
     }
     delay(5);
   }
