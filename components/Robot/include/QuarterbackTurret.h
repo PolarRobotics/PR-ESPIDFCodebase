@@ -219,11 +219,11 @@ class QuarterbackTurret : public Robot
   //==============================//
   //    MotorControl Instances    //
   //==============================//
-  MotorControl cradleActuator;
-  MotorControl turretMotor;
-  MotorControl assemblyMotor;
-  MotorControl flywheelLeftMotor;
-  MotorControl flywheelRightMotor;
+  PWMMotor cradleActuator;
+  PWMMotor turretMotor;
+  PWMMotor assemblyMotor;
+  PWMMotor flywheelLeftMotor;
+  PWMMotor flywheelRightMotor;
 
   //==============================//
   //       Pin Declarations       //
@@ -499,8 +499,13 @@ class QuarterbackTurret : public Robot
   void calibMagnetometer();
   void calculateHeadingMag();
   void holdTurretStill();
-  float turretPIDController(float current, float target, float kp, float kd,
-                            float ki, float maxSpeed);
+  float turretPIDController(
+      float current,
+      float target,
+      float kp,
+      float kd,
+      float ki,
+      float maxSpeed);
 
   /* MAGNETOMETER CURRENT STATE NOTES / PLAN (from April 9th, 2024 7:56 PM)
     - the PID controller works pretty well, tested on table rotating quickly
@@ -530,8 +535,12 @@ class QuarterbackTurret : public Robot
   //=============================//
   void moveAssemblySubroutine();
   void moveCradleSubroutine();
-  void moveTurret(int16_t heading, TurretUnits units, float power = QB_HOME_PCT,
-                  bool relativeToRobot = true, bool ramp = false);
+  void moveTurret(
+      int16_t heading,
+      TurretUnits units,
+      float power = QB_HOME_PCT,
+      bool relativeToRobot = true,
+      bool ramp = false);
   void updateTurretMotionStatus();
   int16_t getCurrentHeading();
   int16_t findNearestHeading(int16_t targetHeading, int16_t currentHeading);
@@ -540,6 +549,7 @@ class QuarterbackTurret : public Robot
   int CalculateRotation(float currentAngle, float targetAngle);
   int angleToTarget(Receiver receiver);
   float distanceToTarget(Receiver receiver);
+  void updateReadMotorValues();
 #pragma endregion
 
 #pragma region Public
@@ -552,16 +562,17 @@ class QuarterbackTurret : public Robot
   //========================//
   //      Constructor       //
   //========================//
-  QuarterbackTurret(uint8_t flywheelLeftPin,     // M1
-                    uint8_t flywheelRightPin,    // M2
-                    uint8_t cradlePin,           // M3
-                    uint8_t turretPin,           // M4
-                    uint8_t assemblyPin,         // S1
-                    uint8_t magnetometerSdaPin,  // S3
-                    uint8_t magnetometerSclPin,  // S4
-                    uint8_t turretEncoderPinA,   // E1A
-                    uint8_t turretEncoderPinB,   // E1B
-                    uint8_t turretLaserPin       // E2A
+  QuarterbackTurret(
+      uint8_t flywheelLeftPin,     // M1
+      uint8_t flywheelRightPin,    // M2
+      uint8_t cradlePin,           // M3
+      uint8_t turretPin,           // M4
+      uint8_t assemblyPin,         // S1
+      uint8_t magnetometerSdaPin,  // S3
+      uint8_t magnetometerSclPin,  // S4
+      uint8_t turretEncoderPinA,   // E1A
+      uint8_t turretEncoderPinB,   // E1B
+      uint8_t turretLaserPin       // E2A
   );
 
   bool magnetometerCalibrated = false;
@@ -609,12 +620,18 @@ class QuarterbackTurret : public Robot
   // speed as one of the defined enums adjustFlywheelSpeedStage       Move to
   // the next level up or down in the list of speeds
   void setTurretSpeed(float absoluteSpeed, bool overrideEncoderTare = false);
-  void moveTurret(int16_t heading, bool relativeToRobot = true,
-                  bool ramp = true);
-  void moveTurret(int16_t heading, float power = QB_HOME_PCT,
-                  bool relativeToRobot = true, bool ramp = true);
-  void moveTurretAndWait(int16_t heading, float power = QB_HOME_PCT,
-                         bool relativeToRobot = true, bool ramp = true);
+  void moveTurret(
+      int16_t heading, bool relativeToRobot = true, bool ramp = true);
+  void moveTurret(
+      int16_t heading,
+      float power = QB_HOME_PCT,
+      bool relativeToRobot = true,
+      bool ramp = true);
+  void moveTurretAndWait(
+      int16_t heading,
+      float power = QB_HOME_PCT,
+      bool relativeToRobot = true,
+      bool ramp = true);
   void aimAssembly(AssemblyAngle angle, bool force = false);
   void moveCradle(CradleState state, bool force = false);
   void setFlywheelSpeed(float absoluteSpeed);
