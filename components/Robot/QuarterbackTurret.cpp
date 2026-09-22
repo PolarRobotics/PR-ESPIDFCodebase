@@ -2,7 +2,7 @@
 
 #include "esp_log.h"
 
-static const char *TAG = "QuarterbackTurret";
+static const char* TAG = "QuarterbackTurret";
 
 // This for some reason has to be declared in the .cpp file and not the .h file
 // so that it does not conflict with the same declaration in other .h files
@@ -134,7 +134,7 @@ QuarterbackTurret::QuarterbackTurret(
   QuarterbackTurret::turretEncoderPinA = turretEncoderPinA;
   QuarterbackTurret::turretEncoderPinB = turretEncoderPinB;
   QuarterbackTurret::currentTurretEncoderCount = 0;
-  pinMode(turretEncoderPinA, INPUT_PULLUP);
+  pinMode(turretEncoderPinA, INPUT);
   pinMode(turretEncoderPinB, INPUT);
   attachInterrupt(turretEncoderPinA, turretEncoderISR, RISING);
 
@@ -280,14 +280,14 @@ void QuarterbackTurret::action()
       else if (QB_AUTO_ENABLED && ps5.L1())
       {
         currReceiver--;
-        if (currReceiver < 0) currReciever = 0;
+        if (currReceiver < 0) currReceiver = 0;
         // switchTarget(receiver_1);
       }
       //* Right Button (R1): Switch Target to Receiver 2
       else if (QB_AUTO_ENABLED && ps5.R1())
       {
         currReceiver++;
-        if (currReceiver > NUM_RECEIVERS - 1) currReciever = NUM_RECEIVERS - 1;
+        if (currReceiver > NUM_RECEIVERS - 1) currReceiver = NUM_RECEIVERS - 1;
         // switchTarget(receiver_2);
       }
       //* Auto Mode
@@ -413,7 +413,7 @@ void QuarterbackTurret::action()
           }
 
           /*
-          //* D-Pad Left: Move left one position
+          // D-Pad Left: Move left one position
           if (dbDpadLeft->debounceAndPressed(ps5.Left()))
           {
             if (this->combinePosition == combineStraight)
@@ -429,7 +429,7 @@ void QuarterbackTurret::action()
               targetRelativeHeading = 0;
             }
           }
-          //* D-Pad Right: Move right one position
+          // D-Pad Right: Move right one position
           else if (dbDpadRight->debounceAndPressed(ps5.Right()))
           {
             if (this->combinePosition == combineStraight)
@@ -502,11 +502,11 @@ void QuarterbackTurret::action()
         /*
         else
         {
-          //* Right Stick X: Turret Control
+          // Right Stick X: Turret Control
           // Left = CCW, Right = CW
           if (fabs(stickTurret) > STICK_DEADZONE)
           {
-            //* Use absolute positioning and position-based control iff.
+            // Use absolute positioning and position-based control iff.
             // magnetometer functionality is enabled
             if (useMagnetometer && holdTurretStillEnabled)
             {
@@ -524,7 +524,7 @@ void QuarterbackTurret::action()
               calculateHeadingMag();
               holdTurretStill();
             }
-            //* Use relative positioning and speed-based control
+            // Use relative positioning and speed-based control
             else
             {
               setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
@@ -547,17 +547,17 @@ void QuarterbackTurret::action()
 
           // updateTurretMotionStatus();
 
-          //* Left Stick Y: Flywheel Override
+          // Left Stick Y: Flywheel Override
           if (fabs(stickFlywheel) > STICK_DEADZONE)
           {
             setFlywheelSpeed(stickFlywheel);
           }
           else
           {
-            //* D-Pad Up: Increase flywheel speed by one stage
+            // D-Pad Up: Increase flywheel speed by one stage
             if (dbDpadUp->debounceAndPressed(ps5.Up()))
               adjustFlywheelSpeedStage(INCREASE);
-            //* D-Pad Down: Decrease flywheel speed by one stage
+            // D-Pad Down: Decrease flywheel speed by one stage
             else if (dbDpadDown->debounceAndPressed(ps5.Down()))
               adjustFlywheelSpeedStage(DECREASE);
             else
@@ -660,7 +660,7 @@ void QuarterbackTurret::moveTurret(
     bool relativeToRobot,
     bool ramp)
 {
-  const char *unitLabel = (units == degrees) ? "degrees" : "counts";
+  const char* unitLabel = (units == degrees) ? "degrees" : "counts";
   ESP_LOGI(
       TAG,
       "moveTurret called with heading = %d, units = %s, rel = %d",
@@ -2256,11 +2256,8 @@ float QuarterbackTurret::turretPIDController(
       ePrevious = 0;
     }
     // Serial.print("\tCurrent [deg]: "); Serial.print(current, 0);
-    /*target = (target - 180) + 360;
-    if(target >= 360)
-    {
-      target = target - 360;
-    }
+    target = (target - 180) + 360;
+    if (target >= 360) target = target - 360;
 
     ESP_LOGI(
         TAG,
@@ -2282,11 +2279,18 @@ float QuarterbackTurret::turretPIDController(
     // Removed asymmetric bias: if(u > 0){ u *= 1.1; } – this can cause
     // directional preference
 
-    ESP_LOGI(TAG,
-             "DeltaT: %.2f\tError: [deg]: %d\tP: %.4f\tI: %.4f\tD:\t%.4f\tPWM "
-             "Value: %.4f\tCurrent [deg]: %.0f\tTarget [deg]: %.2f",
-             deltaT, e, (kp * e), (ki * eIntegral), (kd * eDerivative), u,
-             current, target);
+    ESP_LOGI(
+        TAG,
+        "DeltaT: %.2f\tError: [deg]: %d\tP: %.4f\tI: %.4f\tD:\t%.4f\tPWM "
+        "Value: %.4f\tCurrent [deg]: %.0f\tTarget [deg]: %.2f",
+        deltaT,
+        e,
+        (kp * e),
+        (ki * eIntegral),
+        (kd * eDerivative),
+        u,
+        current,
+        target);
 
     // Constrain the values that are sent to the motor while keeping sign
     u = copysign(constrain(abs(u), 0, 1), u);  // TODO: maybe not necessary?
@@ -2294,9 +2298,9 @@ float QuarterbackTurret::turretPIDController(
 
     return -u;
   }
-  else if (deltaT >
-           QB_TURRET_PID_BAD_DELTA_T)  // else if (deltaT >
-                                       // QB_TURRET_PID_BAD_DELTA_T / 1000.0f)
+  else if (deltaT > QB_TURRET_PID_BAD_DELTA_T)  // else if (deltaT >
+                                                // QB_TURRET_PID_BAD_DELTA_T /
+                                                // 1000.0f)
   {
     // Drop the value if the time since last loop is too high so that errors
     // don't spike
@@ -2313,56 +2317,52 @@ float QuarterbackTurret::turretPIDController(
 #pragma endregion
 
 #pragma region Stabilization
-/**
- * @brief Reads a UART communication from the other ESP mounted to the turret.
- * This ESP currently provides the speed of both motors on the drivetrain so
- * we know if the robot is moving
- * @author George Rak
- * @date 5-14-2024
- */
-    void QuarterbackTurret::updateReadMotorValues()
+/*@brief Reads a UART communication from the other ESP mounted to the
+        turret.* This ESP currently provides the speed of both motors on the
+            drivetrain so* we know if the robot
+                is moving* @author George Rak* @date 5 -
+    14 - 2024 */
+void QuarterbackTurret::updateReadMotorValues()
+{
+  recievedMessage = "";
+  // While there are characters available in the buffer read each one
+  // individually
+  while (Uart_Turret.available())
+  {
+    char character = Uart_Turret.read();
+    // Added a delimeter between messages since loop times are different and
+    // multiple messages might come in before they are read and the buffer
+    // is cleared Since they are coming so fast and there is no need to
+    // remember past values only the most recent is kept
+    if (character == '~')
     {
-      recievedMessage = "";
-      // While there are characters available in the buffer read each one
-      // individually
-      while (Uart_Turret.available())
-      {
-        char character = Uart_Turret.read();
-        // Added a delimeter between messages since loop times are different and
-        // multiple messages might come in before they are read and the buffer
-        // is cleared Since they are coming so fast and there is no need to
-        // remember past values only the most recent is kept
-        if (character == '~')
-        {
-          if (Uart_Turret.available()) recievedMessage = "";
-        }
-        else
-        {
-          recievedMessage += character;
-        }
-      }
-      // The Server client relationship between the ESPs knows if they
-      // disconnect so it is possible that they might send DISCONNECTED over the
-      // communication instead of values, in this case set the value to the max
-      // so that the turret spins slower
-      if (recievedMessage != "")
-      {
-        if (recievedMessage == "DISCONNECTED")
-        {
-          motor1Value = 100;
-          motor2Value = 100;
-        }
-        else
-        {
-          // Doing some string formatting here, a delimiter was added between
-          // the data to help keep them separate for motor #1 and motor #2
-          motor1Value =
-              (recievedMessage.substring(0, recievedMessage.indexOf('&')))
-                  .toInt();
-          motor2Value =
-              (recievedMessage.substring(recievedMessage.indexOf('&') + 1))
-                  .toInt();
-        }
-      }
+      if (Uart_Turret.available()) recievedMessage = "";
     }
+    else
+    {
+      recievedMessage += character;
+    }
+  }
+  // The Server client relationship between the ESPs knows if they
+  // disconnect so it is possible that they might send DISCONNECTED over the
+  // communication instead of values, in this case set the value to the max
+  // so that the turret spins slower
+  if (recievedMessage != "")
+  {
+    if (recievedMessage == "DISCONNECTED")
+    {
+      motor1Value = 100;
+      motor2Value = 100;
+    }
+    else
+    {
+      // Doing some string formatting here, a delimiter was added between
+      // the data to help keep them separate for motor #1 and motor #2
+      motor1Value =
+          (recievedMessage.substring(0, recievedMessage.indexOf('&'))).toInt();
+      motor2Value =
+          (recievedMessage.substring(recievedMessage.indexOf('&') + 1)).toInt();
+    }
+  }
+}
 #pragma endregion
