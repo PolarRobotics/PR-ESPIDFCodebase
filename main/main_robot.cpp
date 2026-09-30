@@ -208,8 +208,6 @@ extern "C" void main_app(void)
 
   if (drive != nullptr) drive->printSetup();
 
-  drive->printSetup();
-
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
 
