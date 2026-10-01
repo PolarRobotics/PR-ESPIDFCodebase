@@ -5,7 +5,7 @@ idf_component_register(
         ${DRIVE_SOURCES}
     INCLUDE_DIRS 
         "include"
-        "../../main"
+        "../../main" 
     REQUIRES  
         Motor
         Types

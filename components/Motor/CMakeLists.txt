@@ -6,6 +6,7 @@ idf_component_register(
     INCLUDE_DIRS 
         "include"
         "../../main"
+        "../Drive"
     REQUIRES
         Types
         espressif__arduino-esp32 
