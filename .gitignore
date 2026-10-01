@@ -33,6 +33,9 @@ GPATH
 # Doc build artifacts
 docs/_build/
 docs/doxygen_sqlite3.db
+docs/build/*
+docs/.venv/*
+.venv/*
 
 # Downloaded font files
 docs/_static/DejaVuSans.ttf
