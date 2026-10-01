@@ -209,7 +209,11 @@ extern "C" void main_app(void)
   if (drive != nullptr) drive->printSetup();
 
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
+#if CONFIG_PR_SKIP_BT_PAIRING
+  ESP_LOGW(TAG, "Bluetooth pairing disabled by build configuration.");
+#else
   activatePairing();
+#endif
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
