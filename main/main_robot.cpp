@@ -42,6 +42,7 @@ static const char *TAG = "MainRobot";
 #include <QuarterbackBase.h>
 #include <QuarterbackTurret.h>
 #include <Robot.h>
+#include <Swerve.h>
 
 // Types Includes
 #include <BotTypes.h>
@@ -161,11 +162,13 @@ extern "C" void main_app(void)
       drive = new Drive(center, driveParams);
       drive->setupMotors(DRIVE_M1, DRIVE_M2);
       break;
-    case swerve;
-        robot =
-            new Swerve(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3, SPECBOT_PIN4);
-        drive = new Drive(swerve, driveParams);
-        drive->setupMotors(DRIVE_M1, DRIVE_M2); break; case center_conversion:
+    case swerve:
+      robot =
+          new Swerve(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3, SPECBOT_PIN4);
+      drive = new Drive(swerve, driveParams);
+      drive->setupMotors(DRIVE_M1, DRIVE_M2);
+      break;
+    case center_conversion:
       robot = new CenterConversion(SPECBOT_PIN1);
       drive = new Drive(center_conversion, driveParams);
       drive->setupMotors(DRIVE_M1, DRIVE_M2);
