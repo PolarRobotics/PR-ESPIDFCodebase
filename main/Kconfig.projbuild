@@ -1,0 +1,10 @@
+menu "Polar Robotics"
+
+config PR_SKIP_BT_PAIRING
+    bool "Skip PS5 Bluetooth pairing"
+    default n
+    help
+        Skip Bluetooth controller initialization in environments without the
+        ESP32 Bluetooth hardware, such as QEMU.
+
+endmenu
