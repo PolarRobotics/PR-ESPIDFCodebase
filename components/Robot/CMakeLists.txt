@@ -9,6 +9,7 @@ idf_component_register(
     REQUIRES 
         Drive
         Motor
+        Pairing
         Utilities 
         espressif__arduino-esp32 
         ps5-esp32
