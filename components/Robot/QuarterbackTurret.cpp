@@ -1,5 +1,6 @@
 #include <QuarterbackTurret.h>
 
+#include "Wire.h"
 #include "esp_log.h"
 
 static const char* TAG = "QuarterbackTurret";
@@ -188,7 +189,18 @@ QuarterbackTurret::QuarterbackTurret(
 
   this->dbTurretInterpolator = new Debouncer(QB_TURRET_INTERPOLATION_DELAY);
 
-  magnetometerSetup();
+  if (Wire.begin(magnetometerSdaPin, magnetometerSclPin))
+  {
+    magnetometerSetup();
+  }
+  else
+  {
+    ESP_LOGE(
+        TAG,
+        "Failed to initialize magnetometer I2C on SDA %u, SCL %u",
+        magnetometerSdaPin,
+        magnetometerSclPin);
+  }
 
   this->northHeadingDegrees = 7;
 
@@ -1966,13 +1978,8 @@ void QuarterbackTurret::moveTurret(
       {
         if (!lis3mdl.begin_I2C())
         {
-          // hardware I2C mode, can pass in address & alt Wire
-          // if (! lis3mdl.begin_SPI(LIS3MDL_CS)) {  // hardware SPI mode
-          // if (! lis3mdl.begin_SPI(LIS3MDL_CS, LIS3MDL_CLK, LIS3MDL_MISO,
-          // LIS3MDL_MOSI)) { // soft SPI
-          // if (! lis3mdl.begin_SPI(LIS3MDL_CS, LIS3MDL_CLK, LIS3MDL_MISO,
-          // LIS3MDL_MOSI)) { // soft SPI
           ESP_LOGE(TAG, "Failed to find LIS3MDL chip");
+          return;
         }
         ESP_LOGI(TAG, "LIS3MDL Found!");
 
@@ -2559,9 +2566,10 @@ void QuarterbackTurret::moveTurret(
 
           return -u;
         }
-        else if (deltaT > QB_TURRET_PID_BAD_DELTA_T)  // else if (deltaT >
-                                                      // QB_TURRET_PID_BAD_DELTA_T
-                                                      // / 1000.0f)
+        else if (
+            deltaT > QB_TURRET_PID_BAD_DELTA_T)  // else if (deltaT >
+                                                 // QB_TURRET_PID_BAD_DELTA_T
+                                                 // / 1000.0f)
         {
           // Drop the value if the time since last loop is too high so that
           // errors don't spike
