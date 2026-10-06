@@ -173,8 +173,8 @@ extern "C" void main_app(void)
       break;
     case quarterback_turret:
       robot = new QuarterbackTurret(
-          M1_IDX,        // left flywheel
-          M2_IDX,        // right flywheel
+          DRIVE_M1,      // left flywheel
+          DRIVE_M2,      // right flywheel
           M3_PIN,        // cradle
           M4_PIN,        // turret
           SPECBOT_PIN1,  // assembly motor
