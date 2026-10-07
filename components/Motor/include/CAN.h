@@ -12,7 +12,7 @@
 
 extern MCP2515 mcp2515;
 extern MCP2515::ERROR err;
-extern uint8_t motors[8];
+extern uint8_t can_motors[8];
 
 // Parameter Set Packet
 extern struct can_frame param_set;
