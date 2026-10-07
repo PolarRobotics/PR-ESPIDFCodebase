@@ -8,7 +8,7 @@
 
 // Indexes are 0-7; Driving/Turning motors alternate; hence "if <index> % 2 ==
 // 0" (or != 0) can be used for looping logic
-uint8_t motors[8] = {0x02, 0x06, 0x01, 0x05, 0x03, 0x07, 0x04, 0x08};
+uint8_t can_motors[8] = {0x02, 0x06, 0x01, 0x05, 0x03, 0x07, 0x04, 0x08};
 
 /**
  * @brief
@@ -135,7 +135,7 @@ void updateMotors(uint8_t *data)
       setupPacket(
           &velocity_set,
           velocity_set_id,
-          motors[i],
+          can_motors[i],
           velocity_set_dlc,
           &data[i * 8]);
       err = mcp2515.sendMessage(&velocity_set);
@@ -148,7 +148,7 @@ void updateMotors(uint8_t *data)
       setupPacket(
           &position_set,
           position_set_id,
-          motors[i],
+          can_motors[i],
           position_set_dlc,
           &data[i * 8]);
       err = mcp2515.sendMessage(&position_set);
@@ -172,7 +172,7 @@ void updateParameters(bool toggle)
         setupPacket(
             &param_set,
             param_set_id,
-            motors[i],
+            can_motors[i],
             param_set_dlc,
             set_coast_mode);
       }
@@ -181,7 +181,7 @@ void updateParameters(bool toggle)
         setupPacket(
             &param_set,
             param_set_id,
-            motors[i],
+            can_motors[i],
             param_set_dlc,
             set_break_mode);
       }
