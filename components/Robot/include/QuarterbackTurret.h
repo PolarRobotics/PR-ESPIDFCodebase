@@ -12,7 +12,6 @@
 #ifndef QUARTERBACK_TURRET_H
 #define QUARTERBACK_TURRET_H
 
-#include <Adafruit_LIS3MDL.h>  // Magnetometer
 #include <Debouncer.h>
 #include <HardwareSerial.h>  // For ESP-to-ESP UART
 #include <MotorEnums.h>
@@ -212,8 +211,6 @@ class QuarterbackTurret : public Robot
   double avgRx = 0;        // Smoothed receiver x position
   double avgRy = 0;        // Smoothed receiver y position
   int posBufferCount = 0;  // Initialization flag for position EMA
-  float headingDegSmoothed = 0;          // Smoothed heading
-  int headingBufferCount = 0;            // Initialization flag for heading EMA
   unsigned long lastFlywheelUpdate = 0;  // Timer for 1s flywheel updates
 
   //==============================//
@@ -345,14 +342,12 @@ class QuarterbackTurret : public Robot
   // due to mechanical backlash in the gears, set by robot during homing / reset
   // stopError                      number of encoder counts needed for motor to
   // stop moving turretMoving                   set to true when the turret is
-  // moving asynchronously or in the normal program manualHeadingIncrementCount
-  // default = 0
+  // moving asynchronously or in the normal program
   int32_t targetTurretEncoderCount;
   int32_t errorEncoderCount;
   int32_t slopError;  // TODO: remove with new encoder
   int32_t stopError;  // TODO: remove with new encoder (?)
   bool turretMoving;
-  uint8_t manualHeadingIncrementCount;
 
   //===============================//
   //    Robot Relative Headings    //
@@ -361,19 +356,6 @@ class QuarterbackTurret : public Robot
   int16_t targetRelativeHeading;       // default = 0 //* as of 2024-11-15, in
                                        // degrees only
   int32_t currentRelativeTurretCount;  // default is undefined
-
-  //========================================//
-  //   Absolute (World Relative) Headings   //
-  //========================================//
-  // currentAbsoluteHeading
-  // targetAbsoluteHeading
-  // turretLaserState
-  int16_t currentAbsoluteHeading;  // default = 0
-                                   // TODO: is unused, merge with
-                                   // headingRad/headingDeg
-  int16_t targetAbsoluteHeading;   // default = 0
-  uint8_t turretLaserState;        // triggered or not
-                                   // TODO: seems to be unused, remove?
 
   //================================//
   //    Control Input Debouncers    //
@@ -395,81 +377,7 @@ class QuarterbackTurret : public Robot
   Debouncer* dbCross;
   Debouncer* dbTurretInterpolator;  // TODO: seems to be unused, remove?
 
-#pragma region Magnetometer
-  //==========================//
-  //|                        |//
-  //|      Magnetometer      |//
-  //|                        |//
-  //==========================//
-  Adafruit_LIS3MDL lis3mdl;  // magnetometer object
-
-  bool useMagnetometer =
-      true;  // set 'false' to disable the magnetometer and its functions
-  bool holdTurretStillEnabled =
-      false;  // set 'false' if you only want to use the magnetometer for the
-              // handoff and not the hold steady
-
-  //============================//
-  //  Magnetometer Calibration  //
-  //============================//
-  //* used at each startup
-  // TODO: make a class or struct for all these
-  // mag_xVal, mag_yVal:     The current x and y values read by the magnetometer
-  // (after adjustments) mag_xMax, mag_xMin:     During calibration the max and
-  // min X values are recorded mag_yMax, mag_yMin:     During calibration the
-  // max and min Y values are recorded mag_xHalf, mag_yHalf:   Half of the total
-  // range of expected x and Y values (Used to shift values back to origin
-  // [0,0]) mag_xSign, mag_ySign:   Determines whether to add to the half value
-  // or subtract from it when shifting values back to origin (true = subtract)
-  int mag_yVal = 0;
-  int mag_xVal = 0;
-  int mag_xMax = -1000000;
-  int mag_xMin = 1000000;
-  int mag_xHalf = 0;
-  int mag_yMax = -1000000;
-  int mag_yMin = 1000000;
-  int mag_yHalf = 0;
-  bool mag_xSign = false;
-  bool mag_ySign = false;
-  int northHeadingDegrees = 0;
-
-  /* Magnetometer current heading calculations
-      - headingRad:     The current calculated heading in radians using the X
-     and Y values after calibration
-      - headingDeg:     The current calculated heading in degrees -> uses
-     headingRad
-  */
-  float headingRad;  // TODO: merge with robot abs pot vars
-  float headingDeg;  // TODO: merge with robot abs pot vars
-
-//==================================//
-//    Magnetometer PID Variables    //
-//==================================//
-// PID_ERROR_AVG_ARRAY_LENGTH       The length of the array used for averaging
-// the error
-
-// prevErrorVals        Array of previous error values used to average the last
-// few error values together
-//                          to smooth out random spikes in readings from
-//                          magnetometer
-// prevErrorIndex       The current index gets replaced with the new error value
-// cycling through the entire array over time firstAverage         On the first
-// error calculations, the array is filled with zeros.
-//                          This accounts for that by filling the entire array
-//                          with the current reading.
-
-// previousTime:        Used to calculate errors and deltaT in PID function
-// ePrevious:           The error builds as time goes on, this is used to record
-// the previous and new error values eIntegral:           The current error
-// integral calculated, will be added to ePrevious in PID loop kp: Proportional
-// gain used in PID ki:                  Integral gain used in PID kd:
-// Derivative gain used in PID turretPIDSpeed:      The calculated PWM value
-// used in the PID loop minMagSpeed:         Small PWM signals fail to make the
-// motor turn leading to error in PID calculations.
-//                        This sets a bottom bound on the PWM signal that can be
-//                        calculated by the PID loop
 #define PID_ERROR_AVG_ARRAY_LENGTH 5
-  // TODO: convert to appropriate (u)int#_t types
   int prevErrorVals[PID_ERROR_AVG_ARRAY_LENGTH] = {0, 0, 0, 0, 0};
   int prevErrorIndex = 0;
   bool firstAverage = true;
@@ -481,24 +389,7 @@ class QuarterbackTurret : public Robot
   float ki = 0.000;  // 0.0008 we had 0.000
   float kd = 0.000;  // 0.004 was last value
   float turretPIDSpeed = 0;
-  float minMagSpeed = .075;
 
-  //============================//
-  //   Magnetometer Functions   //
-  //============================//
-  // magnetometerSetup      Sets some of the parameters. Runs once on startup.
-  // calibMagnetometer      Rotates turret once on startup, records readings and
-  // sets values that will scale/transform
-  //                            outputs to the correct angles
-  // calculateHeadingMag    Uses the values calculated during calibration to
-  // find the current heading of the turret
-  //                            with respect to the original 0 position
-  // holdTurretStill        Checks if the calibration has been completed and
-  // hold turret stil is enabled then enables the PID loop
-  void magnetometerSetup();
-  void calibMagnetometer();
-  void calculateHeadingMag();
-  void holdTurretStill();
   float turretPIDController(
       float current,
       float target,
@@ -506,24 +397,6 @@ class QuarterbackTurret : public Robot
       float kd,
       float ki,
       float maxSpeed);
-
-  /* MAGNETOMETER CURRENT STATE NOTES / PLAN (from April 9th, 2024 7:56 PM)
-    - the PID controller works pretty well, tested on table rotating quickly
-    - Tested PID controller on field and it immidiately flipped so we need to
-    tune it so that the robot does not tip itself over
-    - Magnetometer mount needs redesigned and printed to be more stable /
-    protective of the magnetometer and wires (Should probably solder wires to
-    magnetometer for best reliability)
-    - Ability to change holding angle of turret with joystick needs evaluated
-    for correctness
-    - Turret flywheel equation needs generated for requested distance
-    - Scan and Score capstone integration needs done to control angle and throw
-    distance
-    - Testing needs done to see how much flywheels beign on affects magnetometer
-    - Relative velocities should be taken into account with trajectory
-    calculations
-  */
-#pragma endregion
 
   //====================================//
   //     Private UART Communication     //
@@ -568,14 +441,10 @@ class QuarterbackTurret : public Robot
       uint8_t cradlePin,           // M3
       uint8_t turretPin,           // M4
       uint8_t assemblyPin,         // S1
-      uint8_t magnetometerSdaPin,  // S3
-      uint8_t magnetometerSclPin,  // S4
       uint8_t turretEncoderPinA,   // E1A
       uint8_t turretEncoderPinB,   // E1B
       uint8_t turretLaserPin       // E2A
   );
-
-  bool magnetometerCalibrated = false;
 
   //===================================//
   //   Quarterback General Functions   //
