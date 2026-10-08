@@ -1,6 +1,6 @@
-
 #include <CAN.h>
 #include <Swerve.h>
+#include <inverseKin.h>
 #include <ps5controller.h>
 
 Swerve::Swerve(uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4)
@@ -13,22 +13,6 @@ Swerve::Swerve(uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4)
   initalizeCANDriver();
   setupPacket(&heartbeat, heartbeat_id, 0, heartbeat_dlc, heartbeat_data);
   setupPacket(&halt, halt_id, 0, halt_dlc, nullptr);
-}
-
-void Swerve::action()
-{
-  getInputs();
-
-  const WheelData wheelData = kinematics.getData();
-  if (!kinematics.checkHalt())
-  {
-    createDataCAN(wheelData, can_data);
-    updateMotors(can_data);
-  }
-  else
-  {
-    mcp2515.sendMessage(&halt);
-  }
 }
 
 void Swerve::getInputs()
@@ -46,4 +30,20 @@ void Swerve::getInputs()
 
   kinematics.setSpeedScalars();
   kinematics.normalizeInputs();
+}
+
+void Swerve::action()
+{
+  getInputs();
+
+  const WheelData wheelData = kinematics.getData();
+  if (!kinematics.checkHalt())
+  {
+    createDataCAN(wheelData, can_data);
+    updateMotors(can_data);
+  }
+  else
+  {
+    mcp2515.sendMessage(&halt);
+  }
 }

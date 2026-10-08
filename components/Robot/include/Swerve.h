@@ -5,6 +5,15 @@
 
 #include <cstdint>
 
-Swerve::Swerve(uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4);
+class Swerve : public Robot
+{
+ public:
+  Swerve(uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4);
+  void action();
 
-void Swerve::action();
+ private:
+  void getInputs();
+
+  InverseKin kinematics;
+  uint8_t can_data[64];
+};
