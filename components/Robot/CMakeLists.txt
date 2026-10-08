@@ -13,6 +13,5 @@ idf_component_register(
         espressif__arduino-esp32 
         ps5-esp32
         pr-lib-motor
-        adafruit_lis3mdl
         usbsabertooth
 )

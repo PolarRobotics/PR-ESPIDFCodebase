@@ -1,7 +1,6 @@
 #include <QuarterbackTurret.h>
 
 #include "esp_log.h"
-#include "Wire.h"
 
 static const char* TAG = "QuarterbackTurret";
 
@@ -29,8 +28,6 @@ int32_t QuarterbackTurret::currentTurretEncoderCount;
 // Throwing distance calculation has be created by testing by hand. The equation
 // is accurate up to 18ft, with some inconsistencies up close.
 
-// Also, magnetometer is very difficult to calibrate, so deemed not useful for
-// now
 uint8_t QuarterbackTurret::turretLaserPin;
 
 // The tracking is now working somewhat. It does seem to be consistently off to
@@ -62,8 +59,6 @@ QuarterbackTurret::QuarterbackTurret(
     uint8_t cradlePin,           // M3
     uint8_t turretPin,           // M4
     uint8_t assemblyPin,         // S1
-    uint8_t magnetometerSdaPin,  // S3
-    uint8_t magnetometerSclPin,  // S4
     uint8_t turretEncoderPinA,   // E1A
     uint8_t turretEncoderPinB,   // E1B
     uint8_t turretLaserPin       // E2A
@@ -117,17 +112,11 @@ QuarterbackTurret::QuarterbackTurret(
 
   this->turretMoving = false;
 
-  this->manualHeadingIncrementCount = 0;
-
-  this->currentAbsoluteHeading = 0;
-  this->targetAbsoluteHeading = 0;
-
   this->stickFlywheel = 0;
   this->stickTurret = 0;
 
   // turret laser setup
   // this->turretLaserPin = turretLaserPin;
-  // this->turretLaserState = 0;
   // pinMode(turretLaserPin, INPUT_PULLUP); //! will be 1 when at home position
   // or main power is off (the latter is electrically unavoidable)
 
@@ -163,21 +152,6 @@ QuarterbackTurret::QuarterbackTurret(
   this->dbCross = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
 
   this->dbTurretInterpolator = new Debouncer(QB_TURRET_INTERPOLATION_DELAY);
-
-  if (Wire.begin(magnetometerSdaPin, magnetometerSclPin))
-  {
-    magnetometerSetup();
-  }
-  else
-  {
-    ESP_LOGE(
-        TAG,
-        "Failed to initialize magnetometer I2C on SDA %u, SCL %u",
-        magnetometerSdaPin,
-        magnetometerSclPin);
-  }
-
-  this->northHeadingDegrees = 7;
 
   // Initialize receiver positions to safe defaults to avoid garbage math
   for (int i = 0; i < NUM_RECEIVERS; i++)
@@ -313,7 +287,7 @@ void QuarterbackTurret::action()
         // integral calculation in the PID loop to make it faster. Adjusted the
         // combine angles to more accurately line up with the receiver target
         // locations. Update receiver data (EMA)
-        if (magnetometerCalibrated && newData)
+        if (newData)
         {
           double newRx = receivers[currReceiver].position[0];
           double newRy = receivers[currReceiver].position[1];
@@ -352,8 +326,7 @@ void QuarterbackTurret::action()
           // No stick input for 1+ second → resume normal auto tracking
           if (fabs(avgRx) > 0.01 || fabs(avgRy) > 0.01)
           {
-            calculateHeadingMag();
-            currentRelativeHeading = headingDeg;
+            currentRelativeHeading = getCurrentHeading();
             double tempRx = rx, tempRy = ry;
             rx = avgRx;
             ry = avgRy;
@@ -477,107 +450,13 @@ void QuarterbackTurret::action()
         {
           // Right stick turret control (manual mode)
           if (fabs(stickTurret) > STICK_DEADZONE)
-          {
-            if (useMagnetometer && holdTurretStillEnabled)
-            {
-              if (manualHeadingIncrementCount == 0)
-              {
-                targetAbsoluteHeading += (1 * copysign(1, stickTurret));
-                targetAbsoluteHeading %= 360;
-              }
-              else
-              {
-                manualHeadingIncrementCount++;
-                manualHeadingIncrementCount %= 4;
-              }
-              calculateHeadingMag();
-              holdTurretStill();
-            }
-            else
-            {
-              setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
-            }
-          }
-          else if (useMagnetometer && holdTurretStillEnabled)
-          {
-            calculateHeadingMag();
-            holdTurretStill();
-          }
+            setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
           else
-          {
             setTurretSpeed(0);
-          }
         }
 
         updateTurretMotionStatus();
 
-        /*
-        else
-        {
-          // Right Stick X: Turret Control
-          // Left = CCW, Right = CW
-          if (fabs(stickTurret) > STICK_DEADZONE)
-          {
-            // Use absolute positioning and position-based control iff.
-            // magnetometer functionality is enabled
-            if (useMagnetometer && holdTurretStillEnabled)
-            {
-              // only change position every 4 loops
-              if (manualHeadingIncrementCount == 0)
-              {
-                targetAbsoluteHeading += (1 * copysign(1, stickTurret));
-                targetAbsoluteHeading %= 360;
-              }
-              else
-              {
-                manualHeadingIncrementCount++;
-                manualHeadingIncrementCount %= 4;
-              }
-              calculateHeadingMag();
-              holdTurretStill();
-            }
-            // Use relative positioning and speed-based control
-            else
-            {
-              setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
-            }
-          }
-          else
-          {
-            // Check if magnetometer functionality is enabled
-            if (useMagnetometer && holdTurretStillEnabled)
-            {
-              calculateHeadingMag();
-              holdTurretStill();
-            }
-            else
-            {
-              setTurretSpeed(0);
-            }
-            updateTurretMotionStatus();
-          }
-
-          // updateTurretMotionStatus();
-
-          // Left Stick Y: Flywheel Override
-          if (fabs(stickFlywheel) > STICK_DEADZONE)
-          {
-            setFlywheelSpeed(stickFlywheel);
-          }
-          else
-          {
-            // D-Pad Up: Increase flywheel speed by one stage
-            if (dbDpadUp->debounceAndPressed(ps5.Up()))
-              adjustFlywheelSpeedStage(INCREASE);
-            // D-Pad Down: Decrease flywheel speed by one stage
-            else if (dbDpadDown->debounceAndPressed(ps5.Down()))
-              adjustFlywheelSpeedStage(DECREASE);
-            else
-              setFlywheelSpeedStage(currentFlywheelStage);
-          }
-        }
-
-        */
       }
 
       //* Left Stick Y + D-Pad: Flywheel control
@@ -611,10 +490,6 @@ void QuarterbackTurret::action()
 
   if (millis() - lastPrintTime >= 1000)
   {
-    calculateHeadingMag();
-    Serial.print("Magnetometer angle: ");
-    Serial.println(headingDeg);
-
     Serial.print("QB Position: x=");
     Serial.print(position[0]);
     Serial.print(", y=");
@@ -734,8 +609,8 @@ void QuarterbackTurret::moveTurret(
       // currentRelativeHeading = targetRelativeHeading;
     }
     else
-    {  // relative to field
-       // todo: use magnetometer
+    {
+      // Field-relative control requires a world-heading sensor.
     }
   }
   else
@@ -1330,44 +1205,13 @@ void QuarterbackTurret::handoff()
   this->runningMacro = true;
   aimAssembly(straight);
   int16_t targetHeading = (getCurrentHeading() + 130) % 360;
-  calculateHeadingMag();
-  targetAbsoluteHeading = headingDeg + 180;
-  targetAbsoluteHeading %= 360;
-
-  if (useMagnetometer)
-  {
-    // moveTurretAndWait(targetHeading);
-    // Use the magnetometer to make sure we get close to the requested angle
-    // calculateHeadingMag();
-    // holdTurretStill();
-    // cradleActuator.write(1.0);
-    setFlywheelSpeedStage(slow_outwards);
-    long currentTime = millis();
-    while ((currentTime + 4000) > millis())
-    {
-      calculateHeadingMag();
-      turretPIDSpeed = turretPIDController(
-          headingDeg,
-          (float)targetAbsoluteHeading,
-          .01,
-          0,
-          0,
-          .25);
-      setTurretSpeed(turretPIDSpeed, true);
-    }
-    cradleActuator.write(1.0);
-    delay(2000);
-  }
-  else
-  {
-    targetHeading += 10;
-    targetHeading %= 360;
-    moveTurretAndWait(targetHeading);
-    cradleActuator.write(1.0);
-    setFlywheelSpeedStage(slow_outwards);
-    delay(2000);
-    setFlywheelSpeedStage(stopped);
-  }
+  targetHeading += 10;
+  targetHeading %= 360;
+  moveTurretAndWait(targetHeading);
+  cradleActuator.write(1.0);
+  setFlywheelSpeedStage(slow_outwards);
+  delay(2000);
+  setFlywheelSpeedStage(stopped);
   cradleActuator.write(-1);
   delay(2000);
   cradleActuator.write(0);
@@ -1725,13 +1569,6 @@ void QuarterbackTurret::zeroTurret()
   currentTurretEncoderCount = 0;
   ESP_LOGI(TAG, "zeroed");
 
-  // Now that the encoder is zeroed we can just zero the magnetometer
-  if (useMagnetometer)
-  {
-    delay(250);
-    calibMagnetometer();
-  }
-
   this->runningMacro = false;
 }
 
@@ -1816,368 +1653,10 @@ void QuarterbackTurret::printDebug()
   */
   if (enabled)
   {
-    /*
-    ESP_LOGI(TAG, "turretLaserState: %d; currentTurretEncoderCount: %ld",
-             digitalRead(turretLaserPin),
-             (long)currentTurretEncoderCount);
-    */
   }
 }
-
-#pragma region Magnetometer
-/**
- * @brief Sets up magnetometer
- * @authors Rhys Davies, Corbin Hibler
- * @date 2024-01-03
- */
-void QuarterbackTurret::magnetometerSetup()
-{
-  if (!lis3mdl.begin_I2C())
-  {
-    ESP_LOGE(TAG, "Failed to find LIS3MDL chip");
-    return;
-  }
-  ESP_LOGI(TAG, "LIS3MDL Found!");
-
-  lis3mdl.setPerformanceMode(LIS3MDL_MEDIUMMODE);
-  switch (lis3mdl.getPerformanceMode())
-  {
-    case LIS3MDL_LOWPOWERMODE:
-      ESP_LOGI(TAG, "Performance mode set to: Low");
-      break;
-    case LIS3MDL_MEDIUMMODE:
-      ESP_LOGI(TAG, "Performance mode set to: Medium");
-      break;
-    case LIS3MDL_HIGHMODE:
-      ESP_LOGI(TAG, "Performance mode set to: High");
-      break;
-    case LIS3MDL_ULTRAHIGHMODE:
-      ESP_LOGI(TAG, "Performance mode set to: Ultra-High");
-      break;
-  }
-
-  lis3mdl.setOperationMode(LIS3MDL_CONTINUOUSMODE);
-  // Single shot mode will complete conversion and go into power down
-  switch (lis3mdl.getOperationMode())
-  {
-    case LIS3MDL_CONTINUOUSMODE:
-      ESP_LOGI(TAG, "Operation mode set to: Continuous");
-      break;
-    case LIS3MDL_SINGLEMODE:
-      ESP_LOGI(TAG, "Operation mode set to: Single mode");
-      break;
-    case LIS3MDL_POWERDOWNMODE:
-      ESP_LOGI(TAG, "Operation mode set to: Power-down");
-      break;
-  }
-
-  lis3mdl.setDataRate(LIS3MDL_DATARATE_155_HZ);
-  // You can check the datarate by looking at the frequency of the DRDY pin
-  switch (lis3mdl.getDataRate())
-  {
-    case LIS3MDL_DATARATE_0_625_HZ:
-      ESP_LOGI(TAG, "Data rate set to: 0.625 Hz");
-      break;
-    case LIS3MDL_DATARATE_1_25_HZ:
-      ESP_LOGI(TAG, "Data rate set to: 1.25 Hz");
-      break;
-    case LIS3MDL_DATARATE_2_5_HZ:
-      ESP_LOGI(TAG, "Data rate set to: 2.5 Hz");
-      break;
-    case LIS3MDL_DATARATE_5_HZ:
-      ESP_LOGI(TAG, "Data rate set to: 5 Hz");
-      break;
-    case LIS3MDL_DATARATE_10_HZ:
-      ESP_LOGI(TAG, "Data rate set to: 10 Hz");
-      break;
-    case LIS3MDL_DATARATE_20_HZ:
-      ESP_LOGI(TAG, "Data rate set to: 20 Hz");
-      break;
-    case LIS3MDL_DATARATE_40_HZ:
-      ESP_LOGI(TAG, "Data rate set to: 40 Hz");
-      break;
-    case LIS3MDL_DATARATE_80_HZ:
-      ESP_LOGI(TAG, "Data rate set to: 80 Hz");
-      break;
-    case LIS3MDL_DATARATE_155_HZ:
-      ESP_LOGI(TAG, "Data rate set to: 155 Hz");
-      break;
-    case LIS3MDL_DATARATE_300_HZ:
-      ESP_LOGI(TAG, "Data rate set to: 300 Hz");
-      break;
-    case LIS3MDL_DATARATE_560_HZ:
-      ESP_LOGI(TAG, "Data rate set to: 560 Hz");
-      break;
-    case LIS3MDL_DATARATE_1000_HZ:
-      ESP_LOGI(TAG, "Data rate set to: 1000 Hz");
-      break;
-  }
-
-  lis3mdl.setRange(LIS3MDL_RANGE_4_GAUSS);
-  switch (lis3mdl.getRange())
-  {
-    case LIS3MDL_RANGE_4_GAUSS:
-      ESP_LOGI(TAG, "Range set to: +-4 gauss");
-      break;
-    case LIS3MDL_RANGE_8_GAUSS:
-      ESP_LOGI(TAG, "Range set to: +-8 gauss");
-      break;
-    case LIS3MDL_RANGE_12_GAUSS:
-      ESP_LOGI(TAG, "Range set to: +-12 gauss");
-      break;
-    case LIS3MDL_RANGE_16_GAUSS:
-      ESP_LOGI(TAG, "Range set to: +-16 gauss");
-      break;
-  }
-
-  lis3mdl.setIntThreshold(500);
-  lis3mdl.configInterrupt(
-      false,
-      false,
-      true,   // enable z axis
-      true,   // polarity
-      false,  // don't latch
-      true);  // enabled!
-}
-
-/**
- * @brief Spins the turret 360 degrees slowly to allow magnetometer to
- * calibrate itself on startup
- * @author George Rak
- * @date 4-9-2024
- */
-void QuarterbackTurret::calibMagnetometer()
-{
-  mag_yVal = 0;
-  mag_xVal = 0;
-  mag_xMax = -1000000;
-  mag_xMin = 1000000;
-  mag_xHalf = 0;
-  mag_yMax = -1000000;
-  mag_yMin = 1000000;
-  mag_yHalf = 0;
-  mag_xSign = false;
-  mag_ySign = false;
-
-  // northHeadingDegrees = 7.0f;
-
-  northHeadingDegrees = 0;
-
-  /*long startTime = millis();
-  setTurretSpeed(QB_HOME_MAG, true);
-
-  while (millis() - startTime < 5000 && !testForDisableOrStop()){
-    // get X Y and Z data all at once
-    lis3mdl.read();*/
-
-  int degreesMove = 360;
-  targetTurretEncoderCount =
-      (int)round((double)degreesMove * QB_COUNTS_PER_TURRET_DEGREE);
-  turretMoving = true;
-  setTurretSpeed(QB_HOME_MAG * copysign(1, degreesMove), true);
-  // Loop until the target encoder count has been achieved
-  while (currentTurretEncoderCount < targetTurretEncoderCount &&
-         !testForDisableOrStop())
-  {
-    // get X Y and Z data all at once
-    lis3mdl.read();
-
-    // Constantly looking for min and max values of X
-    if (lis3mdl.x < mag_xMin && lis3mdl.x != -1 && lis3mdl.x != 0)
-      mag_xMin = lis3mdl.x;
-    else if (lis3mdl.x > mag_xMax && lis3mdl.x != -1 && lis3mdl.x != 0)
-      mag_xMax = lis3mdl.x;
-
-    // Adjusting X values to range from + or - values rather than all positive
-    mag_xHalf = abs(mag_xMax) - abs(mag_xMin);
-    mag_xHalf /= 2;
-    mag_xHalf += abs(mag_xMin);
-
-    // Constantly looking for min and max values of Y
-    if (lis3mdl.y < mag_yMin && lis3mdl.y != -1 && lis3mdl.y != 0 &&
-        lis3mdl.y != 10)
-    {
-      mag_yMin = lis3mdl.y;
-    }
-    else if (
-        lis3mdl.y > mag_yMax && lis3mdl.y != -1 && lis3mdl.y != 0 &&
-        lis3mdl.y != 10)
-    {
-      mag_yMax = lis3mdl.y;
-    }
-
-    // Adjusting Y values to range from + or - values rather than all positive
-    mag_yHalf = abs(mag_yMax) - abs(mag_yMin);
-    mag_yHalf /= 2;
-    mag_yHalf += abs(mag_yMin);
-
-    /*DEBUGGING PRINTOUTS
-    //Serial.print("X: "); Serial.print(lis3mdl.x);
-    //Serial.print("\tY: "); Serial.print(lis3mdl.y);
-    //Serial.print("\tMinX: "); Serial.print(mag_xMin);
-    //Serial.print("\tMaxX: "); Serial.print(mag_xMax);
-    //Serial.print("\tMinY: "); Serial.print(mag_yMin);
-    //Serial.print("\tMaxY: "); Serial.print(mag_yMax);
-    //Serial.println(); */
-  }
-
-  setTurretSpeed(0, true);
-
-  // Updating variables that will be used to handle other two possible sign
-  // cases for each value
-  if ((mag_xMax + mag_xMin) < 0) mag_xSign = true;
-  if ((mag_yMax + mag_yMin) < 0) mag_ySign = true;
-  //
-
-  calculateHeadingMag();
-
-  ESP_LOGI(
-      TAG,
-      "Magnetometer reading after calib: %.2f\tEncoder after calib:%ld",
-      headingDeg,
-      (long)currentTurretEncoderCount);
-
-  // delay(5000);
-
-  currentTurretEncoderCount = 0;
-  targetTurretEncoderCount = 0;
-  // turretMoving = false;
-  turretMoving = true;
-  moveTurretAndWait(0, true);  // go to zero of the encoder
-
-  magnetometerCalibrated = true;
-
-  calculateHeadingMag();  // calculate current value of magnetometer
-                          // (headingDeg)
-
-  this->northHeadingDegrees = headingDeg;  // + 45;
-  ESP_LOGI(
-      TAG,
-      "Target Abs Heading Before 0: %.2f\tNorth Heading Degrees: %.2f",
-      targetAbsoluteHeading,
-      northHeadingDegrees);
-
-  // delay(2000);
-
-  // from here on out, headingDeg and targetAbsoluteHeading are offset by
-  // northHeadingDegrees headingDeg = 0; targetAbsoluteHeading = 0;
-
-  ESP_LOGI(TAG, "Magnetometer has been calibrated!");
-  eIntegral = 0;
-  previousTime = millis();
-
-  setTurretSpeed(0);
-
-  // delay(5000);
-}
-
-/**
- * @brief Uses the data collected at calibration to calculate the current
- * heading relative to magnetic north
- * @author George Rak
- * @date 4-9-2024
- */
-void QuarterbackTurret::calculateHeadingMag()
-{
-  // Only run the code in here if the calibration has been done to the
-  // magnetometer
-  if (magnetometerCalibrated)
-  {
-    lis3mdl.read();
-    // Calculate the current angle of the turret based on the calibration data
-    if (mag_xSign)
-      mag_xVal = lis3mdl.x + mag_xHalf;
-    else
-      mag_xVal = lis3mdl.x - mag_xHalf;
-
-    if (mag_ySign)
-      mag_yVal = lis3mdl.y + mag_yHalf;
-    else
-      mag_yVal = lis3mdl.y - mag_yHalf;
-
-    // Evaluate both ranges of X and Y then scale the smaller value to be
-    // within the same range as the larger
-    if (mag_yHalf > mag_xHalf)
-    {
-      mag_xVal =
-          (double)((double)mag_xVal / ((double)mag_xHalf)) * (double)mag_yHalf;
-    }
-    else if (mag_xHalf > mag_yHalf)
-    {
-      mag_yVal =
-          (double)((double)mag_yVal / ((double)mag_yHalf)) * (double)mag_xHalf;
-    }
-
-    // Calculate angle in radians
-    if (mag_xVal != -1 && mag_xVal != 0 && mag_yVal != 0 && mag_yVal != -1)
-      headingRad = atan2(mag_yVal, mag_xVal);
-
-    // Convert to degrees
-    headingDeg = headingRad * 180 / M_PI;
-
-    // If the degrees are negative then they just need inversed plus 180
-    if (headingDeg < 0) headingDeg += 360;
-
-    // integrate offset into measurement
-    // + 180 - QB_NORTH_OFFSET
-    headingDeg = ((int)headingDeg) + northHeadingDegrees;
-    if (headingDeg > 360) headingDeg = ((int)headingDeg) % 360;
-
-    /*DEBUGGING PRINTOUTS*/
-    // Serial.print("X: "); Serial.print(lis3mdl.x);
-    // Serial.print("\tY: "); Serial.print(lis3mdl.y);
-    // Serial.print("\tMinX: "); Serial.print(mag_xMin);
-    // Serial.print("\tMaxX: "); Serial.print(mag_xMax);
-    // Serial.print("\tMinY: "); Serial.print(mag_yMin);
-    // Serial.print("\tMaxY: "); Serial.print(mag_yMax);
-    // Serial.print("\txAdapt: "); Serial.print(mag_xVal);
-    // Serial.print("\tyAdapt: "); Serial.print(mag_yVal);
-    // Serial.print("\tHeading [deg]: "); Serial.print(headingDeg);
-    // Serial.println();
-  }
-}
-
-#pragma endregion
 
 #pragma region PID
-/**
- * @brief Checks if the turret should be held still and runs the PID loop
- * setting turret speed equal to PWM value calculated
- * @author George Rak
- * @date 4-9-2024
- */
-void QuarterbackTurret::holdTurretStill()
-{
-  if (magnetometerCalibrated)
-  {
-    // float maxSpeed = 0.2f;
-    int maxSpeed = .2;
-    if (motor1Value > 25 || motor2Value > 25)
-    {
-      // We should limit the rotation rate of the turret since the base is
-      // moving as well and we don't want the robot to flip
-      maxSpeed = .125;
-      // maxSpeed = 0.1f;
-    }
-
-    // Run the PID loop
-    turretPIDSpeed = turretPIDController(
-        headingDeg,
-        (float)targetAbsoluteHeading,
-        kp,
-        kd,
-        ki,
-        .2);
-    setTurretSpeed(turretPIDSpeed, true);
-  }
-}
-
-/**
- * @brief PID controller to hold the turret still (gains tuned, not
- * calculated)
- * @author George Rak
- * @date 4-9-2024
- */
 float QuarterbackTurret::turretPIDController(
     float current, float target, float kp, float kd, float ki, float maxSpeed)
 {
