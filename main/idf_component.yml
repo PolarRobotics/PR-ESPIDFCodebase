@@ -22,12 +22,6 @@ dependencies:
     git: https://github.com/PolarRobotics/PR-Lib.git
     path: components/motor
 
-  # PR-Lib version of Adafruit LIS3MDL
-  adafruit_lis3mdl:
-    version: '*'
-    git: https://github.com/PolarRobotics/PR-Lib.git
-    path: components/adafruit_lis3mdl
-
   # PR-Lib version of Adafruit BusIO
   adafruit_busio:
     version: '*'
