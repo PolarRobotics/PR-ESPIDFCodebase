@@ -74,6 +74,7 @@ esp_spp_role_t role =
     ESP_SPP_ROLE_SLAVE;  // ESP_SPP_ROLE_MASTER or ESP_SPP_ROLE_SLAVE
 
 // MAC Addresses to match to PS5 Controllers
+const char *beta1 = "bc:c7:46:02";           // length 11
 const char *macTest = "bc:c7:46:03";         // length 11
 const char *macTest2 = "bc:c7:46:04";        // length 11
 const char *macTest3 = "14:3a:9a";           // length 8
@@ -93,6 +94,8 @@ bool addressIsController(const char *addrCharPtr)
   else if (strncmp(addrCharPtr, macTest2, 11) == 0)
     return true;
   else if (strncmp(addrCharPtr, macTest3, 8) == 0)
+    return true;
+  else if (strncmp(addrCharPtr, beta1, 11) == 0)
     return true;
   else if (strncmp(addrCharPtr, RhysController, 11) == 0)
     return true;

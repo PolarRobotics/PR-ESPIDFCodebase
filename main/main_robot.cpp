@@ -178,8 +178,6 @@ extern "C" void main_app(void)
           M3_PIN,        // cradle
           M4_PIN,        // turret
           SPECBOT_PIN1,  // assembly motor
-          SPECBOT_PIN3,  // magnetometer sda
-          SPECBOT_PIN4,  // magnetometer scl
           ENC1_CHA,      // turret encoder
           ENC1_CHB,      // turret encoder
           LASER_PIN      // zeroing laser
