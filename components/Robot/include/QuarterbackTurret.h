@@ -22,7 +22,7 @@
 enum TurretMode
 {
   manual,
-  automatic,
+  tracking,
   combine
 };
 
@@ -171,7 +171,7 @@ const unsigned long long RECEIVER_0_ID = 0xDECA4B5BCBB00FA3;
 #define QB_TURRET_PID_BAD_DELTA_T 250
 #define QB_NORTH_OFFSET 0
 
-// Enable or Disable Auto Mode for testing
+// Enable or Disable Tracking Mode for testing
 #define QB_AUTO_ENABLED true
 
 //===============================//
@@ -511,7 +511,7 @@ class QuarterbackTurret : public Robot
   //===================================//
   //  Quarterback Automatic Targeting  //
   //===================================//
-  // switchMode                 Used to switch between manual and automatic mode
+  // switchMode                 Used to switch between manual and tracking mode
   // (overloaded function) switchTarget               Switch between receiver1
   // or receiver2
   void switchMode(TurretMode mode);
