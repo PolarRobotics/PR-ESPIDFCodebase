@@ -54,14 +54,22 @@ void QuarterbackTurret::turretEncoderISR()
 
 #pragma region Constructor
 QuarterbackTurret::QuarterbackTurret(
-    uint8_t flywheelLeftPin,    // M1
-    uint8_t flywheelRightPin,   // M2
-    uint8_t cradlePin,          // M3
-    uint8_t turretPin,          // M4
-    uint8_t assemblyPin,        // S1
-    uint8_t turretEncoderPinA,  // E1A
-    uint8_t turretEncoderPinB,  // E1B
-    uint8_t turretLaserPin      // E2A
+    uint8_t flywheelLeftPin,      // M1
+    uint8_t flywheelRightPin,     // M2
+    uint8_t cradlePin,            // M3
+    uint8_t turretPin,            // M4
+    uint8_t assemblyPin,          // S1
+    uint8_t turretEncoderPinA,    // E1A
+    uint8_t turretEncoderPinB,    // E1B
+    uint8_t turretLaserPin        // E2A
+        uint8_t flywheelLeftPin,  // M1
+    uint8_t flywheelRightPin,     // M2
+    uint8_t cradlePin,            // M3
+    uint8_t turretPin,            // M4
+    uint8_t assemblyPin,          // S1
+    uint8_t turretEncoderPinA,    // E1A
+    uint8_t turretEncoderPinB,    // E1B
+    uint8_t turretLaserPin        // E2A
 )
 {
   // set all state variables to default values,
