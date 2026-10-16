@@ -173,16 +173,16 @@ extern "C" void main_app(void)
       break;
     case quarterback_turret:
       robot = new QuarterbackTurret(
-        M1_IDX,        // left flywheel
-        M2_IDX,        // right flywheel
-        M3_PIN,        // cradle
-        M4_PIN,        // turret
-        SPECBOT_PIN1,  // assembly motor
-        SPECBOT_PIN3,  // magnetometer sda
-        SPECBOT_PIN4,  // magnetometer scl
-        ENC1_CHA,      // turret encoder
-        ENC1_CHB,      // turret encoder
-        ENC2_CHB       // zeroing laser
+          M1_IDX,        // left flywheel
+          M2_IDX,        // right flywheel
+          M3_PIN,        // cradle
+          M4_PIN,        // turret
+          SPECBOT_PIN1,  // assembly motor
+          SPECBOT_PIN3,  // magnetometer sda
+          SPECBOT_PIN4,  // magnetometer scl
+          ENC1_CHA,      // turret encoder
+          ENC1_CHB,      // turret encoder
+          ENC2_CHB       // zeroing laser
       );
       break;
     case quarterback_base:
@@ -213,8 +213,11 @@ extern "C" void main_app(void)
 
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
-  HWSerial.begin(115200, SERIAL_8N1, 16,
-                 17);  // 9600 baudrate default for USBSabertooth
+  HWSerial.begin(
+      115200,
+      SERIAL_8N1,
+      16,
+      17);  // 9600 baudrate default for USBSabertooth
   {
     ;  // wait for serial port to connect
   }
@@ -265,6 +268,10 @@ extern "C" void main_app(void)
         {
           // used to calibrate the max pwm signal for the falcon 500 motors
           drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
+        }
+        else if (ps5.Battery() < 10)
+        {
+          ps5.setLed(255, 0, 0);
         }
         else
         {
