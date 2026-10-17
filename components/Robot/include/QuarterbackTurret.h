@@ -22,8 +22,8 @@
 enum TurretMode
 {
   manual,
-  tracking,
-  combine
+  combine,
+  tracking
 };
 
 enum TurretUnits
@@ -171,9 +171,6 @@ const unsigned long long RECEIVER_0_ID = 0xDECA4B5BCBB00FA3;
 #define QB_TURRET_PID_BAD_DELTA_T 250
 #define QB_NORTH_OFFSET 0
 
-// Enable or Disable Tracking Mode for testing
-#define QB_AUTO_ENABLED true
-
 //===============================//
 //    UART Communication Pins    //
 //===============================//
@@ -240,7 +237,7 @@ class QuarterbackTurret : public Robot
   //==============================//
   //     Autonomous Targeting     //
   //==============================//
-  // mode: manual or autonomous (or combine)
+  // mode: manual joystick control, combine preset angles, or position tracking
   // target: reciever1 or reciever2
   // position: [x,y] coordinates of the qb
   // targetPosition: [x,y] coordinates of the target
@@ -248,6 +245,7 @@ class QuarterbackTurret : public Robot
   TargetReceiver target;
   CombinePosition combinePosition;
   double position[2] = {0, 0};
+  bool qbPositionValid = false;
   double targetPosition[2] = {6, 6};
   float x;
   int changeInPos = 1;  // used to change the x position in auto mode
@@ -265,6 +263,7 @@ class QuarterbackTurret : public Robot
     double position[2];
     double distance;
     double angle;
+    bool positionValid = false;
   };
 #define NUM_RECEIVERS 4
   Receiver receivers[NUM_RECEIVERS];
@@ -360,7 +359,6 @@ class QuarterbackTurret : public Robot
   //================================//
   //    Control Input Debouncers    //
   //================================//
-  Debouncer* dbShare;
   Debouncer* dbOptions;
   Debouncer* dbSquare;
   Debouncer* dbDpadUp;
