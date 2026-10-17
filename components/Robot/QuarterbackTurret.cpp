@@ -34,9 +34,6 @@ uint8_t QuarterbackTurret::turretLaserPin;
 // the right by maybe 15 degrees. The distancing also is somewhat functional,
 // but the QB cradle was not mechanically sound, so an actual throwing test
 // could not be completed.
-double rx;
-double ry;
-
 void QuarterbackTurret::turretEncoderISR()
 {
   turretEncoderStateB = digitalRead(turretEncoderPinB);
@@ -105,16 +102,12 @@ QuarterbackTurret::QuarterbackTurret(
   this->cradleMoving = false;
   this->cradleStartTime = 0;
 
-  this->mode = manual;  // start in manual mode by default, auto mode can be
-                        // enabled by selecting a target
+  this->mode = manual;
+  this->combinePosition = combineStraight;
+  this->firstCombine = false;
   this->target =
       receiver_1;  // the default target is receiver 1, but this has no effect
-                   // until the mode is switched to automatic
-  this->mode = manual;  // start in manual mode by default, auto mode can be
-                        // enabled by selecting a target
-  this->target =
-      receiver_1;  // the default target is receiver 1, but this has no effect
-                   // until the mode is switched to automatic
+                   // until the mode is switched to tracking
 
   this->currentFlywheelStage =
       stopped;  // it is safe to assume the flywheels are stopped
@@ -172,7 +165,6 @@ QuarterbackTurret::QuarterbackTurret(
   flywheelRightMotor.setup(flywheelRightPin, falcon);
 
   // initialize debouncers
-  this->dbShare = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
   this->dbOptions = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
   this->dbSquare = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
   this->dbDpadUp = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
@@ -193,6 +185,7 @@ QuarterbackTurret::QuarterbackTurret(
     receivers[i].position[1] = 3.0;  // 3 meters default Y (straight ahead)
     receivers[i].distance = 0;
     receivers[i].angle = 0;
+    receivers[i].positionValid = false;
   }
 
   currReceiver = 0;
@@ -283,95 +276,79 @@ void QuarterbackTurret::action()
         aimAssembly(targetAssemblyAngle);
       }
 
-      //* Share Button: Switch to Combine Mode
-      if (dbShare->debounceAndPressed(ps5.Share()))
-      {
-        if (mode != combine)
-        {
-          switchMode(combine);
-          this->combinePosition = combineStraight;
-          targetRelativeHeading = 0;
-          zeroTurret();
-        }
-        else
-        {
-          switchMode(manual);
-        }
-      }
-      //* Options (Button): Switch Mode (toggle between auto/manual targeting)
-      else if (QB_AUTO_ENABLED && dbOptions->debounceAndPressed(ps5.Options()))
+      //* Options: Cycle through manual, combine, and tracking modes
+      if (dbOptions->debounceAndPressed(ps5.Options()))
       {
         switchMode();
       }
       //* Left Button (L1): Switch Target to Receiver 1
-      else if (QB_AUTO_ENABLED && ps5.L1())
+      else if (ps5.L1())
       {
-        currReceiver--;
-        if (currReceiver < 0) currReceiver = 0;
+        if (currReceiver > 0)
+        {
+          currReceiver--;
+          posBufferCount = 0;
+        }
         // switchTarget(receiver_1);
       }
       //* Right Button (R1): Switch Target to Receiver 2
-      else if (QB_AUTO_ENABLED && ps5.R1())
+      else if (ps5.R1())
       {
-        currReceiver++;
-        if (currReceiver > NUM_RECEIVERS - 1) currReceiver = NUM_RECEIVERS - 1;
+        if (currReceiver < NUM_RECEIVERS - 1)
+        {
+          currReceiver++;
+          posBufferCount = 0;
+        }
         // switchTarget(receiver_2);
       }
       //* Auto Mode
-      else if (QB_AUTO_ENABLED && mode == automatic)
+      else if (mode == tracking)
       {
-        // TODO: Implement auto mode
-        // do something based on current value of 'targetReceiver'
+        stickFlywheel = (ps5.LStickY() / 127.5f);
+        stickTurret = (ps5.RStickX() / 127.5f);
 
-        // Fine tuned PID and combine angles
-        // Began adding combine automation along with an adjustment to the
-        // integral calculation in the PID loop to make it faster. Adjusted the
-        // combine angles to more accurately line up with the receiver target
-        // locations. Update receiver data (EMA)
-        if (newData)
+        Receiver& receiver = receivers[currReceiver];
+        if (newData && qbPositionValid && receiver.positionValid)
         {
-          double newRx = receivers[currReceiver].position[0];
-          double newRy = receivers[currReceiver].position[1];
-
           if (posBufferCount == 0)
           {
-            avgRx = newRx;
-            avgRy = newRy;
+            avgRx = receiver.position[0];
+            avgRy = receiver.position[1];
           }
           else
           {
-            avgRx = emaAlpha * newRx + (1 - emaAlpha) * avgRx;
-            avgRy = emaAlpha * newRy + (1 - emaAlpha) * avgRy;
+            avgRx = emaAlpha * receiver.position[0] + (1 - emaAlpha) * avgRx;
+            avgRy = emaAlpha * receiver.position[1] + (1 - emaAlpha) * avgRy;
           }
           posBufferCount = 1;
           newData = false;
         }
 
-        // ─────────────────────────────────────────────────────────────
-        // RIGHT STICK MANUAL OVERRIDE (only in Auto mode)
-        // ─────────────────────────────────────────────────────────────
-        if (fabs(stickTurret) > STICK_DEADZONE)
+        if (qbPositionValid && receiver.positionValid)
         {
-          // User is moving the stick → fine manual adjustment
-          float overrideSpeed = stickTurret * 0.12;
-          setTurretSpeed(overrideSpeed);
-          lastStickActivity = millis();
-        }
-        else if (millis() - lastStickActivity < 2000)
-        {
-          // Stick just returned to center → stop turret for 1 second
-          setTurretSpeed(0);
-        }
-        else
-        {
-          // No stick input for 1+ second → resume normal auto tracking
-          if (fabs(avgRx) > 0.01 || fabs(avgRy) > 0.01)
+          if (posBufferCount == 0)
+          {
+            avgRx = receiver.position[0];
+            avgRy = receiver.position[1];
+            posBufferCount = 1;
+          }
+
+          if (fabs(stickTurret) > STICK_DEADZONE)
+          {
+            setTurretSpeed(stickTurret * 0.12);
+            lastStickActivity = millis();
+          }
+          else if (millis() - lastStickActivity < 2000)
+          {
+            setTurretSpeed(0);
+          }
+          else
           {
             currentRelativeHeading = getCurrentHeading();
-            double tempRx = rx, tempRy = ry;
-            rx = avgRx;
-            ry = avgRy;
-            targetRelativeHeading = angleToTarget(receivers[currReceiver]);
+            Receiver smoothedReceiver = receiver;
+            smoothedReceiver.position[0] = avgRx;
+            smoothedReceiver.position[1] = avgRy;
+            targetRelativeHeading = angleToTarget(smoothedReceiver);
             turretPIDSpeed = turretPIDController(
                 (float)currentRelativeHeading,
                 (float)targetRelativeHeading,
@@ -381,16 +358,17 @@ void QuarterbackTurret::action()
                 0.1);
             setTurretSpeed(turretPIDSpeed);
 
-            // Flywheel update every 0.5 s
             unsigned long now = millis();
             if (now - lastFlywheelUpdate >= 500)
             {
               setAutoFlywheelSpeed(0);
               lastFlywheelUpdate = now;
             }
-            rx = tempRx;
-            ry = tempRy;
           }
+        }
+        else
+        {
+          setTurretSpeed(0);
         }
       }
       //* Manual Controls
@@ -500,7 +478,7 @@ void QuarterbackTurret::action()
       }
 
       //* Left Stick Y + D-Pad: Flywheel control
-      if (mode != automatic)
+      if (mode != tracking)
       {
         if (fabs(stickFlywheel) > STICK_DEADZONE)
         {
@@ -1062,17 +1040,28 @@ void QuarterbackTurret::turretDirectionChanged()
     void QuarterbackTurret::switchMode()
     {
       if (mode == manual)
-        switchMode(automatic);
-      else if (mode == automatic)
+        switchMode(combine);
+      else if (mode == combine)
+        switchMode(tracking);
+      else
         switchMode(manual);
     }
 
-    void QuarterbackTurret::switchMode(TurretMode mode) { this->mode = mode; }
-    void QuarterbackTurret::switchMode(TurretMode mode) { this->mode = mode; }
+    void QuarterbackTurret::switchMode(TurretMode mode)
+    {
+      if (this->mode != tracking && mode == tracking) posBufferCount = 0;
+
+      if (this->mode != combine && mode == combine)
+      {
+        combinePosition = combineStraight;
+        firstCombine = true;
+      }
+      this->mode = mode;
+    }
 
     void QuarterbackTurret::switchTarget(TargetReceiver target)
     {
-      switchMode(automatic);
+      switchMode(tracking);
       this->target = target;
       // todo: not sure if this needs more functionality?
     }
@@ -1158,6 +1147,7 @@ void QuarterbackTurret::turretDirectionChanged()
           {
             position[0] = newX;  // X coordinate
             position[1] = newY;  // Y coordinate
+            qbPositionValid = true;
             // Serial.print("Updated QB: X=");
             // Serial.print(newX, 2);
             // Serial.print(", Y=");
@@ -1175,6 +1165,7 @@ void QuarterbackTurret::turretDirectionChanged()
           {
             receivers[index].position[0] = newX;
             receivers[index].position[1] = newY;
+            receivers[index].positionValid = true;
             // Serial.print("Updated Receiver ");
             // Serial.print(index);
             // Serial.print(": X=");
