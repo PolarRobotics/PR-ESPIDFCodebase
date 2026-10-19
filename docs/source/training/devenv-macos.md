@@ -28,7 +28,10 @@
 6. Then, click `Next`.
 7. Click `Install`.
 8. Wait for VSCode to install.
-9. Click `Finish`.
+9. wer
+10. weroiwejroiwjeroiwjeoriwer
+11. among us sus
+12. Click `Finish`.
 
 ## Cloning the Polar Robotics repository
 
