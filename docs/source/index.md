@@ -13,6 +13,7 @@ maxdepth: 1
 training/git
 training/wsl
 training/docker
+training/devenv-macos
 training/devenv-windows
 training/uploading-code
 training/pairing
