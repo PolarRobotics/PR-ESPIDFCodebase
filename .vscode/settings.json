@@ -51,5 +51,6 @@
   "C_Cpp.autocompleteAddParentheses": true,
   "C_Cpp.formatting": "clangFormat",
   "C_Cpp.default.browse.limitSymbolsToIncludedHeaders": false,
-  "idf.currentSetup": "/opt/esp/idf"
+  "idf.currentSetup": "/opt/esp/idf",
+  "cmake.sourceDirectory": "/wsl.localhost/Ubuntu/home/wklew/PR-ESPIDFCodebase/PR-ESPIDFCodebase/main"
 }
