@@ -195,12 +195,12 @@ extern "C" void main_app(void)
     default:  // Assume lineman
       robot = new Lineman();
       {
-        String debugMsg = "01: Instantiating Drive Class\n";
+        String debugMsg = "01: Instantiating Drive Class";
         ESP_LOGI(TAG, "%s", debugMsg.c_str());
       }
       drive = new Drive(lineman, driveParams);
       {
-        String debugMsg2 = "03: Call setupMotors\n";
+        String debugMsg2 = "03: Call setupMotors";
         ESP_LOGI(TAG, "%s", debugMsg2.c_str());
       }
       drive->setupMotors(DRIVE_M1, DRIVE_M2);
@@ -211,8 +211,11 @@ extern "C" void main_app(void)
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
 
+  ESP_LOGI(TAG, "Attaching PS5 callbacks...");
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
+
+  ESP_LOGI(TAG, "Initializing hardware serial...");
   HWSerial.begin(115200, SERIAL_8N1, 16,
                  17);  // 9600 baudrate default for USBSabertooth
   {
@@ -236,17 +239,19 @@ extern "C" void main_app(void)
   {
     if (ps5.isConnected())
     {
-      // ESP_LOGI(TAG, "\r\nConnected");
+      ESP_LOGI(TAG, "Connected, running drive code...");
       // ps5.setLed(255, 0, 0);   // set LED red
 
       //* QBv3 Turret doesn't have drive, so this is a temporary measure to
       // avoid NPEs and chaos
       // TODO: find better solution
       if (robotType != quarterback_turret)
-      {
+     {
+        ESP_LOGI(TAG, "Setting stick power...");
         drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
 
         // determine BSN percentage (boost, slow, or normal)
+        ESP_LOGI(TAG, "Determining BSN (Boost, Slow, Normal) percentage...");
         if (ps5.Touchpad())
         {
           drive->emergencyStop();
@@ -272,10 +277,12 @@ extern "C" void main_app(void)
         }
 
         // Manual Home / Away Position Setting
+        ESP_LOGI(TAG, "Check if switching home or away...");
         if (dbOptions->debounceAndPressed(ps5.Options())) switchTackleSensor();
 
         //* Update the motors based on the inputs from the controller
         //* Can change functionality depending on subclass, like robot.action()
+        ESP_LOGI(TAG, "Updating motors based on controller inputs...");
         drive->update();
         // drive->printDebugInfo(); // comment this line out to reduce compile
         // time and memory usage drive->printCsvInfo(); // prints info to serial
@@ -283,6 +290,8 @@ extern "C" void main_app(void)
       }
       //! Performs all special robot actions depending on the instantiated Robot
       //! subclass
+      
+      ESP_LOGI(TAG, "Performing robot actions...");
       robot->action();
 
       // DEBUGGING:
@@ -292,14 +301,16 @@ extern "C" void main_app(void)
     }
     else
     {  // no response from PS5 controller within last 300 ms, so stop
-      // ESP_LOGI(TAG, "Controller DC\n");
+      ESP_LOGI(TAG, "Controller disconnected");
       if (robotType != quarterback_turret)
       {
         // Emergency stop if the controller disconnects
+        ESP_LOGI(TAG, "Emergency stop due to controller disconnect.");
         drive->emergencyStop();
       }
       else
       {
+        // ESP_LOGI(TAG, "Emergency stop due to controller disconnect for quarterback turret.");
         ((QuarterbackTurret *)robot)->emergencyStop();
       }
     }
