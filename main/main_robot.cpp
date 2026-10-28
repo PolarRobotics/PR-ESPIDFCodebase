@@ -239,7 +239,7 @@ extern "C" void main_app(void)
   {
     if (ps5.isConnected())
     {
-      ESP_LOGI(TAG, "Connected, running drive code...");
+      // ESP_LOGI(TAG, "Connected, running drive code...");
       // ps5.setLed(255, 0, 0);   // set LED red
 
       //* QBv3 Turret doesn't have drive, so this is a temporary measure to
@@ -247,11 +247,11 @@ extern "C" void main_app(void)
       // TODO: find better solution
       if (robotType != quarterback_turret)
      {
-        ESP_LOGI(TAG, "Setting stick power...");
+        // ESP_LOGI(TAG, "Setting stick power...");
         drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
 
         // determine BSN percentage (boost, slow, or normal)
-        ESP_LOGI(TAG, "Determining BSN (Boost, Slow, Normal) percentage...");
+        // ESP_LOGI(TAG, "Determining BSN (Boost, Slow, Normal) percentage...");
         if (ps5.Touchpad())
         {
           drive->emergencyStop();
@@ -277,12 +277,12 @@ extern "C" void main_app(void)
         }
 
         // Manual Home / Away Position Setting
-        ESP_LOGI(TAG, "Check if switching home or away...");
+        // ESP_LOGI(TAG, "Check if switching home or away...");
         if (dbOptions->debounceAndPressed(ps5.Options())) switchTackleSensor();
 
         //* Update the motors based on the inputs from the controller
         //* Can change functionality depending on subclass, like robot.action()
-        ESP_LOGI(TAG, "Updating motors based on controller inputs...");
+        // ESP_LOGI(TAG, "Updating motors based on controller inputs...");
         drive->update();
         // drive->printDebugInfo(); // comment this line out to reduce compile
         // time and memory usage drive->printCsvInfo(); // prints info to serial
@@ -291,7 +291,7 @@ extern "C" void main_app(void)
       //! Performs all special robot actions depending on the instantiated Robot
       //! subclass
       
-      ESP_LOGI(TAG, "Performing robot actions...");
+      // ESP_LOGI(TAG, "Performing robot actions...");
       robot->action();
 
       // DEBUGGING:
@@ -301,11 +301,11 @@ extern "C" void main_app(void)
     }
     else
     {  // no response from PS5 controller within last 300 ms, so stop
-      ESP_LOGI(TAG, "Controller disconnected");
+      // ESP_LOGI(TAG, "Controller disconnected");
       if (robotType != quarterback_turret)
       {
         // Emergency stop if the controller disconnects
-        ESP_LOGI(TAG, "Emergency stop due to controller disconnect.");
+        // ESP_LOGI(TAG, "Emergency stop due to controller disconnect.");
         drive->emergencyStop();
       }
       else
