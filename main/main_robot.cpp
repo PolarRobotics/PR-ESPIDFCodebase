@@ -86,11 +86,7 @@ void quarterbackBaseCallback();
 
 void onConnection()
 {
-  if (ps5.isConnected())
-  {
-    ESP_LOGI(TAG, "Controller Connected.");
-    // ps5.setLed(0, 255, 0);   // set LED green
-  }
+  if (ps5.isConnected()) ESP_LOGI(TAG, "Controller Connected.");
 
   // TODO: perm sln
   if (robotType != quarterback_turret)
