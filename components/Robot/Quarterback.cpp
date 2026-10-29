@@ -35,25 +35,8 @@ Quarterback::Quarterback(
 
 void Quarterback::action()
 {
-  // Update the bools within the class to see if the user wants to go up or down
-  if (ps5.Up())
-    aim(QBAim::AIM_UP);
-  else if (ps5.Down())
-    aim(QBAim::AIM_DOWN);
-
-  // Toogle the Conveyor and Flywheels
-  if (ps5.Square())
-    toggleConveyor();
-  else if (ps5.Circle())
-    toggleFlywheels();
-
-  // Change the flywheel speed
-  if (ps5.Triangle())
-    changeFWSpeed(SpeedStatus::INCREASE);
-  else if (ps5.Cross())
-    changeFWSpeed(SpeedStatus::DECREASE);
-
-  // Update the aim and flywheels on quarterback to see if we need to stop or not
+  // Button handling moved to quarterbackCallback() via ps5.attach()
+  // Periodic elevation timing + flywheel ramp
   update();
 }
 
