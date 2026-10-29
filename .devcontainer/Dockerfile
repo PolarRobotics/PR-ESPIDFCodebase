@@ -18,9 +18,14 @@ RUN apt-get update -y && apt-get install -y \
     zsh \
     git \
     curl \
-    clangd \
     clang-format \
     clang-tidy
+
+# Install clangd from Espressif's Xtensa-enabled LLVM distribution.
+RUN IDF_TOOLS_PATH=/opt/esp /opt/esp/idf/tools/idf_tools.py install esp-clang && \
+    clangd_path="$(find /opt/esp/tools/esp-clang -type f -path '*/esp-clang/bin/clangd' -print -quit)" && \
+    test -n "$clangd_path" && \
+    ln -s "$clangd_path" /usr/local/bin/clangd-esp
 
 # Install Starship prompt and zsh plugins (I promise this is important for productivity)
 RUN curl -sS https://starship.rs/install.sh | sh -s -- -y

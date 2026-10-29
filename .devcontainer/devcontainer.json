@@ -64,6 +64,11 @@
 				// Clangd stuff, formatting
 				// Disable IntelliSense completely
 				"C_Cpp.intelliSenseEngine": "disabled",
+				"clangd.path": "/usr/local/bin/clangd-esp",
+				"clangd.arguments": [
+					"--background-index",
+					"--query-driver=/opt/esp/tools/xtensa-esp-elf/*/xtensa-esp-elf/bin/xtensa-esp-elf-gcc,/opt/esp/tools/xtensa-esp-elf/*/xtensa-esp-elf/bin/xtensa-esp-elf-g++"
+				],
 				"editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
 				"editor.formatOnSave": true,
 				// Search exclusions for better performance
