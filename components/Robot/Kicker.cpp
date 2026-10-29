@@ -64,13 +64,7 @@ void Kicker::kickerEncoderISR()
  */
 void Kicker::action()
 {
-  // Control the motor on the kicker manually
-  if (ps5.Triangle())
-    turnForward();
-  else if (ps5.Cross())
-    turnReverse();
-  else
-    stop();
+  // Button handling moved to kickerCallback() via ps5.attach()
 }
 
 /**

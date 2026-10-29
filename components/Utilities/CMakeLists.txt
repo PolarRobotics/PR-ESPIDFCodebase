@@ -9,5 +9,6 @@ idf_component_register(
     REQUIRES
         Types
         espressif__arduino-esp32
-        usbsabertooth 
+        usbsabertooth
+        ps5-esp32
 )

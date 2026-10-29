@@ -117,6 +117,11 @@ public:
   void setSpeedValue(float speed_pct);
   float getSpeedScalar();
   void emergencyStop();
+  /**
+   * @brief Apply stick power and BSN (boost/slow/normal) from the PS5 controller.
+   * @param runningbackBoost If true, R1 uses BIG_BOOST_PCT instead of standard BOOST scalar.
+   */
+  void ps5Callback(bool runningbackBoost = false);
   void generateMotionValues(float tankModePct = TANK_MODE_PCT);
   virtual void update();
   void printSetup();
