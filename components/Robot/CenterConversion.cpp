@@ -8,13 +8,7 @@ CenterConversion::CenterConversion(uint8_t actuatorPin)
 
 void CenterConversion::action()
 {
-    // Control the actuator of the center conversion
-    if (ps5.Triangle())
-        actuatorControl(true);
-    else if (ps5.Cross())
-        actuatorControl(false);
-    else
-        stop(); // Stop the motor when no button is pressed
+    // Button handling moved to centerConversionCallback() via ps5.attach()
 }
 
 void CenterConversion::actuatorControl(bool raise)

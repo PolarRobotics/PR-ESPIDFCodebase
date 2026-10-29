@@ -1,4 +1,5 @@
 #include <Drive.h>
+#include <ps5Controller.h>
 #include "esp_log.h"
 
 static const char *TAG = "Drive";
@@ -215,6 +216,41 @@ void Drive::setSpeedValue(float speed_pct)
 float Drive::getSpeedScalar()
 {
     return this->speedScalar;
+}
+
+/**
+ * @brief Apply stick power and BSN scalars from the PS5 controller report.
+ * Call from per-robot ps5.attach() callbacks before drive->update() in the main loop.
+ */
+void Drive::ps5Callback(bool runningbackBoost)
+{
+    setStickPwr(ps5.LStickY(), ps5.RStickX());
+
+    if (ps5.Touchpad())
+    {
+        emergencyStop();
+        setSpeedScalar(BRAKE);
+    }
+    else if (ps5.R1())
+    {
+        if (runningbackBoost)
+            setSpeedValue(BIG_BOOST_PCT);
+        else
+            setSpeedScalar(BOOST);
+    }
+    else if (ps5.L1())
+    {
+        setSpeedScalar(SLOW);
+    }
+    else if (ps5.R2() && motorType == falcon)
+    {
+        // used to calibrate the max pwm signal for the falcon 500 motors
+        setSpeedValue(FALCON_CALIBRATION_FACTOR);
+    }
+    else
+    {
+        setSpeedScalar(NORMAL);
+    }
 }
 
 /**
