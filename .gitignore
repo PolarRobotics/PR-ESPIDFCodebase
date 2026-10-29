@@ -110,8 +110,5 @@ size_info*.txt
 XUNIT_RESULT*.xml
 .manifest_sha
 
-# clang config (for LSP)
-.clangd
-
 # Vale
 .vale/styles/*
