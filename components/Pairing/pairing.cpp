@@ -170,6 +170,8 @@ void getAddress(const char *&addr)
 /// @param discoverTime the time limit to repair to existing devices, or search for new devices, in milliseconds
 void activatePairing(bool doRePair, int discoverTime)
 {
+  ESP_LOGI(TAG, "Activating pairing...");
+
   // if we just returned a char*, it would be deleted and point to nowhere useful
   // so we have to pass in and mutate a (reference to a) char array.
   char discoveredAddr[MAC_ADDR_STR_LEN] = {0};
@@ -222,6 +224,8 @@ void activatePairing(bool doRePair, int discoverTime)
   // Beginning of Asynchronous Discovery Process
   if (startDiscovery())
   {
+    ESP_LOGI(TAG, "Starting asynchronous discovery...");
+
     int timer = 0;
 
     // recall foundController is set by the callback in `startDiscovery` when a valid PS5 controller is found

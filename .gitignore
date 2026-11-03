@@ -1,9 +1,6 @@
 build/
 sdkconfig.old
 
-# dependencies.lock updates everytime so there is no point tracking it
-dependencies.lock
-
 .config
 *.o
 *.pyc
@@ -33,6 +30,9 @@ GPATH
 # Doc build artifacts
 docs/_build/
 docs/doxygen_sqlite3.db
+docs/build/*
+docs/.venv/*
+.venv/*
 
 # Downloaded font files
 docs/_static/DejaVuSans.ttf
@@ -106,9 +106,6 @@ list_job*.txt
 size_info*.txt
 XUNIT_RESULT*.xml
 .manifest_sha
-
-# clang config (for LSP)
-.clangd
 
 # Vale
 .vale/styles/*

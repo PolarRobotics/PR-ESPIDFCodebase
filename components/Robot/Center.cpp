@@ -31,23 +31,7 @@ Center::Center(uint8_t armPin, uint8_t clawPin)
 
 void Center::action()
 {
-  // Control the arm of the center
-  if (ps5.Triangle())
-    armControl(ArmStatus::HIGHER);
-  else if (ps5.Cross())
-    armControl(ArmStatus::LOWER);
-  else if (ps5.Circle())
-    armControl(ArmStatus::HOLD);
-  else
-    armControl(ArmStatus::STOP_ARM);
-
-  // Control the Claw of the center
-  if (ps5.Up())
-    clawControl(ClawStatus::OPEN);
-  else if (ps5.Down())
-    clawControl(ClawStatus::CLOSE);
-  else
-    clawControl(ClawStatus::STOP_CLAW);
+  // Button handling moved to centerCallback() via ps5.attach()
 }
 
 /**

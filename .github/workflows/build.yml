@@ -3,6 +3,9 @@ name: Build Robot (PR)
 on:
   pull_request:
     branches: [ "production", "dev/main" ]
+    paths:
+      - 'components/**'
+      - 'main/**'
 
 jobs:
   build:

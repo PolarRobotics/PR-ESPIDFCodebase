@@ -73,13 +73,20 @@ Debouncer *dbOptions;
 
 // Prototypes for Controller Callbacks
 // Implementations located at the bottom of this file
+void onConnection();
+void onDisconnect();
+
+void linemanCallback();
+void runningbackCallback();
+void centerCallback();
+void centerConversionCallback();
+void kickerCallback();
+void quarterbackCallback();
+void quarterbackBaseCallback();
+
 void onConnection()
 {
-  if (ps5.isConnected())
-  {
-    ESP_LOGI(TAG, "Controller Connected.");
-    // ps5.setLed(0, 255, 0);   // set LED green
-  }
+  if (ps5.isConnected()) ESP_LOGI(TAG, "Controller Connected.");
 
   // TODO: perm sln
   if (robotType != quarterback_turret)
@@ -97,6 +104,117 @@ void onDisconnect()
     drive->emergencyStop();
   else
     ((QuarterbackTurret *)robot)->emergencyStop();
+}
+
+void linemanCallback()
+{
+  if (drive)
+    drive->ps5Callback();
+  checkOptionsTackle(dbOptions);
+}
+
+void runningbackCallback()
+{
+  if (drive)
+    drive->ps5Callback(/*runningbackBoost=*/true);
+  checkOptionsTackle(dbOptions);
+}
+
+void centerCallback()
+{
+  if (drive)
+    drive->ps5Callback();
+  checkOptionsTackle(dbOptions);
+  if (!robot)
+    return;
+
+  Center *c = (Center *)robot;
+
+  if (ps5.event.button_down.triangle)
+    c->armControl(ArmStatus::HIGHER);
+  else if (ps5.event.button_down.cross)
+    c->armControl(ArmStatus::LOWER);
+  else if (ps5.event.button_down.circle)
+    c->armControl(ArmStatus::HOLD);
+  if (ps5.event.button_up.triangle || ps5.event.button_up.cross ||
+      ps5.event.button_up.circle)
+    c->armControl(ArmStatus::STOP_ARM);
+
+  if (ps5.event.button_down.up)
+    c->clawControl(ClawStatus::OPEN);
+  else if (ps5.event.button_down.down)
+    c->clawControl(ClawStatus::CLOSE);
+  if (ps5.event.button_up.up || ps5.event.button_up.down)
+    c->clawControl(ClawStatus::STOP_CLAW);
+}
+
+void centerConversionCallback()
+{
+  if (drive)
+    drive->ps5Callback();
+  checkOptionsTackle(dbOptions);
+  if (!robot)
+    return;
+
+  CenterConversion *cc = (CenterConversion *)robot;
+
+  if (ps5.event.button_down.triangle)
+    cc->actuatorControl(true);
+  else if (ps5.event.button_down.cross)
+    cc->actuatorControl(false);
+  if (ps5.event.button_up.triangle || ps5.event.button_up.cross)
+    cc->stop();
+}
+
+void kickerCallback()
+{
+  if (drive)
+    drive->ps5Callback();
+  checkOptionsTackle(dbOptions);
+  if (!robot)
+    return;
+
+  Kicker *k = (Kicker *)robot;
+
+  if (ps5.event.button_down.triangle)
+    k->turnForward();
+  else if (ps5.event.button_down.cross)
+    k->turnReverse();
+  if (ps5.event.button_up.triangle || ps5.event.button_up.cross)
+    k->stop();
+}
+
+void quarterbackCallback()
+{
+  if (drive)
+    drive->ps5Callback();
+  checkOptionsTackle(dbOptions);
+  if (!robot)
+    return;
+
+  Quarterback *qb = (Quarterback *)robot;
+
+  if (ps5.event.button_down.up)
+    qb->aim(QBAim::AIM_UP);
+  else if (ps5.event.button_down.down)
+    qb->aim(QBAim::AIM_DOWN);
+
+  if (ps5.event.button_down.square)
+    qb->toggleConveyor();
+  else if (ps5.event.button_down.circle)
+    qb->toggleFlywheels();
+
+  if (ps5.event.button_down.triangle)
+    qb->changeFWSpeed(SpeedStatus::INCREASE);
+  else if (ps5.event.button_down.cross)
+    qb->changeFWSpeed(SpeedStatus::DECREASE);
+}
+
+void quarterbackBaseCallback()
+{
+  if (drive)
+    drive->ps5Callback();
+  checkOptionsTackle(dbOptions);
 }
 
 extern "C" void main_app(void)
@@ -146,30 +264,36 @@ extern "C" void main_app(void)
     // An initialization of `robot` as a new Robot subclass
     // An initialization of `drive` as a new Drive subclass
     // A call to drive->setupMotors (or downcast and call to override)
+    // A ps5.attach() of that robot's event callback (except turret)
     case kicker:
       robot = new Kicker(SPECBOT_PIN1, SPECBOT_PIN2, ENC1_CHA, ENC1_CHB);
       drive = new Drive(kicker, driveParams);
       drive->setupMotors(DRIVE_M1, DRIVE_M2);
+      ps5.attach(kickerCallback);
       break;
     case quarterback_old:
       robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
       drive = new Drive(quarterback_old, driveParams);
       drive->setupMotors(DRIVE_M1, DRIVE_M2);
+      ps5.attach(quarterbackCallback);
       break;
     case center:
       robot = new Center(SPECBOT_PIN1, SPECBOT_PIN2);
       drive = new Drive(center, driveParams);
       drive->setupMotors(DRIVE_M1, DRIVE_M2);
+      ps5.attach(centerCallback);
       break;
     case center_conversion:
       robot = new CenterConversion(SPECBOT_PIN1);
       drive = new Drive(center_conversion, driveParams);
       drive->setupMotors(DRIVE_M1, DRIVE_M2);
+      ps5.attach(centerConversionCallback);
       break;
     case runningback:
       robot = new Lineman();
       drive = new Drive(runningback, driveParams);
       drive->setupMotors(DRIVE_M1, DRIVE_M2);
+      ps5.attach(runningbackCallback);
       break;
     case quarterback_turret:
       robot = new QuarterbackTurret(
@@ -189,21 +313,23 @@ extern "C" void main_app(void)
       drive = new Drive(quarterback_base, driveParams);
       drive->setupMotors(DRIVE_M1, DRIVE_M2);
       robot = new QuarterbackBase(drive);
+      ps5.attach(quarterbackBaseCallback);
       break;
     case receiver:
     case lineman:
     default:  // Assume lineman
       robot = new Lineman();
       {
-        String debugMsg = "01: Instantiating Drive Class\n";
+        String debugMsg = "01: Instantiating Drive Class";
         ESP_LOGI(TAG, "%s", debugMsg.c_str());
       }
       drive = new Drive(lineman, driveParams);
       {
-        String debugMsg2 = "03: Call setupMotors\n";
+        String debugMsg2 = "03: Call setupMotors";
         ESP_LOGI(TAG, "%s", debugMsg2.c_str());
       }
       drive->setupMotors(DRIVE_M1, DRIVE_M2);
+      ps5.attach(linemanCallback);
   }
 
   drive->printSetup();
@@ -211,8 +337,11 @@ extern "C" void main_app(void)
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
 
+  ESP_LOGI(TAG, "Attaching PS5 callbacks...");
   ps5.attachOnConnect(onConnection);
   ps5.attachOnDisconnect(onDisconnect);
+
+  ESP_LOGI(TAG, "Initializing hardware serial...");
   HWSerial.begin(115200, SERIAL_8N1, 16,
                  17);  // 9600 baudrate default for USBSabertooth
   {
@@ -236,85 +365,35 @@ extern "C" void main_app(void)
   {
     if (ps5.isConnected())
     {
-      // ESP_LOGI(TAG, "\r\nConnected");
-      // ps5.setLed(255, 0, 0);   // set LED red
-
       //* QBv3 Turret doesn't have drive, so this is a temporary measure to
       // avoid NPEs and chaos
       // TODO: find better solution
       if (robotType != quarterback_turret)
       {
-        drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
-
-        // determine BSN percentage (boost, slow, or normal)
-        if (ps5.Touchpad())
-        {
-          drive->emergencyStop();
-          drive->setSpeedScalar(Drive::BRAKE);
-        }
-        else if (ps5.R1())
-        {
-          drive->setSpeedScalar(Drive::BOOST);
-          // ps5.setLed(0, 255, 0);   // set LED red
-        }
-        else if (ps5.L1())
-        {
-          drive->setSpeedScalar(Drive::SLOW);
-        }
-        else if (ps5.R2() && driveParams.motor_type == falcon)
-        {
-          // used to calibrate the max pwm signal for the falcon 500 motors
-          drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
-        }
-        else
-        {
-          drive->setSpeedScalar(Drive::NORMAL);
-        }
-
-        // Manual Home / Away Position Setting
-        if (dbOptions->debounceAndPressed(ps5.Options())) switchTackleSensor();
-
-        //* Update the motors based on the inputs from the controller
-        //* Can change functionality depending on subclass, like robot.action()
+        // Stick power, BSN, and Options→tackle are handled in ps5.attach callbacks
         drive->update();
-        // drive->printDebugInfo(); // comment this line out to reduce compile
-        // time and memory usage drive->printCsvInfo(); // prints info to serial
-        // monitor in a csv (comma separated value) format
       }
       //! Performs all special robot actions depending on the instantiated Robot
-      //! subclass
+      //! subclass (periodic work; button edges handled in callbacks)
       robot->action();
-
-      // DEBUGGING:
-      // drive->printDebugInfo(); // comment this line out to reduce compile
-      // time and memory usage drive->printCsvInfo(); // prints info to serial
-      // monitor in a csv (comma separated value) format
     }
     else
     {  // no response from PS5 controller within last 300 ms, so stop
-      // ESP_LOGI(TAG, "Controller DC\n");
+      // ESP_LOGI(TAG, "Controller disconnected");
       if (robotType != quarterback_turret)
       {
         // Emergency stop if the controller disconnects
+        // ESP_LOGI(TAG, "Emergency stop due to controller disconnect.");
         drive->emergencyStop();
       }
       else
       {
+        // ESP_LOGI(TAG, "Emergency stop due to controller disconnect for quarterback turret.");
         ((QuarterbackTurret *)robot)->emergencyStop();
       }
     }
     delay(5);
   }
-
-  /**
-   * @brief onConnection: Function to be called on controller connect
-   */
-
-  /**
-   * @brief onDisconnect: Function to be called on controller disconnect
-   * Stops bots from driving off and ramming into a wall or someone's foot if
-   * they disconnect
-   */
 
   // WARNING: if program reaches end of function app_main() the MCU will
   // restart.
