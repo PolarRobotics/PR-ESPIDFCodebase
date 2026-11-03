@@ -100,7 +100,7 @@ const float QB_DECLINATION = -6.5;
 //        Speed Constants         //
 //================================//
 #define QB_MIN_PWM_VALUE 0.08
-#define QB_HOME_PCT 0.125
+#define QB_HOME_PCT 0.05
 #define QB_HANDOFF 0.3
 #define QB_HOME_MAG 0.1
 #define QB_ASM_SPEED 0.3
@@ -434,14 +434,14 @@ class QuarterbackTurret : public Robot
   //      Constructor       //
   //========================//
   QuarterbackTurret(
-      uint8_t flywheelLeftPin,     // M1
-      uint8_t flywheelRightPin,    // M2
-      uint8_t cradlePin,           // M3
-      uint8_t turretPin,           // M4
-      uint8_t assemblyPin,         // S1
-      uint8_t turretEncoderPinA,   // E1A
-      uint8_t turretEncoderPinB,   // E1B
-      uint8_t turretLaserPin       // E2A
+      uint8_t flywheelLeftPin,    // M1
+      uint8_t flywheelRightPin,   // M2
+      uint8_t cradlePin,          // M3
+      uint8_t turretPin,          // M4
+      uint8_t assemblyPin,        // S1
+      uint8_t turretEncoderPinA,  // E1A
+      uint8_t turretEncoderPinB,  // E1B
+      uint8_t turretLaserPin      // E2A
   );
 
   //===================================//

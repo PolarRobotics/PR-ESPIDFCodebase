@@ -182,17 +182,6 @@ extern "C" void main_app(void)
           ENC1_CHA,      // turret encoder
           ENC1_CHB,      // turret encoder
           LASER_PIN      // zeroing laser
-      robot = new QuarterbackTurret(
-          M1_IDX,        // left flywheel
-          M2_IDX,        // right flywheel
-          M3_PIN,        // cradle
-          M4_PIN,        // turret
-          SPECBOT_PIN1,  // assembly motor
-          SPECBOT_PIN3,  // magnetometer sda
-          SPECBOT_PIN4,  // magnetometer scl
-          ENC1_CHA,      // turret encoder
-          ENC1_CHB,      // turret encoder
-          LASER_PIN      // zeroing laser
       );
       break;
     case quarterback_base:
