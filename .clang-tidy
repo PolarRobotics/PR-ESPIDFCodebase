@@ -1,10 +1,12 @@
 # .clang-tidy
+# Filter for our source directories only
+HeaderFilterRegex: '.*/PR-ESPIDFCodebase/(main|components)/.*'
+
 Checks: >
   -*,
+  clang-diagnostic-*,
   bugprone-*,
   cert-*,
   performance-*,
   readability-*,
   google-*
-  
-# WarningsAsErrors: 'google-*,bugprone-*'
