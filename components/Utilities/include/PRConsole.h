@@ -2,16 +2,11 @@
 
 #include <ConfigManager.h>
 
-#include "esp_console.h"
-#include "esp_vfs_dev.h"
-#include "driver/uart.h"
-#include "linenoise/linenoise.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+
+#include "freertos/task.h"
 
 #define CONSOLE_MAX_CMDLINE_LEN 128
 #define CONSOLE_MAX_ARGS 8

@@ -4,10 +4,9 @@
 #define CFG_MGR_H
 
 #include <Arduino.h>
-#include <Preferences.h>
-#include <MotorTypes.h>
 #include <BotTypes.h>
-#include <string>
+#include <MotorTypes.h>
+#include <Preferences.h>
 
 // #include <Utilities/BotTypes.h>
 #include <PolarRobotics.h>
@@ -17,7 +16,7 @@
 
 class ConfigManager
 {
-private:
+ private:
   bot_config_t *config;
 
   // Members of Config
@@ -28,10 +27,10 @@ private:
   // Write Function
   bool write(bot_config_t *cfg);
 
-protected:
+ protected:
   Preferences preferences;
 
-public:
+ public:
   ConfigManager();
   // ConfigManager(bool writable = false);
   ~ConfigManager();
@@ -42,7 +41,14 @@ public:
   drive_param_t getDriveParams();
   String toString();
   bool setConfig(uint8_t botindex);
-  bool setConfig(uint8_t botindex, BotType bottype, MotorType motortype, float gearratio, float wheelbase, float r_min, float r_max);
+  bool setConfig(
+      uint8_t botindex,
+      BotType bottype,
+      MotorType motortype,
+      float gearratio,
+      float wheelbase,
+      float r_min,
+      float r_max);
 };
 
-#endif // CFG_MGR_H
+#endif  // CFG_MGR_H
