@@ -12,64 +12,56 @@
 
 typedef enum
 {
-    serial,
-    pwm
+  serial,
+  pwm
 } MotorInterfaceType;
 
 typedef enum
 {
-    big_ampflow,     // index 0 for 24v AmpFlow motor E30-400-24 (serial)
-    small_ampflow,   // index 1 for 24v AmpFlow motor E30-150-24 (serial)
-    pancake_ampflow, // index 2 for 24v AmpFlow motor P40-350-24 (serial)
-    falcon,          // index 3 for the falcon motors on the runningback (pwm)
-    neo_vortex,      // index 4: NEO Vortex motors (pwm)
-    small_12v,       // index 5 for the small 12v motors on the old robots (serial)
-    big_ampflow_pwm, // index 6 for 24v AmpFlow motor E30-400-24 with PWM interface (strength linemen)
+  big_ampflow,      // 0: for 24v AmpFlow motor E30-400-24 (serial)
+  small_ampflow,    // 1: for 24v AmpFlow motor E30-150-24 (serial)
+  pancake_ampflow,  // 2: for 24v AmpFlow motor P40-350-24 (serial)
+  falcon,           // 3: for the falcon motors on the runningback (pwm)
+  neo_vortex,       // 4: NEO Vortex motors (pwm)
+  small_12v,        // 5: small 12v motors on the old robots (serial)
+  big_ampflow_pwm,  // 6: 24v AmpFlow motor E30-400-24 with PWM
+                    // interface (strength linemen)
 } MotorType;
 
 const int MOTOR_MAX_RPM_ARR[NUM_MOTOR_TYPES] = {
-    5700, // 24v AmpFlow motor E30-400-24 (serial)
-    5600, // 24v AmpFlow motor E30-150-24 (serial)
-    3500, // 24v AmpFlow motor P40-350-24 (serial)
-    6380, // the falcon motors on the runningback
-    6380, // NEO Vortex motors (using same as falcon for now)
-    4000, // !TEMP, NEED TO CONFIRM NUMBER the small 12v motors on the old robots
-    5700  // 24v AmpFlow motor E30-400-24 with PWM interface (strength linemen)
+    5700,  // 24v AmpFlow motor E30-400-24 (serial)
+    5600,  // 24v AmpFlow motor E30-150-24 (serial)
+    3500,  // 24v AmpFlow motor P40-350-24 (serial)
+    6380,  // the falcon motors on the runningback
+    6380,  // NEO Vortex motors (using same as falcon for now)
+    4000,  // !TEMP, NEED TO CONFIRM NUMBER the small 12v motors on the old
+           // robots
+    5700   // 24v AmpFlow motor E30-400-24 with PWM interface (strength linemen)
 };
 
 const MotorInterfaceType MOTORTYPE_INTERFACE_ARRAY[NUM_MOTOR_TYPES] = {
-    serial, // index 0: Big Ampflow Motor (serial)
-    serial, // index 1: Small Ampflow Motor
-    serial, // index 2: Pancake Ampflow Motor
-    pwm,    // index 3: Falcon500 motors
-    pwm,    // index 4: NEO Vortex motors
-    serial, // index 5: Small 12v motors (old robots)
-    pwm     // index 6: Big Ampflow Motor with PWM interface (strength linemen)
+    serial,  // 0: Big Ampflow Motor (serial)
+    serial,  // 1: Small Ampflow Motor
+    serial,  // 2: Pancake Ampflow Motor
+    pwm,     // 3: Falcon500 motors
+    pwm,     // 4: NEO Vortex motors
+    serial,  // 5: Small 12v motors (old robots)
+    pwm      // 6: Big Ampflow Motor with PWM interface (strength linemen)
 };
-
-// PWM POWERS
-// constexpr int MOTORTYPE_BNS_ARRAY[NUM_MOTOR_TYPES][3] = {
-//     // Boost   Normal  Slow
-//     {int(0.70f * SABERTOOTH_MAX_POWER), int(0.60f * SABERTOOTH_MAX_POWER), int(0.30f * SABERTOOTH_MAX_POWER)}, // index 0: Big Ampflow Motor
-//     {int(0.85f * SABERTOOTH_MAX_POWER), int(0.70f * SABERTOOTH_MAX_POWER), int(0.40f * SABERTOOTH_MAX_POWER)}, // index 1: Small Ampflow Motor
-//     {int(0.70f * SABERTOOTH_MAX_POWER), int(0.60f * SABERTOOTH_MAX_POWER), int(0.30f * SABERTOOTH_MAX_POWER)}, // index 2: Pancake Ampflow Motor
-//     {int(0.60f * SABERTOOTH_MAX_POWER), int(0.40f * SABERTOOTH_MAX_POWER), int(0.15f * SABERTOOTH_MAX_POWER)}, // index 3: Falcon500 motors
-//     {int(0.60f * SABERTOOTH_MAX_POWER), int(0.40f * SABERTOOTH_MAX_POWER), int(0.15f * SABERTOOTH_MAX_POWER)}, // index 4: NEO Vortex motors
-//     {int(0.15f * SABERTOOTH_MAX_POWER), int(0.10f * SABERTOOTH_MAX_POWER), int(0.05f * SABERTOOTH_MAX_POWER)}  // index 5: Small 12v motors (old robots)
-// };
 
 // SERIAL POWERS
 constexpr float MOTORTYPE_BNS_ARRAY[NUM_MOTOR_TYPES][3] = {
     // Boost   Normal  Slow
-    {0.70f, 0.60f, 0.30f}, // index 0: Big Ampflow Motor (serial)
-    {0.85f, 0.70f, 0.40f}, // index 1: Small Ampflow Motor
-    {0.70f, 0.60f, 0.30f}, // index 2: Pancake Ampflow Motor
-    {0.60f, 0.40f, 0.15f}, // index 3: Falcon500 motors
-    {0.60f, 0.40f, 0.15f}, // index 4: NEO Vortex motors
-    {0.15f, 0.10f, 0.05f}, // index 5: Small 12v motors (old robots)
-    {0.70f, 0.60f, 0.30f}  // index 6: Big Ampflow Motor with PWM interface (strength linemen)
+    {0.70F, 0.60F, 0.30F},  // 0: Big Ampflow Motor (serial)
+    {0.85F, 0.70F, 0.40F},  // 1: Small Ampflow Motor
+    {0.70F, 0.60F, 0.30F},  // 2: Pancake Ampflow Motor
+    {0.60F, 0.40F, 0.15F},  // 3: Falcon500 motors
+    {0.60F, 0.40F, 0.15F},  // 4: NEO Vortex motors
+    {0.15F, 0.10F, 0.05F},  // 5: Small 12v motors (old robots)
+    {0.70F, 0.60F, 0.30F}   // 6: Big Ampflow Motor with PWM
+                            // interface (strength linemen)
 };
 
 const char *getMotorTypeString(MotorType type);
 
-#endif // MOTOR_TYPES_H
+#endif  // MOTOR_TYPES_H
