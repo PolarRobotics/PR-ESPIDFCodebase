@@ -481,7 +481,7 @@ dependencies:
       require: private
       version: '>=5.0'
     source:
-      registry_url: https://components.espressif.com
+      registry_url: https://components.espressif.com/
       type: service
     version: 1.14.1
   espressif/network_provisioning:
@@ -512,7 +512,7 @@ dependencies:
       type: service
     version: 1.0.0
   espressif/rmaker_common:
-    component_hash: bfb0fc9a19686e4fc61da00e10d1db03fecb712d79d2a34c5fbb3fd41ef5f026
+    component_hash: cfbe92d0e739288354c91655e4fe7b9592bbfa410c01a2480428038acd149a7f
     dependencies:
     - name: espressif/mqtt
       registry_url: https://components.espressif.com
@@ -527,7 +527,7 @@ dependencies:
     - name: espressif/rmaker_common_events
       registry_url: https://components.espressif.com
       require: private
-      version: ^1.1.0
+      version: ^1.2.0
     - name: espressif/rmaker_console
       registry_url: https://components.espressif.com
       require: private
@@ -550,9 +550,9 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.9.0
+    version: 1.10.1
   espressif/rmaker_common_events:
-    component_hash: 57df0770974627a57a2c4d459a4ec93d707d2b9c029966128ddf262fed982c5d
+    component_hash: 3cd947e1e97c3c391087f0f82167c830dd20dd852e36db3c918f9bbff484b2ff
     dependencies:
     - name: idf
       require: private
@@ -560,7 +560,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.1.0
+    version: 1.2.0
   espressif/rmaker_console:
     component_hash: 22f38fe0ec9c84257427dad9a92e09ddbba48a6278eae42b0b167589f0e79f20
     dependencies:
@@ -677,6 +677,6 @@ direct_dependencies:
 - pr-lib-motor
 - ps5-esp32
 - usbsabertooth
-manifest_hash: fc40922a863cf6997b1cd2e5e4d36b7fdf4956d9ccc88aa6337f7e1a3c4dabcf
+manifest_hash: ce829d2b2c10c11a1396142106229c056ed98fcf288dc98dd87cba67e2d7ea79
 target: esp32
 version: 2.0.0
