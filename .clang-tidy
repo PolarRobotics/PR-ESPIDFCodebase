@@ -9,4 +9,6 @@ Checks: >
   cert-*,
   performance-*,
   readability-*,
-  google-*
+  -readability-braces-around-statements,
+  google-*,
+  -google-readability-braces-around-statements
