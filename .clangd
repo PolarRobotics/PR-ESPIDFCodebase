@@ -3,3 +3,13 @@ CompileFlags:
   Remove:
     - -fno-tree-switch-conversion
     - -fstrict-volatile-bitfields
+    - -mlongcalls
+    - -fno-shrink-wrap
+
+---
+If:
+  PathMatch:
+    - .*/managed_components/.*
+    - .*/opt/esp/idf/components/.*
+Diagnostics:
+  Suppress: "*"

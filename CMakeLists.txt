@@ -41,3 +41,16 @@ idf_component_get_property(modbus_lib espressif__esp-modbus COMPONENT_LIB)
 if(TARGET ${modbus_lib})
     target_compile_options(${modbus_lib} PRIVATE -Wno-stringop-truncation)
 endif()
+
+# clang-tidy does not honor .clangd Remove / --query-driver. Keep
+# compile_commands.json usable for CLI analysis after every build.
+idf_build_get_property(python PYTHON)
+set(_PR_PREPARE_CCDB "${CMAKE_SOURCE_DIR}/tools/prepare_compile_commands.py")
+if(EXISTS "${_PR_PREPARE_CCDB}")
+    add_custom_target(pr_prepare_compile_commands ALL
+        COMMAND "${python}" "${_PR_PREPARE_CCDB}"
+                "${CMAKE_BINARY_DIR}/compile_commands.json"
+        COMMENT "Preparing compile_commands.json for clang-tidy"
+        VERBATIM
+    )
+endif()
