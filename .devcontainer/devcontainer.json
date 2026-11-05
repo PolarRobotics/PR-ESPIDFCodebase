@@ -81,7 +81,9 @@
 				"files.exclude": {
 					"**/build": true,
 					"**/managed_components": true
-				}
+				},
+				// Todo tree configuration for ripgrep binary
+				"todo-tree.ripgrep.ripgrep": "/usr/bin/rg"
 			},
 			"extensions": [
 				// Core ESP-IDF extensions

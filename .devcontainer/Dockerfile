@@ -18,6 +18,7 @@ RUN apt-get update -y && apt-get install -y \
     zsh \
     git \
     curl \
+    ripgrep \
     clang-format \
     clang-tidy
 
