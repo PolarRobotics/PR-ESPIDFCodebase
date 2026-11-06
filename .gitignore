@@ -1,11 +1,6 @@
 build/
 sdkconfig.old
 
-# VSCode
-.vscode
-!.vscode/launch.json
-
-
 .config
 *.o
 *.pyc
@@ -35,6 +30,9 @@ GPATH
 # Doc build artifacts
 docs/_build/
 docs/doxygen_sqlite3.db
+docs/build/*
+docs/.venv/*
+.venv/*
 
 # Downloaded font files
 docs/_static/DejaVuSans.ttf
@@ -75,9 +73,6 @@ coverage_report/
 
 test_multi_heap_host
 
-# VS Code Settings
-.vscode/
-
 # VIM files
 *.swp
 *.swo
@@ -112,9 +107,5 @@ size_info*.txt
 XUNIT_RESULT*.xml
 .manifest_sha
 
-# clang config (for LSP)
-.clangd
-
 # Vale
 .vale/styles/*
-.vscode/c_cpp_properties.json

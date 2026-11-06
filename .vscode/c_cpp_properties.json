@@ -1,0 +1,12 @@
+{
+  "configurations": [
+    {
+      "name": "ESP-IDF",
+      "compileCommands": "/workspaces/PR-ESPIDFCodebase/build/compile_commands.json",
+      "configurationProvider": "idf.espIdf",
+      "cStandard": "c17",
+      "cppStandard": "gnu++17"
+    }
+  ],
+  "version": 4
+}

@@ -1,20 +1,18 @@
 ## IDF Component Manager Manifest File
 dependencies:
   ## Required IDF version
+  # This is NOT where we update the IDF version, that is in the Dockerfile
+  # However, when you update the IDF version in the Dockerfile, you should also 
+  # update this version here to match!
   idf:
-    version: '>=4.1.0'
-  # # Put list of dependencies here
-  # # For components maintained by Espressif:
-  # component: "~1.0.0"
-  # # For 3rd party components:
-  # username/component: ">=1.0.0,<2.0.0"
-  # username2/component2:
-  #   version: "~1.0.0"
-  #   # For transient dependencies `public` flag can be set.
-  #   # `public` flag doesn't have an effect dependencies of the `main` component.
-  #   # All dependencies of `main` are public by default.
-  #   public: true
-  espressif/arduino-esp32: ^3.3.0
+    version: '==5.5.5'
+
+  # FOLLOW LATEST ARDUINO RELEASE HERE: 
+  # https://github.com/espressif/arduino-esp32/releases
+  #
+  # IDF version should follow based on the Arduino release notes, which specify 
+  # the IDF version used for that release. 
+  espressif/arduino-esp32: "==3.3.12"
 
   # PR-Lib Motor Library
   pr-lib-motor:
@@ -51,3 +49,12 @@ dependencies:
     version: '*'
     git: https://github.com/PolarRobotics/PR-Lib.git
     path: components/USBSabertooth
+
+# Force transitive mdns (pulled in by arduino-esp32 as ^1.11.2) to stay on
+# 1.14.1 — 1.15.0 currently fails to compile with this project.
+overrides:
+  - espressif/mdns:
+      with:
+        espressif/mdns:
+          version: "==1.14.1"
+      reason: "1.15.0 fails to compile; arduino allows ^1.11.2 which floats onto it"

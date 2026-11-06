@@ -1,4 +1,7 @@
 #include <Drive.h>
+#include "esp_log.h"
+
+static const char *TAG = "Drive";
 
 /**
  * @brief Drive Class, base class for specialized drive classes, this configuration is intended for the standard linemen.
@@ -364,26 +367,16 @@ void Drive::printSetup()
 {
     const int maxRpm = (motorInterfaceType == pwm) ? pwmM1.getMaxRPM() : serialM1.getMaxRPM();
 
-    Serial.print(F("\nDrive::printSetup():"));
-    Serial.print(F("\nMotorType: "));
-    Serial.print(getMotorTypeString(this->motorType));
-    Serial.print(F("\nGearRatio: "));
-    Serial.print(this->gearRatio);
-    Serial.print(F("\nR_Min: "));
-    Serial.print(this->R_Min);
-    Serial.print(F("\nR_Max: "));
-    Serial.print(this->R_Max);
-    Serial.print(F("\nMin RPM: "));
-    Serial.print(this->min_RPM);
-    Serial.print(F("\nMAX RPM: "));
-    Serial.print(maxRpm);
-    Serial.print(F("\nTurnSensitivityMode: "));
-    Serial.print(enableTurnSensitivity);
-    Serial.print(F("\nEncoders: "));
-    Serial.print(F("\nHas Encoders? "));
-    Serial.print(this->hasEncoders ? F("True") : F("False"));
-
-    Serial.print(F("\n"));
+    ESP_LOGI(TAG, "Drive::printSetup():");
+    ESP_LOGI(TAG, "MotorType: %s", getMotorTypeString(this->motorType));
+    ESP_LOGI(TAG, "GearRatio: %f", (double)this->gearRatio);
+    ESP_LOGI(TAG, "R_Min: %f", (double)this->R_Min);
+    ESP_LOGI(TAG, "R_Max: %f", (double)this->R_Max);
+    ESP_LOGI(TAG, "Min RPM: %d", this->min_RPM);
+    ESP_LOGI(TAG, "MAX RPM: %d", maxRpm);
+    ESP_LOGI(TAG, "TurnSensitivityMode: %d", enableTurnSensitivity);
+    ESP_LOGI(TAG, "Encoders: ");
+    ESP_LOGI(TAG, "Has Encoders? %s", this->hasEncoders ? "True" : "False");
 }
 
 /**
@@ -394,45 +387,9 @@ void Drive::printSetup()
  */
 void Drive::printDebugInfo()
 {
-    Serial.print(F("L_Hat_Y: "));
-    Serial.print(stickForwardRev);
-    Serial.print(F("  R_HAT_X: "));
-    Serial.print(stickTurn);
-
-    // Serial.print(F("  |  Turn: "));
-    // Serial.print(lastTurnPwr);
-
-    // Serial.print(F("  |  Left ReqPwr: "));
-    // Serial.print(requestedMotorPower[0]);
-    // Serial.print(F("  Right ReqPwr: "));
-    // Serial.print(requestedMotorPower[1]);
-
-    Serial.print(F("  |  Omega: "));
-    Serial.print(omega);
-
-    Serial.print(F("  omega_L: "));
-    Serial.print(omega_L);
-    Serial.print(F("  omega_R: "));
-    Serial.print(omega_R);
-
-    // Serial.print(F("  lastRampTime "));
-    // Serial.print(lastRampTime[0]);
-    // Serial.print(F("  requestedPower "));
-    // Serial.print(requestedPower);
-    // Serial.print(F("  current "));
-    // Serial.print(currentRampPower[0]);
-    // Serial.print(F("  requestedPower - currentRampPower "));
-    // Serial.println(requestedPower - currentRampPower[mtr], 10);
-
-    Serial.print(F("  Left Motor: "));
-    Serial.print(requestedMotorPowerSerial[0]);
-    Serial.print(F("  Right: "));
-    Serial.print(requestedMotorPowerSerial[1]);
-
-    // Serial.print(F("  scaledSensitiveTurn: "));
-    // Serial.print(scaledSensitiveTurn);
-
-    Serial.print(F("\n"));
+    ESP_LOGI(TAG, "L_Hat_Y: %f  R_HAT_X: %f  |  Omega: %f  omega_L: %f  omega_R: %f  Left Motor: %d  Right: %d",
+             (double)stickForwardRev, (double)stickTurn, (double)omega, (double)omega_L, (double)omega_R,
+             requestedMotorPowerSerial[0], requestedMotorPowerSerial[1]);
 }
 /**
  * @brief Prints variables to the serial monitor in a csv format
@@ -444,16 +401,7 @@ void Drive::printDebugInfo()
  */
 void Drive::printCsvInfo()
 {
-    Serial.print(F("header1,")); // name of value to be used as header
-    Serial.print(1);             // variable you want to track
-    Serial.print(F(",header2,"));
-    Serial.print(2);
-    Serial.print(F(",header3,"));
-    Serial.print(3);
-    Serial.print(F(",header4,"));
-    Serial.print(4);
-    Serial.print(F(",header5,"));
-    Serial.println(5); // last line is -ALWAYS- println or else the python script will break
+    ESP_LOGI(TAG, "header1,%d,header2,%d,header3,%d,header4,%d,header5,%d", 1, 2, 3, 4, 5); // last line is -ALWAYS- println or else the python script will break
 }
 /**
  * @brief updates the motors after calling all the functions to generate

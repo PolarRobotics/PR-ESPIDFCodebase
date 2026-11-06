@@ -1,6 +1,7 @@
 idf_component_register( 
     SRCS 
         "main.c"
+        "main_robot.cpp"
     INCLUDE_DIRS
         "include"
     REQUIRES
@@ -12,9 +13,3 @@ idf_component_register(
         espressif__arduino-esp32 
         usbsabertooth
 )
-
-if(CONFIG_ENV_ROBOT)
-    target_sources(${COMPONENT_LIB} PRIVATE "main_robot.cpp")
-elseif(CONFIG_ENV_WRITE_BOT_INFO)
-    target_sources(${COMPONENT_LIB} PRIVATE "main_write_bot_info.cpp")
-endif()
