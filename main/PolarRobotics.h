@@ -48,8 +48,8 @@
 #define SPECBOT_PIN4 22
 
 // Encoder pin definitions
-#define ENC1_CHA 35
-#define ENC1_CHB 34
+#define ENC1_CHA 34
+#define ENC1_CHB 35
 #define ENC2_CHA 36  // VP
 #define ENC2_CHB 39  // VN
 
