@@ -655,6 +655,7 @@ void QuarterbackTurret::updateTurretMotionStatus()
   ESP_LOGI(
       TAG,
       "update called with ctec = %ld; ttec = %ld; error (ct) = %.2f",
+      //(long)turretEncoderPinA,
       (long)currentTurretEncoderCount,
       (long)targetTurretEncoderCount,
       fabs(
@@ -1242,14 +1243,15 @@ void QuarterbackTurret::handoff()
   int16_t targetHeading = (getCurrentHeading() + 130) % 360;
   targetHeading += 10;
   targetHeading %= 360;
+  // ESP_LOGI(TAG, "HANDOFF VALUE = %ld", (long)targetHeading);
   moveTurretAndWait(targetHeading);
-  cradleActuator.write(1.0);
-  setFlywheelSpeedStage(slow_outwards);
-  delay(2000);
-  setFlywheelSpeedStage(stopped);
-  cradleActuator.write(-1);
-  delay(2000);
-  cradleActuator.write(0);
+  // cradleActuator.write(1.0);
+  // setFlywheelSpeedStage(slow_outwards);
+  // delay(2000);
+  // setFlywheelSpeedStage(stopped);
+  // cradleActuator.write(-1);
+  // delay(2000);
+  // cradleActuator.write(0);
   this->runningMacro = false;
 }
 
