@@ -101,7 +101,7 @@ const float QB_DECLINATION = -6.5;
 //================================//
 #define QB_MIN_PWM_VALUE 0.08
 #define QB_HOME_PCT 0.05
-#define QB_HANDOFF 0.3
+#define QB_HANDOFF 0.1
 #define QB_HOME_MAG 0.1
 #define QB_ASM_SPEED 0.3
 

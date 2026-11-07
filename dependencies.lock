@@ -11,16 +11,6 @@ dependencies:
       path: components/adafruit_busio
       type: git
     version: 635b6f50e57b6cb5da17a8286a377c021f85af67
-  adafruit_lis3mdl:
-    component_hash: 2901ea21c6211b2dc88484b5812affd8580cbba75ae2f433da30343a3eefe553
-    dependencies:
-    - name: idf
-      version: '>=4.1.0'
-    source:
-      git: https://github.com/PolarRobotics/PR-Lib.git
-      path: components/adafruit_lis3mdl
-      type: git
-    version: 635b6f50e57b6cb5da17a8286a377c021f85af67
   adafruit_sensor:
     component_hash: 1a44ebb53484c66011379f48a774a00a1ade7ea77a328525ea8064632e8f1a5e
     dependencies:
@@ -338,7 +328,7 @@ dependencies:
       type: service
     version: 2.1.0
   espressif/esp_rainmaker:
-    component_hash: 404b6fce47c5021a35550065a94ec66d766d0d2d31b79c3eead6b40d1dbff1cf
+    component_hash: bafea717156a98296644944781e17d402bd6de0acdbb77cdf3e0f766a1746714
     dependencies:
     - name: espressif/cbor
       registry_url: https://components.espressif.com
@@ -355,11 +345,11 @@ dependencies:
     - name: espressif/json_generator
       registry_url: https://components.espressif.com
       require: private
-      version: ~1.1.1
+      version: ~2.1.0
     - name: espressif/json_parser
       registry_url: https://components.espressif.com
       require: private
-      version: ~1.0.3
+      version: ~2.0.0
     - name: espressif/mdns
       registry_url: https://components.espressif.com
       require: private
@@ -381,7 +371,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.17.0
+    version: 2.1.0
   espressif/esp_schedule:
     component_hash: 52d305300abcee86034c309eb200feb2dfbc95fcbfc5b7b9dcd137763a995dbf
     dependencies:
@@ -407,7 +397,7 @@ dependencies:
       type: service
     version: 2.9.3
   espressif/jsmn:
-    component_hash: d80350c41bbaa827c98a25b6072df00884e72f54885996fab4a4f0aebce6b6c3
+    component_hash: 9b2f6ba1e0fdac1a25e8f1b5a03bfbc8069b43980c62bba225d521ee6cefc6d0
     dependencies:
     - name: idf
       require: private
@@ -415,27 +405,27 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.1.0
+    version: 1.2.0
   espressif/json_generator:
-    component_hash: 45033e1c199b13f1c8c1b544fb7d4e2df6a8e3071ebdcb1b22582b61a7974ff2
+    component_hash: 7433f3e206d8ed81dc8335b77710a5186f36c9e8c8b5375b277d6f2b9b430496
     dependencies: []
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.1.2
+    version: 2.1.0
   espressif/json_parser:
-    component_hash: d74b81729ad06ec11ff5eb5b1b0d7df1d00e6027fc11471f4b139c70dcf1b1e4
+    component_hash: 7a764bd9a057cacc93ccabefeca4cdc6ae558790582af9a639acdd015d5103ae
     dependencies:
     - name: espressif/jsmn
       registry_url: https://components.espressif.com
       require: private
       rules:
       - if: idf_version >=5.0
-      version: ~1.1
+      version: ~1.2
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.0.3
+    version: 2.0.0
   espressif/lan867x:
     component_hash: 88bcd9834f0ddd780c1dbed3b9135d03edd00e76dadfd70b91410a524cc5e85a
     dependencies:
@@ -512,7 +502,7 @@ dependencies:
       type: service
     version: 1.0.0
   espressif/rmaker_common:
-    component_hash: cfbe92d0e739288354c91655e4fe7b9592bbfa410c01a2480428038acd149a7f
+    component_hash: 47540e04384badab2c64677bdabf23fb9ee191be2f7f54794fd609fe99d409b4
     dependencies:
     - name: espressif/mqtt
       registry_url: https://components.espressif.com
@@ -531,7 +521,7 @@ dependencies:
     - name: espressif/rmaker_console
       registry_url: https://components.espressif.com
       require: private
-      version: ^1.0.0
+      version: ^1.1.0
     - name: espressif/rmaker_system_ctrl
       registry_url: https://components.espressif.com
       require: private
@@ -543,14 +533,14 @@ dependencies:
     - name: espressif/rmaker_work_queue
       registry_url: https://components.espressif.com
       require: private
-      version: ^1.0.0
+      version: ^1.1.0
     - name: idf
       require: private
       version: '>=5.1'
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.10.1
+    version: 1.12.0
   espressif/rmaker_common_events:
     component_hash: 3cd947e1e97c3c391087f0f82167c830dd20dd852e36db3c918f9bbff484b2ff
     dependencies:
@@ -562,7 +552,7 @@ dependencies:
       type: service
     version: 1.2.0
   espressif/rmaker_console:
-    component_hash: 22f38fe0ec9c84257427dad9a92e09ddbba48a6278eae42b0b167589f0e79f20
+    component_hash: 627c588581909ea68676f100e1ad0643fab7b5402c5d5cc4994785d61fa69326
     dependencies:
     - name: espressif/rmaker_system_ctrl
       registry_url: https://components.espressif.com
@@ -578,7 +568,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.0.1
+    version: 1.1.0
   espressif/rmaker_system_ctrl:
     component_hash: b4208fbc7e99b30fb1d272cbd30e578327079a6495499d12fb466b6c2fc0d899
     dependencies:
@@ -608,7 +598,7 @@ dependencies:
       type: service
     version: 1.0.2
   espressif/rmaker_work_queue:
-    component_hash: 7d2a9ee4e0343eb36e1816e987dde7babe892b99873c8dc5bae15e647a0e4028
+    component_hash: 26f9da268e535e7f01418558fbaa495b03c22e1f7181c57f67b2d4d4492c67d2
     dependencies:
     - name: idf
       require: private
@@ -616,7 +606,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.0.0
+    version: 1.1.0
   idf:
     source:
       type: idf
@@ -670,13 +660,12 @@ dependencies:
     version: 635b6f50e57b6cb5da17a8286a377c021f85af67
 direct_dependencies:
 - adafruit_busio
-- adafruit_lis3mdl
 - adafruit_sensor
 - espressif/arduino-esp32
 - idf
 - pr-lib-motor
 - ps5-esp32
 - usbsabertooth
-manifest_hash: ce829d2b2c10c11a1396142106229c056ed98fcf288dc98dd87cba67e2d7ea79
+manifest_hash: 229885c24917a91d634bdbd4d246c48d5caa8a80711571ab77aad5a63576e975
 target: esp32
 version: 2.0.0
