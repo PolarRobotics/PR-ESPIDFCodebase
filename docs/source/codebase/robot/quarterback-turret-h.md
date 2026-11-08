@@ -16,6 +16,8 @@
         |----------------------|-------|
         | QB_TURRET_NUM_SPEEDS | 7     |
         | flywheelSpeeds       | {-0.1, 0, 0.1, 0.215, 0.31, 0.3875, 1.0}        |
+        | combineSpeeds        | {-0.1, 0, 0.215, 0.35, 0.45}                   |
+    - In combine mode, D-Pad Up selects the next combine flywheel preset, while D-Pad Down selects the minimum preset (-0.1); the left stick remains a continuous speed override. Up selection stops at the highest preset.
     - Debounce and Delay Constants:
         | Constant                      | Value |
         |-------------------------------|-------|

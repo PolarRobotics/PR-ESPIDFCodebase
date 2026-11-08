@@ -467,13 +467,17 @@ void QuarterbackTurret::action()
         }
         else if (dbDpadUp->debounceAndPressed(ps5.Up()))
         {
-          float newSpeed = currentFlywheelSpeed + 0.025;
-          setFlywheelSpeed(newSpeed);
+          if (mode == combine)
+            adjustFlywheelSpeedStage(INCREASE);
+          else
+            setFlywheelSpeed(currentFlywheelSpeed + 0.025);
         }
         else if (dbDpadDown->debounceAndPressed(ps5.Down()))
         {
-          float newSpeed = currentFlywheelSpeed - 0.025;
-          setFlywheelSpeed(newSpeed);
+          if (mode == combine)
+            setFlywheelSpeed(combineSpeeds[0], true);
+          else
+            setFlywheelSpeed(currentFlywheelSpeed - 0.025);
         }
       }
     }
@@ -929,14 +933,15 @@ void QuarterbackTurret::moveCradle(CradleState state, bool force)
 #pragma endregion
 
 #pragma region Flywheels
-void QuarterbackTurret::setFlywheelSpeed(float absoluteSpeed)
+void QuarterbackTurret::setFlywheelSpeed(float absoluteSpeed, bool forceUpdate)
 {
   // update the motors so they are spinning at the new speed
   if (enabled)
   {
     // if current speed is not the passed speed, change the motor speed.
     // this is only to avoid unnecessary writes
-    if (fabs(currentFlywheelSpeed - absoluteSpeed) > STICK_DEADZONE)
+    if (forceUpdate ||
+        fabs(currentFlywheelSpeed - absoluteSpeed) > STICK_DEADZONE)
     {
       // constrain to the first and last values of the flywheel speed
       // array. the first value should be the slow intake speed -- the
@@ -981,6 +986,29 @@ void QuarterbackTurret::setFlywheelSpeedStage(FlywheelSpeed stage)
 
 void QuarterbackTurret::adjustFlywheelSpeedStage(SpeedStatus speed)
 {
+  if (mode == combine)
+  {
+    uint8_t idx = 0;
+    float closestDifference = fabs(currentFlywheelSpeed - combineSpeeds[0]);
+    for (uint8_t i = 1; i < QB_TURRET_NUM_COMBINE_SPEEDS; i++)
+    {
+      float difference = fabs(currentFlywheelSpeed - combineSpeeds[i]);
+      if (difference < closestDifference)
+      {
+        idx = i;
+        closestDifference = difference;
+      }
+    }
+
+    if (speed == INCREASE && idx < QB_TURRET_NUM_COMBINE_SPEEDS - 1)
+      idx++;
+    else if (speed == DECREASE && idx > 0)
+      idx--;
+
+    setFlywheelSpeed(combineSpeeds[idx], true);
+    return;
+  }
+
   uint8_t idx = static_cast<uint8_t>(currentFlywheelStage);
 
   // Change the speed stage based on whether the user wants to increase or
