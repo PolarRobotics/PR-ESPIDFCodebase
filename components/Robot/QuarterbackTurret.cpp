@@ -36,7 +36,10 @@ uint8_t QuarterbackTurret::turretLaserPin;
 // could not be completed.
 void QuarterbackTurret::turretEncoderISR()
 {
+  const uint8_t encoderStateA = digitalRead(turretEncoderPinA);
   turretEncoderStateB = digitalRead(turretEncoderPinB);
+
+  if (encoderStateA == 0 && turretEncoderStateB == 0) return;
 
   if (turretEncoderStateB == 1)
     currentTurretEncoderCount--;
