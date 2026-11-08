@@ -40,8 +40,8 @@
         | Constant                    | Value  |
         |-----------------------------|--------|
         | QB_COUNTS_PER_ENCODER_REV   | 1250   |
-        | QB_COUNTS_PER_TURRET_REV    | 11500  |
-        | QB_COUNTS_PER_TURRET_DEGREE | 11500 / 360.0 (31.9444) |
+        | QB_COUNTS_PER_TURRET_REV    | 13417  |
+        | QB_COUNTS_PER_TURRET_DEGREE | 13417 / 360.0 (37.2694) |
         | QB_TURRET_ZERO_OFFSET_DEGREES | -8.2 |
         | QB_TURRET_SLOP_COUNTS       | 540    |
     - Turret Homing Constants:
@@ -128,11 +128,11 @@
   - _Number of ticks per encoder revolution_
   - 1250
 - `QB_COUNTS_PER_TURRET_REV`
-  - _Measured encoder count for one turret revolution._
-  - 11500
+  - _Calibrated encoder count for one turret revolution. A 210-degree command was observed to produce about 180 degrees of physical rotation._
+  - 13417
 - `QB_COUNTS_PER_TURRET_DEGREE`
   - _Derived from `QB_COUNTS_PER_TURRET_REV / 360.0`_
-  - 31.9444
+  - 37.2694
 - `QB_TURRET_ZERO_OFFSET_DEGREES`
   - _Physical offset applied after stage 2 before the encoder is tared._
   - -8.2
