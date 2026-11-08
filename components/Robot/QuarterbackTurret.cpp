@@ -1272,9 +1272,6 @@ void QuarterbackTurret::handoff()
   this->runningMacro = true;
   aimAssembly(straight);
   int16_t targetHeading = (getCurrentHeading() + 180) % 360;
-  // targetHeading += 10;
-  // targetHeading %= 360;
-  // ESP_LOGI(TAG, "HANDOFF VALUE = %ld", (long)targetHeading);
   moveTurretAndWait(targetHeading);
   cradleActuator.write(1.0);
   setFlywheelSpeedStage(slow_outwards);
