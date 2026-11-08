@@ -109,18 +109,17 @@ const float QB_DECLINATION = -6.5;
 //   Turret Angle Calculation Constants   //
 //========================================//
 // QB_COUNTS_PER_ENCODER_REV      Number of ticks per encoder revolution
-// QB_COUNTS_PER_TURRET_REV       Encoder Gear: 18t; Turret Track: 152t. Encoder
-// spins 8.4 times for every turret revolution = 8500 ticks/rev
-// QB_COUNTS_PER_TURRET_DEGREE    (8500/360) = 23.61... ticks per degree
-// QB_TURRET_SLOP_COUNTS          Backlash between input and output on the
-// turret is high -> leads to problems when switching directions
+// QB_COUNTS_PER_TURRET_REV       Measured encoder count for one turret
+// revolution. QB_COUNTS_PER_TURRET_DEGREE    Derived from turret counts per
+// revolution. QB_TURRET_SLOP_COUNTS          Backlash between input and output
+// on the turret is high -> leads to problems when switching directions
 //                                    540 ticks on encoder before turret
 //                                    actually starts to move (Empirically
 //                                    measured)
 #define QB_COUNTS_PER_ENCODER_REV 1250
-#define QB_COUNTS_PER_TURRET_REV \
-  10556  // actually 10555.55555...6, but rounded up
-#define QB_COUNTS_PER_TURRET_DEGREE 29.321
+#define QB_COUNTS_PER_TURRET_REV 11500
+#define QB_COUNTS_PER_TURRET_DEGREE (QB_COUNTS_PER_TURRET_REV / 360.0)
+#define QB_TURRET_ZERO_OFFSET_DEGREES -8.2
 #define QB_TURRET_SLOP_COUNTS 540  // deprecated
 // #define QB_FALCON_TO_TURRET_RATIO 27 / 1
 // #define QB_ENCODER_TO_FALCON_RATIO 5 / 1
@@ -454,7 +453,7 @@ class QuarterbackTurret : public Robot
   // zeroTurret               Runs through the routine to zero the turret
   // reset                    zero turret, aim down (straight), and set
   // flywheels to slow intake
-  void zeroTurret();
+  bool zeroTurret();
   void reset();
 
   // [Safety]

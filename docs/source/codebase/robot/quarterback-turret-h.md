@@ -40,8 +40,9 @@
         | Constant                    | Value  |
         |-----------------------------|--------|
         | QB_COUNTS_PER_ENCODER_REV   | 1250   |
-        | QB_COUNTS_PER_TURRET_REV    | 10556  |
-        | QB_COUNTS_PER_TURRET_DEGREE | 29.321 |
+        | QB_COUNTS_PER_TURRET_REV    | 11500  |
+        | QB_COUNTS_PER_TURRET_DEGREE | 11500 / 360.0 (31.9444) |
+        | QB_TURRET_ZERO_OFFSET_DEGREES | -8.2 |
         | QB_TURRET_SLOP_COUNTS       | 540    |
     - Turret Homing Constants:
         | Constant                        | Value |
@@ -125,14 +126,16 @@
 
 - `QB_COUNTS_PER_ENCODER_REV`
   - _Number of ticks per encoder revolution_
-  - 1000
+  - 1250
 - `QB_COUNTS_PER_TURRET_REV`
-  - _The ratio is 27:1 for the falcon to turret, and the ratio is 5:1 for the falcon to the encoder (for a 12t driving sprocket on 60t gear)_
-  - _Encoder spins 5.4 times (or 27/5) for every turret revolution equates for 5400 ticks per rev_
-  - 5400
+  - _Measured encoder count for one turret revolution._
+  - 11500
 - `QB_COUNTS_PER_TURRET_DEGREE`
-  - _15 ticks per degree (5400 / 360)_
-  - 15
+  - _Derived from `QB_COUNTS_PER_TURRET_REV / 360.0`_
+  - 31.9444
+- `QB_TURRET_ZERO_OFFSET_DEGREES`
+  - _Physical offset applied after stage 2 before the encoder is tared._
+  - -8.2
 - `QB_TURRET_SLOP_COUNTS`
   - _Due to the high levels of backlash between the input and output, there are 540 ticks used in the encoder to add a delay before the turret actually starts to move. This prevents problems when switching directions._
   - 540

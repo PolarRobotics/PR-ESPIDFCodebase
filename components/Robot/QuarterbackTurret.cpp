@@ -203,7 +203,7 @@ void QuarterbackTurret::action()
       if (!initialized)
         reset();
       else
-        zeroTurret();
+        initialized = zeroTurret();
     }
     //* Triangle: Macro 1 - load from center
     else if (dbTriangle->debounceAndPressed(ps5.Triangle()))
@@ -1240,9 +1240,9 @@ void QuarterbackTurret::handoff()
 {
   this->runningMacro = true;
   aimAssembly(straight);
-  int16_t targetHeading = (getCurrentHeading() + 130) % 360;
-  targetHeading += 10;
-  targetHeading %= 360;
+  int16_t targetHeading = (getCurrentHeading() + 180) % 360;
+  // targetHeading += 10;
+  // targetHeading %= 360;
   // ESP_LOGI(TAG, "HANDOFF VALUE = %ld", (long)targetHeading);
   moveTurretAndWait(targetHeading);
   cradleActuator.write(1.0);
@@ -1373,7 +1373,7 @@ void QuarterbackTurret::testRoutine()
   this->runningMacro = false;
 }
 
-void QuarterbackTurret::zeroTurret()
+bool QuarterbackTurret::zeroTurret()
 {
   this->runningMacro = true;
 
@@ -1489,134 +1489,64 @@ void QuarterbackTurret::zeroTurret()
                                           // encoder to update
   }
 
-  int32_t restEncoderCount = currentTurretEncoderCount;
-
-  // at this point, there should be 3 points of data, in increasing order as
-  // follows:
-  //  - the point at which the laser was first triggered (when it first went
-  //  high)
-  //  - the point at which the laser stopped being triggered (when it went low
-  //  after being high)
-  //  - the point at which the motor stopped moving after being commanded to
-  //  stop
-  // at this point, there should be 3 points of data, in increasing order as
-  // follows:
-  //  - the point at which the laser was first triggered (when it first went
-  //  high)
-  //  - the point at which the laser stopped being triggered (when it went low
-  //  after being high)
-  //  - the point at which the motor stopped moving after being commanded to
-  //  stop
-
-  // the first point is the point of reference.
-  // the middle of the first and second points is the target point, where we
-  // assume the true zero is. the third point tells us how far we are from the
-  // second point, i.e., the error caused by the motor not stopping perfectly.
-  //  - this is not needed between the first and second points because the
-  //  motor does not stop moving.
-
-  // the third point also helps us overcome the mechanical slop issue when
-  // changing directions on the turret, since we assume that the turret
-  // rotates outside the laser triggering range when it is told to stop. so,
-  // we start rotating in the other direction, then when the laser triggers
-  // again, we can account for the slop near-perfectly by forcing the current
-  // encoder count to the second point when the laser first triggered, then
-  // continue moving until reaching the halfway point PLUS the difference
-  // between the second and third point, the latter of which is the number of
-  // counts the motor took to stop, so that it should stop exactly on the
-  // halfway mark.
-
-  // now, to actually do this, we start moving the motor (which was stopped),
-  // but in the opposite direction.
-  // now, to actually do this, we start moving the motor (which was stopped),
-  // but in the opposite direction.
-
-  ESP_LOGI(TAG, "motor stopped, now moving in opposite direction");
-
-  setTurretSpeed(-QB_HOME_PCT);
-
-  // moving with a positive power increases the current encoder count, and
-  // vice versa since we are moving with a negative power, the encoder count
-  // will be decreasing
-
-  // wait for the laser to trigger (go high) again, then measure the
-  // difference between the current encoder count and the known falling edge
-  // count. this value represents the mechanical slop, which can be used
-  // later. after that, tare the value of the current encoder count to the
-  // falling edge count.
-
-  while (digitalRead(turretLaserPin) ==
-             LOW &&               // exit when the laser sensor is triggered
-         !testForDisableOrStop()  // exit if emergency stop or disable buttons
-                                  // are triggered
-  )
-  {
-    ESP_LOGI(
-        TAG,
-        "zeroing (stage 3), read = %d; cte_count: %ld; fall_ct: %ld",
-        digitalRead(turretLaserPin),
-        (long)currentTurretEncoderCount,
-        (long)fallingEdgeEncoderCount);
-    delay(5);
-  }
-
-  // at this point, we will record the difference between the current count
-  // (physically, at the second point or falling edge) and the rest count
-  // (third point or stopping point). the current encoder count should be less
-  // than the falling edge count (past it, if it were to be physically
-  // translated) due to the mechanical slop int32_t reEntryEncoderCount =
-  // currentTurretEncoderCount; int32_t reEntryTimestamp = millis();
-
-  // the error only due to the motor not stopping perfectly is then found by
-  // the difference between the first and third points
-  stopError = restEncoderCount - risingEdgeEncoderCount;
-
-  // calculate the error due to slop
-  slopError = fallingEdgeEncoderCount - currentTurretEncoderCount;
-
+  // Apply the calibrated offset from the stage-2 stopping point.
+  setTurretSpeed(0);
+  const int32_t zeroOffsetStartCount = currentTurretEncoderCount;
+  const int32_t zeroOffsetTarget = (int32_t)round(
+      zeroOffsetStartCount +
+      QB_TURRET_ZERO_OFFSET_DEGREES * QB_COUNTS_PER_TURRET_DEGREE);
+  constexpr uint32_t zeroOffsetTimeoutMs = 3000;
+  uint32_t zeroOffsetStartTime = millis();
+  uint32_t lastZeroOffsetLogTime = zeroOffsetStartTime;
   ESP_LOGI(
       TAG,
-      "stop error: %ld; slop error: %ld",
-      (long)stopError,
-      (long)slopError);
-
-  // then, we tare the current count to the third point (falling edge), since
-  // we assume it is there
-  currentTurretEncoderCount = fallingEdgeEncoderCount;
-
-  // find the theoretical midpoint, then add the stop error to get the target
-  // count int32_t targetCount = ((fallingEdgeEncoderCount +
-  // risingEdgeEncoderCount) / 2) - stopError; // for if we change directions
-  // again
-  int32_t targetCount =
-      ((fallingEdgeEncoderCount + risingEdgeEncoderCount) / 2) +
-      (stopError * QB_TURRET_HOME_STOP_FACTOR);
-
-  ESP_LOGI(TAG, "target count: %ld", (long)targetCount);
-
-  // finally, move to the target count, then stop
-  // setTurretSpeed(QB_HOME_PCT);
-
-  while (currentTurretEncoderCount > targetCount && !testForDisableOrStop())
+      "applying zero offset: start=%ld target=%ld power=%.2f",
+      (long)zeroOffsetStartCount,
+      (long)zeroOffsetTarget,
+      (double)-QB_HOME_MAG);
+  setTurretSpeed(-QB_HOME_MAG);
+  while (currentTurretEncoderCount > zeroOffsetTarget &&
+         !testForDisableOrStop())
   {
-    ESP_LOGI(
-        TAG,
-        "zeroing (stage 4), read = %d; cte_count: %ld; target_ct: %ld; "
-        "current_ct > target_ct? = %d",
-        digitalRead(turretLaserPin),
-        (long)currentTurretEncoderCount,
-        (long)targetCount,
-        currentTurretEncoderCount > targetCount);
+    uint32_t now = millis();
+    if (now - lastZeroOffsetLogTime >= 100)
+    {
+      ESP_LOGI(
+          TAG,
+          "zero offset move: ctec=%ld target=%ld",
+          (long)currentTurretEncoderCount,
+          (long)zeroOffsetTarget);
+      lastZeroOffsetLogTime = now;
+    }
+    if (now - zeroOffsetStartTime >= zeroOffsetTimeoutMs)
+    {
+      setTurretSpeed(0);
+      ESP_LOGE(
+          TAG,
+          "zero offset timed out: ctec=%ld target=%ld",
+          (long)currentTurretEncoderCount,
+          (long)zeroOffsetTarget);
+      this->runningMacro = false;
+      return false;
+    }
     delay(5);
   }
-
-  // stop turret and tare everything
   setTurretSpeed(0);
+  if (currentTurretEncoderCount > zeroOffsetTarget)
+  {
+    ESP_LOGW(TAG, "zero offset cancelled before target was reached");
+    this->runningMacro = false;
+    return false;
+  }
+
   currentRelativeHeading = 0;
+  targetRelativeHeading = 0;
+  targetTurretEncoderCount = 0;
   currentTurretEncoderCount = 0;
   ESP_LOGI(TAG, "zeroed");
 
   this->runningMacro = false;
+  return true;
 }
 
 void QuarterbackTurret::reset()
@@ -1626,8 +1556,7 @@ void QuarterbackTurret::reset()
   moveCradle(back, true);  // force
   aimAssembly(straight);
   // loadFromCenter();
-  zeroTurret();  // temp: just zero
-  this->initialized = true;
+  this->initialized = zeroTurret();
   this->runningMacro = false;
 }
 #pragma endregion
