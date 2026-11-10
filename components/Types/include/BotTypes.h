@@ -28,7 +28,7 @@
  *  9: Swerve
  *  10: Strength Lineman
  */
-typedef enum
+typedef enum : uint8_t
 {
   lineman,
   receiver,
@@ -109,30 +109,30 @@ typedef struct BotConfig
 // clang-format off
 constexpr bot_config_t botConfigArray[NUM_BOTS] = {
     // idx  bot_name     bot_type              motor_type    gear_ratio wheel_base r_min   r_max
-    {0, "i++", lineman, {small_ampflow, 0.6f, 12.25F, 9.00F, 36.00f}},                        //* 0:  i++
-    {1, "sqrt(-1)", lineman, {big_ampflow, 0.53333F, 11.25f, 9.00f, 36.00f}},                 //* 1:  sqrt(-1)
-    {2, "pi", receiver, {small_ampflow, 0.46667f, 11.00f, 6.00f, 36.00f}},                    //* 2:  pi
-    {3, "rho", center_conversion, {big_ampflow, 0.6f, 11.25f, 9.00f, 36.00f}},                //* 3:  ρ
-    {4, "2.72", lineman, {big_ampflow, 0.4f, 11.25f, 9.00f, 36.00f}},                         //* 4:  2.72
-    {5, ":)", lineman, {big_ampflow, 1.0f, 9.75f, 9.00f, 36.00f}},                            //* 5:  :)
-    {6, ">=", lineman, {small_ampflow, 1.0f, 10.00f, 6.00f, 27.00f}},                         //* 6:  >=
-    {7, "32.2", receiver, {small_ampflow, 0.5f, 11.50f, 9.00f, 36.00f}},                      //* 7:  32.2
-    {8, "9.8", lineman, {big_ampflow, 0.5f, 11.50f, 9.00f, 36.00f}},                          //* 8:  9.8
-    {9, "c", runningback, {falcon, 0.4f, 8.00f, 6.00f, 36.00f}},                              //* 9:  c
-    {10, "phi", center, {small_ampflow, 0.6f, 11.50f, 9.00f, 36.00f}},                        //* 10: Φ
-    {11, "inf", quarterback_old, {small_ampflow, 0.5625f, 11.50f, 9.00f, 24.00f}},            //* 11: ∞
-    {12, "theta", kicker, {small_ampflow, 0.5f, 10.00f, 9.00f, 36.00f}},                      //* 12: Θ
-    {13, "delta", swerve, {neo_vortex, 0.5f, 11.50f, 9.00f, 36.00f}},                         //* 13: delta (swerve) PLACEHOLDER VALUES
-    {14, "qb_base", quarterback_base, {big_ampflow, 0.5f, 11.50f, 9.00f, 36.00f}},            //* 14: unassigned
-    {15, "qb_turret", quarterback_turret, {falcon, 0.5f, 11.50f, 9.00f, 36.00f}},             //* 15: unassigned
-    {16, "l-man-v1", lineman, {small_12v, 1.0f, 11.00f, 9.00f, 36.00f}},                      //* 16: generic lineman V1
-    {17, "420", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                           //* 17: 420
-    {18, "24", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                            //* 18: 24
-    {19, "25", lineman, {small_12v, 1.0f, 11.00f, 5.50f, 18.00f}},                            //* 19: 25
-    {20, "tau", kicker, {small_ampflow, 0.5f, 9.00f, 9.00f, 36.00f}},                         //* 20: tau
-    {21, "1.21", runningback, {neo_vortex, 0.4f, 8.00f, 6.00f, 36.00f}},                      //* 21: 1.21 (new RB)
-    {22, "derivative", strength_lineman, {big_ampflow_pwm, 0.53333f, 11.25f, 9.00f, 36.00f}}, //* 22: derivative
-    {23, "integral", strength_lineman, {big_ampflow_pwm, 0.53333f, 11.25f, 9.00f, 36.00F}}    //* 23: integral
+    {0, "i++", lineman, {small_ampflow, 0.6F, 12.25F, 9.00F, 36.00F}},                        //* 0:  i++
+    {1, "sqrt(-1)", lineman, {big_ampflow, 0.53333F, 11.25F, 9.00F, 36.00F}},                 //* 1:  sqrt(-1)
+    {2, "pi", receiver, {small_ampflow, 0.46667F, 11.00F, 6.00F, 36.00F}},                    //* 2:  pi
+    {3, "rho", center_conversion, {big_ampflow, 0.6F, 11.25F, 9.00F, 36.00F}},                //* 3:  ρ
+    {4, "2.72", lineman, {big_ampflow, 0.4F, 11.25F, 9.00F, 36.00F}},                         //* 4:  2.72
+    {5, ":)", lineman, {big_ampflow, 1.0F, 9.75F, 9.00F, 36.00F}},                            //* 5:  :)
+    {6, ">=", lineman, {small_ampflow, 1.0F, 10.00F, 6.00F, 27.00F}},                         //* 6:  >=
+    {7, "32.2", receiver, {small_ampflow, 0.5F, 11.50F, 9.00F, 36.00F}},                      //* 7:  32.2
+    {8, "9.8", lineman, {big_ampflow, 0.5F, 11.50F, 9.00F, 36.00F}},                          //* 8:  9.8
+    {9, "c", runningback, {falcon, 0.4F, 8.00F, 6.00F, 36.00F}},                              //* 9:  c
+    {10, "phi", center, {small_ampflow, 0.6F, 11.50F, 9.00F, 36.00F}},                        //* 10: Φ
+    {11, "inf", quarterback_old, {small_ampflow, 0.5625F, 11.50F, 9.00F, 24.00F}},            //* 11: ∞
+    {12, "theta", kicker, {small_ampflow, 0.5F, 10.00F, 9.00F, 36.00F}},                      //* 12: Θ
+    {13, "delta", swerve, {neo_vortex, 0.5F, 11.50F, 9.00F, 36.00F}},                         //* 13: delta (swerve) PLACEHOLDER VALUES
+    {14, "qb_base", quarterback_base, {big_ampflow, 0.5F, 11.50F, 9.00F, 36.00F}},            //* 14: unassigned
+    {15, "qb_turret", quarterback_turret, {falcon, 0.5F, 11.50F, 9.00F, 36.00F}},             //* 15: unassigned
+    {16, "l-man-v1", lineman, {small_12v, 1.0F, 11.00F, 9.00F, 36.00F}},                      //* 16: generic lineman V1
+    {17, "420", lineman, {small_12v, 1.0F, 11.00F, 5.50F, 18.00F}},                           //* 17: 420
+    {18, "24", lineman, {small_12v, 1.0F, 11.00F, 5.50F, 18.00F}},                            //* 18: 24
+    {19, "25", lineman, {small_12v, 1.0F, 11.00F, 5.50F, 18.00F}},                            //* 19: 25
+    {20, "tau", kicker, {small_ampflow, 0.5F, 9.00F, 9.00F, 36.00F}},                         //* 20: tau
+    {21, "1.21", runningback, {neo_vortex, 0.4F, 8.00F, 6.00F, 36.00F}},                      //* 21: 1.21 (new RB)
+    {22, "derivative", strength_lineman, {big_ampflow_pwm, 0.53333F, 11.25F, 9.00F, 36.00F}}, //* 22: derivative
+    {23, "integral", strength_lineman, {big_ampflow_pwm, 0.53333F, 11.25F, 9.00F, 36.00F}}    //* 23: integral
 };
 // clang-format on
 
