@@ -3,10 +3,10 @@
 #ifndef BOT_TYPES_H
 #define BOT_TYPES_H
 
-#include <Arduino.h>
 #include <DriveParameters.h>
 #include <MotorTypes.h>
 #include <Pair.h>
+#include <stdint.h>
 
 #define NUM_POSITIONS 11  // number of members of eBOT_TYPE
 

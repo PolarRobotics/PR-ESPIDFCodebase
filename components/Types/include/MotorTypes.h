@@ -4,19 +4,20 @@
 #define MOTOR_TYPES_H
 
 #include <Pair.h>
+#include <stdint.h>
 
 #define NUM_MOTOR_TYPES 7
 
 // Motor types can be found here:
 // https://docs.google.com/spreadsheets/d/1DswoEAcry9L9t_4ouKL3mXFgDMey4KkjEPFXULQxMEQ/edit#gid=141541655
 
-typedef enum
+typedef enum : uint8_t
 {
   serial,
   pwm
 } MotorInterfaceType;
 
-typedef enum
+typedef enum : uint8_t
 {
   big_ampflow,      // 0: for 24v AmpFlow motor E30-400-24 (serial)
   small_ampflow,    // 1: for 24v AmpFlow motor E30-150-24 (serial)
