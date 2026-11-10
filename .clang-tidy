@@ -12,3 +12,7 @@ Checks: >
   -readability-braces-around-statements,
   google-*,
   -google-readability-braces-around-statements
+
+CheckOptions:
+  - key: readability-function-cognitive-complexity.IgnoreMacros
+    value: 'true'

@@ -5,6 +5,5 @@ idf_component_register(
         ${TYPES_SOURCES}
     INCLUDE_DIRS
         "include"
-        "../../main"
     REQUIRES 
 )

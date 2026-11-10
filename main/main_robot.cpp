@@ -45,6 +45,7 @@ static const char *TAG = "MainRobot";
 
 // Types Includes
 #include <BotTypes.h>
+#include <MotorTypes.h>
 
 // Utilities Includes
 #include <ConfigManager.h>
@@ -257,19 +258,21 @@ extern "C" void main_app(void)
           drive->emergencyStop();
           drive->setSpeedScalar(Drive::BRAKE);
         }
-        else if (ps5.R1())
-        {
-          drive->setSpeedScalar(Drive::BOOST);
-          // ps5.setLed(0, 255, 0);   // set LED red
-        }
+        // Order matters here: should be
+        // Slow -> Superboost -> Boost -> Normal, since the first two are
+        // overrides of the last two
         else if (ps5.L1())
         {
           drive->setSpeedScalar(Drive::SLOW);
         }
-        else if (ps5.R2() && driveParams.motor_type == falcon)
+        else if (ps5.R2())
         {
-          // used to calibrate the max pwm signal for the falcon 500 motors
-          drive->setSpeedValue(FALCON_CALIBRATION_FACTOR);
+          drive->setSpeedValue(SUPERBOOST);
+        }
+        else if (ps5.R1())
+        {
+          drive->setSpeedScalar(Drive::BOOST);
+          // ps5.setLed(0, 255, 0);   // set LED red
         }
         else
         {
