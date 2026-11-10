@@ -174,7 +174,6 @@ void Drive::setupMotors(  // NOLINT(bugprone-easily-swappable-parameters) --
  * float (0 to 255)
  */
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters) -- intentional stick
-// axes
 void Drive::setStickPwr(int8_t leftY, int8_t rightX)
 {
   // left stick all the way forward is 0, backward is 255
@@ -346,7 +345,6 @@ void Drive::generateMotionValues(float tankModePct)
  * was actually sent to the motor
  */
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters) -- intentional turn
-// model args
 void Drive::calcTurning(float stickTrn, float fwdLinPwr)
 {
   MotorControlCommon *leftMotor =
