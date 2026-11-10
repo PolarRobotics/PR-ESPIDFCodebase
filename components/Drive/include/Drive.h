@@ -56,7 +56,7 @@
 #define THRESHOLD 0.00001
 
 // Motor Percent Defines
-#define FALCON_CALIBRATION_FACTOR 1.0F
+#define SUPERBOOST 1.0F
 // the minimum power that can be written to the motor, prevents stalling
 // originally 0.05 for PWM: multiply by 2047 gives 102.35, round up to 103
 #define MOTOR_ZERO_OFFST 103
