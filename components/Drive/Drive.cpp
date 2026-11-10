@@ -44,13 +44,6 @@ static const char *TAG = "Drive";
  * servo
  */
 
-Drive::Drive() { Drive(lineman, {big_ampflow, 1, 9, 6, 36}); }
-
-Drive::Drive(BotType botType, MotorType motorType)
-{
-  Drive(botType, {motorType, 1, 9, 6, 36});
-}
-
 Drive::Drive(
     BotType botType,
     drive_param_t driveParams,
