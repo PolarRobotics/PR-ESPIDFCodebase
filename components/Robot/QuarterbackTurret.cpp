@@ -1031,11 +1031,21 @@ void QuarterbackTurret::adjustFlywheelSpeedStage(SpeedStatus speed)
 void QuarterbackTurret::switchMode()
 {
   if (mode == manual)
+  {
     switchMode(combine);
+    ps5.setLed(0, 255, 0);  // green
+  }
   else if (mode == combine)
+  {
     switchMode(tracking);
+    // ps5.setLed(255, 0, 0);  // red
+  }
   else
+  {
     switchMode(manual);
+    // ps5.setLed(0, 0, 255);  // blue
+  }
+  // ps5.sendToController();
 }
 
 void QuarterbackTurret::switchMode(TurretMode mode)

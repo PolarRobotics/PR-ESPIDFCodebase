@@ -78,7 +78,7 @@ enum FlywheelSpeed
 const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {
     -0.1, 0, 0.1, 0.215, 0.31, 0.3875, 1.0};  // without top prongs
 const float combineSpeeds[QB_TURRET_NUM_COMBINE_SPEEDS] = {
-    -0.1, 0, 0.215, 0.35, 0.45};  // combine flywheel presets
+    -0.1, 0, 0.215, 0.31, 0.39};  // combine flywheel presets
 const float QB_DECLINATION = -6.5;
 
 //================================//
