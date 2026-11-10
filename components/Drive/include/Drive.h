@@ -30,6 +30,9 @@
 // Strength linemen deceleration rate - now uses same rate as acceleration
 // #define STRENGTH_LINEMAN_DECELERATION_RATE 0.0001F // [%/ms] - no longer used
 
+// packet-serial acceleration rate (%/ms)
+#define SERIAL_ACCELERATION_RATE 0.002F
+
 // rate of deceleration/braking
 #define BRAKE_PERCENTAGE 0.9
 // how often the ramp() function changes the motor power
@@ -48,7 +51,8 @@
 // these should = normal speed, QB needs 0.5 for both
 
 // Controller Defines
-#define STICK_DEADZONE 0.075  // 0.0390625F // 8.0 / 127.0
+#define STICK_DEADZONE 0.075F  // 0.0390625F // 8.0 / 127.0
+#define STICK_AXIS_HALF_RANGE 127.5F
 #define THRESHOLD 0.00001
 
 // Motor Percent Defines
@@ -63,6 +67,13 @@
 // define SMALL_12V_SLOW_PCT           0.05F
 
 #define BRAKE_BUTTON_PCT 0
+
+// Turn model / telemetry constants
+constexpr int MIN_DRIVE_RPM = 200;
+constexpr float TURN_SENSITIVITY_SCALAR = 0.49F;
+constexpr float TURN_SENSITIVITY_HALF = 0.5F;
+constexpr float TURN_SENSITIVITY_CUBIC_EXPONENT = 3.0F;
+constexpr int WIFI_MOTOR_PERCENT_SCALE = 100;
 
 // !TODO: not sure if this is the correct location for this array
 // This array must follow the same order as MotorType to be used effectively
@@ -132,11 +143,11 @@ class Drive
       uint8_t right_enc_a_pin,
       uint8_t right_enc_b_pin);
   void setStickPwr(int8_t leftY, int8_t rightX);
-  float getForwardPower();
-  float getTurnPower();
+  float getForwardPower() const;
+  float getTurnPower() const;
   void setSpeedScalar(Speed bns);
   void setSpeedValue(float speed_pct);
-  float getSpeedScalar();
+  float getSpeedScalar() const;
   void emergencyStop();
   void generateMotionValues(float tankModePct = TANK_MODE_PCT);
   virtual void update();
@@ -144,17 +155,4 @@ class Drive
   virtual void printDebugInfo();
   virtual void printCsvInfo();
   int getMotorWifiValue(int motorRequested);
-
-  //* The following variables are initialized in the constructor
-  // maximum speed for these is 1.0
-  // percentage of power used when boosting for big motors
-  float BIG_BOOST_PCT;
-
-  // default: 0.6, this is the typical percentage of power out of the motors'
-  // range that is used (to ensure they don't do seven wheelies)
-  float BIG_NORMAL_PCT;
-
-  // should be a value less than BIG_NORMAL_PCT, to slow down for precision
-  // maneuvering, QB needs this to be 0.3
-  float BIG_SLOW_PCT;
 };

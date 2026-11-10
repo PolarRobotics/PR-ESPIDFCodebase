@@ -60,31 +60,6 @@ Drive::Drive(
   this->R_Min = driveParams.r_min;
   this->R_Max = driveParams.r_max;
 
-  if (botType == quarterback_old)
-  {
-    this->BIG_BOOST_PCT = 0.8;
-    this->BIG_NORMAL_PCT = 0.4;
-    this->BIG_SLOW_PCT = 0.3;
-  }
-  else if (botType == center)
-  {
-    this->BIG_BOOST_PCT = 0.4;
-    this->BIG_NORMAL_PCT = 0.25;
-    this->BIG_SLOW_PCT = 0.15;
-  }
-  else if (botType == strength_lineman)
-  {
-    this->BIG_BOOST_PCT = 1.0;
-    this->BIG_NORMAL_PCT = 0.7;
-    this->BIG_SLOW_PCT = 0.3;
-  }
-  else
-  {
-    this->BIG_BOOST_PCT = 0.7;
-    this->BIG_NORMAL_PCT = 0.6;
-    this->BIG_SLOW_PCT = 0.3;
-  }
-
   // initialize arrays
   for (int i = 0; i < NUM_MOTORS; i++)
   {
@@ -98,34 +73,38 @@ Drive::Drive(
   omega_L = 0;
   omega_R = 0;
   R = 0.0F;
-  min_RPM = 200;
+  min_RPM = MIN_DRIVE_RPM;
 
   // initialize turn sensitivity variables
   // 0 for linear, 1 for Rhys's function, 2 for cubic
   enableTurnSensitivity = turnFunction;
 
   // Range: (0, 0.5) really [0.01, 0.49]
-  turnSensitivityScalar = 0.49;
-  domainAdjustment = 1 / log((1 - (turnSensitivityScalar + 0.5)) /
-                             (turnSensitivityScalar + 0.5));
+  turnSensitivityScalar = TURN_SENSITIVITY_SCALAR;
+  domainAdjustment =
+      1.0F / logf(
+                 (1.0F - (turnSensitivityScalar + TURN_SENSITIVITY_HALF)) /
+                 (turnSensitivityScalar + TURN_SENSITIVITY_HALF));
 }
 
-void Drive::setupMotors(uint8_t lidx, uint8_t ridx)
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters) -- intentional L/R pin
+// pair
+void Drive::setupMotors(uint8_t lpin, uint8_t rpin)
 {
-  // this->motoridxs[0] = lidx, this->motoridxs[1] = ridx;
+  // this->motoridxs[0] = lpin, this->motoridxs[1] = rpin;
   //  this->M1 = new MotorControl(motorType, false, this->gearRatio);
   //  this->M2 = new MotorControl(motorType, false, this->gearRatio);
 
-  // M1->setup(lidx), M2->setup(ridx);
+  // M1->setup(lpin), M2->setup(rpin);
   if (motorInterfaceType == pwm)
   {
-    pwmM1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio);
-    pwmM2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio);
+    pwmM1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio);
+    pwmM2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio);
   }
   else
   {
-    serialM1.setup(lidx, this->motorType, this->hasEncoders, this->gearRatio);
-    serialM2.setup(ridx, this->motorType, this->hasEncoders, this->gearRatio);
+    serialM1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio);
+    serialM2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio);
   }
 }
 
@@ -133,29 +112,30 @@ void Drive::setupMotors(uint8_t lidx, uint8_t ridx)
  * setupMotors
  * @brief to be called when setting up a motor with an encoder
  */
-void Drive::setupMotors(
-    uint8_t lidx,
-    uint8_t ridx,
+void Drive::setupMotors(  // NOLINT(bugprone-easily-swappable-parameters) --
+                          // intentional pin/encoder args
+    uint8_t lpin,
+    uint8_t rpin,  // NOLINT(bugprone-easily-swappable-parameters)
     uint8_t left_enc_a_pin,
-    uint8_t left_enc_b_pin,
+    uint8_t left_enc_b_pin,  // NOLINT(bugprone-easily-swappable-parameters)
     uint8_t right_enc_a_pin,
     uint8_t right_enc_b_pin)
 {
-  // this->motoridxs[0] = lidx, this->motoridxs[1] = ridx;
+  // this->motoridxs[0] = lpin, this->motoridxs[1] = rpin;
   //  this->M1 = new MotorControl(motorType, true, this->gearRatio);
   //  this->M2 = new MotorControl(motorType, true, this->gearRatio);
 
   if (motorInterfaceType == pwm)
   {
     pwmM1.setup(
-        lidx,
+        lpin,
         this->motorType,
         this->hasEncoders,
         this->gearRatio,
         left_enc_a_pin,
         left_enc_b_pin);
     pwmM2.setup(
-        ridx,
+        rpin,
         this->motorType,
         this->hasEncoders,
         this->gearRatio,
@@ -165,14 +145,14 @@ void Drive::setupMotors(
   else
   {
     serialM1.setup(
-        lidx,
+        lpin,
         this->motorType,
         this->hasEncoders,
         this->gearRatio,
         left_enc_a_pin,
         left_enc_b_pin);
     serialM2.setup(
-        ridx,
+        rpin,
         this->motorType,
         this->hasEncoders,
         this->gearRatio,
@@ -193,35 +173,39 @@ void Drive::setupMotors(
  * @param rightX the left right value from the right stick an unsigned 8-bit
  * float (0 to 255)
  */
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters) -- intentional stick
+// axes
 void Drive::setStickPwr(int8_t leftY, int8_t rightX)
 {
   // left stick all the way forward is 0, backward is 255
   // +: forward, -: backward. needs to be negated so that forward is forward and
   // v.v.; subtracting 1 bumps into correct range
-  stickForwardRev = (leftY / 127.5F);
-  stickTurn = (rightX / 127.5F);
+  stickForwardRev = static_cast<float>(leftY) / STICK_AXIS_HALF_RANGE;
+  stickTurn = static_cast<float>(rightX) / STICK_AXIS_HALF_RANGE;
   // stick deadzones
   // set to zero (no input) if within the set deadzone
   // subtacting STICK_DEADZONE and deviding by 1-STICK_DEADZONE normalize the
   // inputs to use the full 0-1 range
-  if (fabs(stickForwardRev) < STICK_DEADZONE)
-    stickForwardRev = 0;
-  else if (stickForwardRev > 0)
-    stickForwardRev = (stickForwardRev - STICK_DEADZONE) / (1 - STICK_DEADZONE);
-  else if (stickForwardRev < 0)
-    stickForwardRev = (stickForwardRev + STICK_DEADZONE) / (1 - STICK_DEADZONE);
+  if (fabsf(stickForwardRev) < STICK_DEADZONE)
+    stickForwardRev = 0.0F;
+  else if (stickForwardRev > 0.0F)
+    stickForwardRev =
+        (stickForwardRev - STICK_DEADZONE) / (1.0F - STICK_DEADZONE);
+  else if (stickForwardRev < 0.0F)
+    stickForwardRev =
+        (stickForwardRev + STICK_DEADZONE) / (1.0F - STICK_DEADZONE);
 
-  if (fabs(stickTurn) < STICK_DEADZONE)
-    stickTurn = 0;
-  else if (stickTurn > 0)
-    stickTurn = (stickTurn - STICK_DEADZONE) / (1 - STICK_DEADZONE);
-  else if (stickTurn < 0)
-    stickTurn = (stickTurn + STICK_DEADZONE) / (1 - STICK_DEADZONE);
+  if (fabsf(stickTurn) < STICK_DEADZONE)
+    stickTurn = 0.0F;
+  else if (stickTurn > 0.0F)
+    stickTurn = (stickTurn - STICK_DEADZONE) / (1.0F - STICK_DEADZONE);
+  else if (stickTurn < 0.0F)
+    stickTurn = (stickTurn + STICK_DEADZONE) / (1.0F - STICK_DEADZONE);
 }
 
-float Drive::getForwardPower() { return stickForwardRev; }
+float Drive::getForwardPower() const { return stickForwardRev; }
 
-float Drive::getTurnPower() { return stickTurn; }
+float Drive::getTurnPower() const { return stickTurn; }
 
 /**
  * @brief setSpeedScalar sets the internal variable to the requested percent
@@ -253,7 +237,7 @@ void Drive::setSpeedValue(float speed_pct)
   this->speedScalar = constrain(speed_pct, 0.0F, 1.0F);
 }
 
-float Drive::getSpeedScalar() { return this->speedScalar; }
+float Drive::getSpeedScalar() const { return this->speedScalar; }
 
 /**
  * generateTurnScalar takes the input stick power and scales the max turning
@@ -263,9 +247,9 @@ float Drive::getSpeedScalar() { return this->speedScalar; }
  */
 void Drive::generateMotionValues(float tankModePct)
 {
-  if (fabs(stickForwardRev) < STICK_DEADZONE)
+  if (fabsf(stickForwardRev) < STICK_DEADZONE)
   {  // fwd stick is zero
-    if (fabs(stickTurn) < STICK_DEADZONE)
+    if (fabsf(stickTurn) < STICK_DEADZONE)
     {
       // turn stick is zero
       // not moving, set motors to zero
@@ -286,7 +270,7 @@ void Drive::generateMotionValues(float tankModePct)
   }
   else
   {  // fwd stick is not zero
-    if (fabs(stickTurn) < STICK_DEADZONE)
+    if (fabsf(stickTurn) < STICK_DEADZONE)
     {  // turn stick is zero
       // just move forward directly
       requestedMotorPower[0] = speedScalar * stickForwardRev;
@@ -361,6 +345,8 @@ void Drive::generateMotionValues(float tankModePct)
  * @param fwdLinPwr the non-turning motor value from the previous loop, which
  * was actually sent to the motor
  */
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters) -- intentional turn
+// model args
 void Drive::calcTurning(float stickTrn, float fwdLinPwr)
 {
   MotorControlCommon *leftMotor =
@@ -377,22 +363,26 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr)
   if (enableTurnSensitivity == 0)  // linear
     scaledSensitiveTurn = stickTrn;
   else if (enableTurnSensitivity == 1)  // rhys's function
-    scaledSensitiveTurn = log((1 - (turnSensitivityScalar * stickTrn + 0.5)) /
-                              (turnSensitivityScalar * stickTrn + 0.5)) *
-                          domainAdjustment;
+    scaledSensitiveTurn =
+        logf(
+            (1.0F -
+             (turnSensitivityScalar * stickTrn + TURN_SENSITIVITY_HALF)) /
+            (turnSensitivityScalar * stickTrn + TURN_SENSITIVITY_HALF)) *
+        domainAdjustment;
   else  // cubic
-    scaledSensitiveTurn = pow(stickTrn, 3);
+    scaledSensitiveTurn = powf(stickTrn, TURN_SENSITIVITY_CUBIC_EXPONENT);
 
   // Calculate the R value from the stick turn input
-  R = (1 - scaledSensitiveTurn) * (R_Max - R_Min) + R_Min;
+  R = (1.0F - scaledSensitiveTurn) * (R_Max - R_Min) + R_Min;
 
   // calculate the requested angular velocity for the robot
   omega = abs(leftMotor->Percent2RPM(fwdLinPwr));
 
-  // calculate the rpm for the left wheel
-  omega_L = (omega / R) * (R + (wheelBase / 2));
-  // calculate the rpm for the right wheel
-  omega_R = (omega / R) * (R - (wheelBase / 2));
+  // calculate the rpm for the left/right wheels in float, then store as int
+  const float halfWheelBase = wheelBase / 2.0F;
+  const float omegaF = static_cast<float>(omega);
+  omega_L = static_cast<int>((omegaF / R) * (R + halfWheelBase));
+  omega_R = static_cast<int>((omegaF / R) * (R - halfWheelBase));
 
   // ensure the left wheel RPM doesnt go below the min or above the max RPM
   omega_L = constrain(omega_L, min_RPM, leftMotor->getMaxRPM());
@@ -491,15 +481,20 @@ void Drive::update()
 {
   const bool isRunningback = (botType == runningback);
   const bool isStrengthLineman = (botType == strength_lineman);
-  const float tankPct = isStrengthLineman ? STRENGTH_TANK_MODE_PCT
-                        : (isRunningback || motorInterfaceType == serial)
-                            ? RB_TANK_MODE_PCT
-                            : TANK_MODE_PCT;
-  const float accelRate =
-      isRunningback ? RB_ACCELERATION_RATE
-                    : (isStrengthLineman ? STRENGTH_LINEMAN_ACCELERATION_RATE
-                                         : ACCELERATION_RATE);
-  const float serialAccelRate = 0.002f;
+
+  float tankPct = TANK_MODE_PCT;
+  if (isStrengthLineman)
+    tankPct = STRENGTH_TANK_MODE_PCT;
+  else if (isRunningback || motorInterfaceType == serial)
+    tankPct = RB_TANK_MODE_PCT;
+
+  float accelRate = ACCELERATION_RATE;
+  if (isRunningback)
+    accelRate = RB_ACCELERATION_RATE;
+  else if (isStrengthLineman)
+    accelRate = STRENGTH_LINEMAN_ACCELERATION_RATE;
+
+  const float serialAccelRate = SERIAL_ACCELERATION_RATE;
   const float decelRate =
       isStrengthLineman ? STRENGTH_LINEMAN_DECELERATION_RATE : accelRate;
 
@@ -523,11 +518,12 @@ void Drive::update()
   }
 
   // Deadband (percent-space)
-  const float deadbandPct = float(MOTOR_ZERO_OFFST) / 2047.0F;
-  requestedMotorPower[0] = (fabs(requestedMotorPower[0]) < deadbandPct)
+  const float deadbandPct = static_cast<float>(MOTOR_ZERO_OFFST) /
+                            static_cast<float>(SABERTOOTH_MAX_POWER);
+  requestedMotorPower[0] = (fabsf(requestedMotorPower[0]) < deadbandPct)
                                ? 0.0F
                                : requestedMotorPower[0];
-  requestedMotorPower[1] = (fabs(requestedMotorPower[1]) < deadbandPct)
+  requestedMotorPower[1] = (fabsf(requestedMotorPower[1]) < deadbandPct)
                                ? 0.0F
                                : requestedMotorPower[1];
 
@@ -545,13 +541,17 @@ void Drive::update()
     pwmM1.write(requestedMotorPower[0]);
     pwmM2.write(requestedMotorPower[1]);
 
-    requestedMotorPowerSerial[0] = int(requestedMotorPower[0] * 2047.0F);
-    requestedMotorPowerSerial[1] = int(requestedMotorPower[1] * 2047.0F);
+    requestedMotorPowerSerial[0] = static_cast<int>(
+        requestedMotorPower[0] * static_cast<float>(SABERTOOTH_MAX_POWER));
+    requestedMotorPowerSerial[1] = static_cast<int>(
+        requestedMotorPower[1] * static_cast<float>(SABERTOOTH_MAX_POWER));
   }
   else
   {
-    requestedMotorPowerSerial[0] = int(requestedMotorPower[0] * 2047.0F);
-    requestedMotorPowerSerial[1] = int(requestedMotorPower[1] * 2047.0F);
+    requestedMotorPowerSerial[0] = static_cast<int>(
+        requestedMotorPower[0] * static_cast<float>(SABERTOOTH_MAX_POWER));
+    requestedMotorPowerSerial[1] = static_cast<int>(
+        requestedMotorPower[1] * static_cast<float>(SABERTOOTH_MAX_POWER));
 
     serialM1.writeRaw(requestedMotorPowerSerial[0]);
     serialM2.writeRaw(requestedMotorPowerSerial[1]);
@@ -566,8 +566,9 @@ int Drive::getMotorWifiValue(int motorRequested)
   int valueToReturn = 0;
   if (motorRequested >= 0 && motorRequested < NUM_MOTORS)
   {
-    float value = trackingMotorPower[motorRequested] * 100;
-    valueToReturn = value;
+    valueToReturn = static_cast<int>(
+        trackingMotorPower[motorRequested] *
+        static_cast<float>(WIFI_MOTOR_PERCENT_SCALE));
   }
   return valueToReturn;
 }
