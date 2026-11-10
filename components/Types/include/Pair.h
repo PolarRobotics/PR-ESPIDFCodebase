@@ -2,7 +2,8 @@
 #define PAIR_H
 
 /**
- * @brief Pair struct used to create simple mappings, for instance of enum values to strings.
+ * @brief Pair struct used to create simple mappings, for instance of enum
+ * values to strings.
  * @author Max Phillips
  */
 
@@ -39,4 +40,4 @@ const char* getColorName(COLOR key) {
 
 */
 
-#endif // PAIR_H
+#endif  // PAIR_H
