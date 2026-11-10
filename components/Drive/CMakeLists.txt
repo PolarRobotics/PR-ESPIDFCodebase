@@ -9,6 +9,4 @@ idf_component_register(
     REQUIRES 
         Motor
         Types
-        espressif__arduino-esp32
-        usbsabertooth
 )

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <Arduino.h>
 #include <BotTypes.h>
 #include <DriveParameters.h>
 #include <MotorTypes.h>
 #include <PWMMotor.h>
 #include <SerialMotor.h>
+#include <stdint.h>
 
 #ifndef NUM_MOTORS
 #define NUM_MOTORS 2
