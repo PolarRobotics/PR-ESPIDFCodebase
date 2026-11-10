@@ -1033,7 +1033,7 @@ void QuarterbackTurret::switchMode()
   if (mode == manual)
   {
     switchMode(combine);
-    ps5.setLed(0, 255, 0);  // green
+    // ps5.setLed(0, 255, 0);  // green
   }
   else if (mode == combine)
   {
