@@ -94,7 +94,7 @@ class Drive
   int omega;
   int omega_L, omega_R;
   float R, R_Max, R_Min;
-  int max_RPM, min_RPM;
+  int max_RPM;
   int enableTurnSensitivity;
   // Turn sensitivity variables
   float scaledSensitiveTurn = 0.0F;

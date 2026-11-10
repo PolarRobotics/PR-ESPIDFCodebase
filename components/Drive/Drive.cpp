@@ -73,7 +73,6 @@ Drive::Drive(
   omega_L = 0;
   omega_R = 0;
   R = 0.0F;
-  min_RPM = MIN_DRIVE_RPM;
 
   // initialize turn sensitivity variables
   // 0 for linear, 1 for Rhys's function, 2 for cubic
@@ -383,9 +382,9 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr)
   omega_R = static_cast<int>((omegaF / R) * (R - halfWheelBase));
 
   // ensure the left wheel RPM doesnt go below the min or above the max RPM
-  omega_L = constrain(omega_L, min_RPM, leftMotor->getMaxRPM());
+  omega_L = constrain(omega_L, MIN_DRIVE_RPM, leftMotor->getMaxRPM());
   // ensure the left wheel RPM doesnt go below the min or above the max RPM
-  omega_R = constrain(omega_R, min_RPM, leftMotor->getMaxRPM());
+  omega_R = constrain(omega_R, MIN_DRIVE_RPM, leftMotor->getMaxRPM());
 
   turnMotorValues[0] = leftMotor->RPM2Percent(omega_L);
   turnMotorValues[1] = rightMotor->RPM2Percent(omega_R);
@@ -418,7 +417,7 @@ void Drive::printSetup()
   ESP_LOGI(TAG, "GearRatio: %f", (double)this->gearRatio);
   ESP_LOGI(TAG, "R_Min: %f", (double)this->R_Min);
   ESP_LOGI(TAG, "R_Max: %f", (double)this->R_Max);
-  ESP_LOGI(TAG, "Min RPM: %d", this->min_RPM);
+  ESP_LOGI(TAG, "Min RPM: %d", MIN_DRIVE_RPM);
   ESP_LOGI(TAG, "MAX RPM: %d", maxRpm);
   ESP_LOGI(TAG, "TurnSensitivityMode: %d", enableTurnSensitivity);
   ESP_LOGI(TAG, "Encoders: ");
