@@ -71,9 +71,6 @@ enum FlywheelSpeed
 #define QB_TURRET_NUM_SPEEDS 7
 #define QB_TURRET_NUM_COMBINE_SPEEDS 5
 
-// const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {-0.1, 0, 0.1, 0.225,
-// 0.35, 0.45, 1.0}; // with top prongs
-
 // Preset flywheel speed values.
 const float flywheelSpeeds[QB_TURRET_NUM_SPEEDS] = {
     -0.1, 0, 0.1, 0.215, 0.31, 0.3875, 1.0};  // without top prongs
@@ -111,27 +108,13 @@ const float QB_DECLINATION = -6.5;
 //========================================//
 // QB_COUNTS_PER_ENCODER_REV      Number of ticks per encoder revolution
 // QB_COUNTS_PER_TURRET_REV       Calibrated encoder count for one turret
-// revolution. QB_COUNTS_PER_TURRET_DEGREE    Derived from turret counts per
-// revolution. QB_TURRET_SLOP_COUNTS          Backlash between input and output
-// on the turret is high -> leads to problems when switching directions
-//                                    540 ticks on encoder before turret
-//                                    actually starts to move (Empirically
-//                                    measured)
+// revolution.
+// QB_COUNTS_PER_TURRET_DEGREE    Derived from turret counts per
+// revolution.
 #define QB_COUNTS_PER_ENCODER_REV 1250
 #define QB_COUNTS_PER_TURRET_REV 13417
 #define QB_COUNTS_PER_TURRET_DEGREE (QB_COUNTS_PER_TURRET_REV / 360.0)
 #define QB_TURRET_ZERO_OFFSET_DEGREES -8.2
-#define QB_TURRET_SLOP_COUNTS 540  // deprecated
-// #define QB_FALCON_TO_TURRET_RATIO 27 / 1
-// #define QB_ENCODER_TO_FALCON_RATIO 5 / 1
-// #define QB_ENCODER_TO_TURRET_RATIO  /* = */ QB_FALCON_TO_TURRET_RATIO /
-// QB_ENCODER_TO_FALCON_RATIO // (27 / 5) = 5.4 #define QB_COUNTS_PER_TURRET_REV
-// /* = */ QB_ENCODER_TO_TURRET_RATIO * QB_COUNTS_PER_ENCODER_REV // 5400
-// #define QB_COUNTS_PER_TURRET_DEGREE /* = */ QB_COUNTS_PER_TURRET_REV / 360
-// #define QB_TURRET_SLOP_GEAR_TEETH   /* = */ 10 // slop is about 10 gear teeth
-// #define QB_TURRET_SLOP_PCT          /* = */
-// QB_DIRECTION_CHANGE_SLOP_GEAR_TEETH / 100 #define QB_TURRET_SLOP_COUNTS /* =
-// */ QB_DIRECTION_CHANGE_SLOP_PCT * QB_COUNTS_PER_TURRET_REV
 
 //===============================//
 //    Turret Homing Constants    //
@@ -178,7 +161,6 @@ const unsigned long long RECEIVER_0_ID = 0xDECA4B5BCBB00FA3;
 // #define RX2 16 // reciever pin
 // #define TX2 17 // transmitter pin
 
-// ????????
 #ifdef RX2
 #undef RX2
 #endif
