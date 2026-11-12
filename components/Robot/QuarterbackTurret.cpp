@@ -162,6 +162,12 @@ QuarterbackTurret::QuarterbackTurret(
 #pragma endregion
 
 #pragma region action()
+
+/**
+ * @brief Main section of code that updates locations and flywheel speeds.
+ * @author Braylon Rieman
+ * @date 2026-11-12
+ */
 void QuarterbackTurret::action()
 {
   //! Control Schema
@@ -173,6 +179,7 @@ void QuarterbackTurret::action()
   static uint32_t lastStickActivity =
       0;  // ← NEW: tracks right-stick activity for 1-second timeout
 
+  // Check for Macros and run them
   if (!testForDisableOrStop() && !runningMacro)
   {
     //* Circle: Startup and Home (Reset or Zero Turret)
@@ -340,7 +347,6 @@ void QuarterbackTurret::action()
           // right)` Flywheel control is available as normal (set powers with
           // override via stick)
 
-          /* OLD COMBINE MODE */
           if (firstCombine)
           {
             firstCombine = false;
@@ -795,6 +801,12 @@ void QuarterbackTurret::adjustFlywheelSpeedStage(SpeedStatus speed)
 #pragma endregion
 
 #pragma region Auto Mode
+
+/**
+ * @brief Cycles mode based on current state.  Manual -> Combine -> Tracking
+ * @author Braylon Rieman
+ * @date 2026-11-12
+ */
 void QuarterbackTurret::switchMode()
 {
   if (mode == manual)
@@ -815,6 +827,11 @@ void QuarterbackTurret::switchMode()
   // ps5.sendToController();
 }
 
+/**
+ * @brief Switches the mode of the QB
+ * @author Braylon Rieman
+ * @date 2026-11-12
+ */
 void QuarterbackTurret::switchMode(TurretMode mode)
 {
   if (this->mode != tracking && mode == tracking) posBufferCount = 0;
@@ -827,6 +844,12 @@ void QuarterbackTurret::switchMode(TurretMode mode)
   this->mode = mode;
 }
 
+/**
+ * @brief Switches the target receiver for the QB to track. This function is
+ * only valid when the QB is in tracking mode.
+ * @author Grok
+ * @date 2026
+ */
 void QuarterbackTurret::switchTarget(TargetReceiver target)
 {
   switchMode(tracking);
@@ -834,6 +857,12 @@ void QuarterbackTurret::switchTarget(TargetReceiver target)
   // todo: not sure if this needs more functionality?
 }
 
+/**
+ * @brief Reads the targeting information from the serial port and updates the
+ * positions of the QB and receivers accordingly.
+ * @author Grok
+ * @date 2026
+ */
 void QuarterbackTurret::readTargetingInfo()
 {
   static boolean recvInProgress = false;
@@ -926,7 +955,8 @@ void QuarterbackTurret::readTargetingInfo()
   }
 }
 
-/* @brief Calculates the target angle based on the location of the target
+/**
+ * @brief Calculates the target angle based on the location of the target
  * receiver relative to the center of the QB
  * @author Kaiden Colish
  * @date 2025-07-21
@@ -977,7 +1007,7 @@ void QuarterbackTurret::moveToTarget(int targetHeading)
   setTurretSpeed(0, true);
 }
 
-/*
+/**
  * @brief Sets the flywheel speed based on the distance (in feet) to the
  * target. Will calculate the distance if it is not provided.
  * @param distance The distance to the target in feet
@@ -1496,10 +1526,13 @@ float QuarterbackTurret::turretPIDController(
 #pragma endregion
 
 #pragma region Stabilization
-/*@brief Reads a UART communication from the other ESP mounted to the
-        turret.* This ESP currently provides the speed of both motors on
-   the drivetrain so* we know if the robot is moving* @author George Rak*
-   @date 5 - 14 - 2024 */
+/**
+ * @brief Reads a UART communication from the other ESP mounted to the turret.
+ * This ESP currently provides the speed of both motors on the drivetrain so we
+ * know if the robot is moving
+ * @author George Rak
+ * @date 5 - 14 - 2024
+ */
 void QuarterbackTurret::updateReadMotorValues()
 {
   recievedMessage = "";
