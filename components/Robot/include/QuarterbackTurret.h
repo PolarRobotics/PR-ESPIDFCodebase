@@ -344,17 +344,14 @@ class QuarterbackTurret : public Robot
   // moving asynchronously or in the normal program
   int32_t targetTurretEncoderCount;
   int32_t errorEncoderCount;
-  int32_t slopError;  // TODO: remove with new encoder
-  int32_t stopError;  // TODO: remove with new encoder (?)
   bool turretMoving;
 
   //===============================//
   //    Robot Relative Headings    //
   //===============================//
-  int16_t currentRelativeHeading;      // default is undefined
-  int16_t targetRelativeHeading;       // default = 0 //* as of 2024-11-15, in
-                                       // degrees only
-  int32_t currentRelativeTurretCount;  // default is undefined
+  int16_t currentRelativeHeading;  // default is undefined
+  int16_t targetRelativeHeading;   // default = 0 //* as of 2024-11-15, in
+                                   // degrees only
 
   //================================//
   //    Control Input Debouncers    //
@@ -373,7 +370,6 @@ class QuarterbackTurret : public Robot
   Debouncer* dbCircle;
   Debouncer* dbTriangle;
   Debouncer* dbCross;
-  Debouncer* dbTurretInterpolator;  // TODO: seems to be unused, remove?
 
 #define PID_ERROR_AVG_ARRAY_LENGTH 5
   int prevErrorVals[PID_ERROR_AVG_ARRAY_LENGTH] = {0, 0, 0, 0, 0};
@@ -415,7 +411,6 @@ class QuarterbackTurret : public Robot
   void updateTurretMotionStatus();
   int16_t getCurrentHeading();
   int16_t findNearestHeading(int16_t targetHeading, int16_t currentHeading);
-  int16_t findNearestHeading(int16_t targetHeading);
   int NormalizeAngle(int angle);
   int CalculateRotation(float currentAngle, float targetAngle);
   int angleToTarget(Receiver receiver);
@@ -468,11 +463,7 @@ class QuarterbackTurret : public Robot
   bool testForDisableOrStop();
 
   // [Debug]
-  // printDebug               Consolidating printouts for the different
-  // functions into one locations for debugging purposes testRoutine Used for
-  // debugging
   void printDebug();
-  void testRoutine();
 
   //====================================//
   //   Quarterback Subsystem Controls   //
@@ -548,11 +539,6 @@ class QuarterbackTurret : public Robot
   // must be static. simple function called when encoder interrupts are
   // triggered. updates [currentTurretEncoderCount].
   static void turretEncoderISR();
-
-  // If the direction changes then some things need to happen differently
-  // because of the incredible amount of backlash
-  // TODO: remove? may not be needed with new encoder system
-  void turretDirectionChanged();
 
   //===================================//
   //     Public UART Communication     //

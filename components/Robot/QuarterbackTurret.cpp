@@ -73,14 +73,9 @@ QuarterbackTurret::QuarterbackTurret(
   // unknown and assigned upon reset/homing
 
   this->enabled = false;  // initially disable robot for safety
-  this->enabled = false;  // initially disable robot for safety
   this->initialized = false;
   this->runningMacro = false;
   this->currentAssemblyAngle = unknownAngle;
-  this->targetAssemblyAngle = straight;  // while the initial state is unknown,
-                                         // we want it to be straight
-  this->assemblyMoving =
-      false;  // it is safe to assume the assembly is not moving
   this->targetAssemblyAngle = straight;  // while the initial state is unknown,
                                          // we want it to be straight
   this->assemblyMoving =
@@ -111,15 +106,10 @@ QuarterbackTurret::QuarterbackTurret(
 
   this->flywheelManualOverride =
       false;  // until/unless the left stick is active, this is false
-  this->flywheelManualOverride =
-      false;  // until/unless the left stick is active, this is false
 
-  this->currentTurretSpeed = 0;  // it is safe to assume the turret is stopped
   this->currentTurretSpeed = 0;  // it is safe to assume the turret is stopped
   this->targetTurretSpeed = 0;
 
-  this->targetRelativeHeading = 0;  // while the initial heading is unknown, we
-                                    // want the heading to be zero
   this->targetRelativeHeading = 0;  // while the initial heading is unknown, we
                                     // want the heading to be zero
   this->targetTurretEncoderCount = 0;
