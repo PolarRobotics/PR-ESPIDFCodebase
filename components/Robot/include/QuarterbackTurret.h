@@ -19,46 +19,48 @@
 #include <Robot.h>
 #include <ps5Controller.h>  // ESP PS5 library, access using global instance `ps5`
 
-enum TurretMode
+#include <cstdint>
+
+enum TurretMode : std::uint8_t
 {
   manual,
   combine,
   tracking
 };
 
-enum TurretUnits
+enum TurretUnits : std::uint8_t
 {
   degrees,
   counts
 };
 
-enum AssemblyAngle
+enum AssemblyAngle : std::uint8_t
 {
   straight,
   angled,
   unknownAngle
 };
 
-enum CradleState
+enum CradleState : std::uint8_t
 {
   forward,
   back
 };
 
-enum TargetReceiver
+enum TargetReceiver : std::uint8_t
 {
   receiver_1,
   receiver_2
 };
 
-enum CombinePosition
+enum CombinePosition : std::uint8_t
 {
   combineLeft,
   combineStraight,
   combineRight
 };
 
-enum FlywheelSpeed
+enum FlywheelSpeed : std::uint8_t
 {
   slow_inwards,
   stopped,
@@ -114,7 +116,7 @@ const float QB_DECLINATION = -6.5;
 #define QB_COUNTS_PER_ENCODER_REV 1250
 #define QB_COUNTS_PER_TURRET_REV 13417
 #define QB_COUNTS_PER_TURRET_DEGREE (QB_COUNTS_PER_TURRET_REV / 360.0)
-#define QB_TURRET_ZERO_OFFSET_DEGREES -8.2
+#define QB_TURRET_ZERO_OFFSET_DEGREES (-8.2)
 
 //===============================//
 //    Turret Homing Constants    //
@@ -131,7 +133,7 @@ const float QB_DECLINATION = -6.5;
 #define QB_TURRET_MANUAL_CONTROL_FACTOR 4
 
 // sets reciever 0's ID
-const unsigned long long RECEIVER_0_ID = 0xDECA4B5BCBB00FA3;
+const uint64_t RECEIVER_0_ID = 0xDECA4B5BCBB00FA3;
 
 //=====================================//
 //   Turret PID Controller Constants   //
@@ -190,7 +192,7 @@ class QuarterbackTurret : public Robot
   double avgRx = 0;        // Smoothed receiver x position
   double avgRy = 0;        // Smoothed receiver y position
   int posBufferCount = 0;  // Initialization flag for position EMA
-  unsigned long lastFlywheelUpdate = 0;  // Timer for 1s flywheel updates
+  uint32_t lastFlywheelUpdate = 0;  // Timer for 1s flywheel updates
 
   //==============================//
   //    MotorControl Instances    //
@@ -358,7 +360,7 @@ class QuarterbackTurret : public Robot
   int prevErrorIndex = 0;
   bool firstAverage = true;
   bool firstCombine;
-  long previousTime = 0;
+  uint32_t previousTime = 0;
   float ePrevious = 0;
   float eIntegral = 0;
   float kp = 0.005;  // 0.003 we had 0.005

@@ -18,6 +18,7 @@ HardwareSerial Uart_Turret(1);  // UART2
 uint8_t QuarterbackTurret::turretEncoderPinA;
 uint8_t QuarterbackTurret::turretEncoderPinB;
 uint8_t QuarterbackTurret::turretEncoderStateB;
+uint8_t QuarterbackTurret::turretLaserPin;
 int32_t QuarterbackTurret::currentTurretEncoderCount;
 
 // Major changes for Auto Mode
@@ -27,8 +28,6 @@ int32_t QuarterbackTurret::currentTurretEncoderCount;
 
 // Throwing distance calculation has be created by testing by hand. The equation
 // is accurate up to 18ft, with some inconsistencies up close.
-
-uint8_t QuarterbackTurret::turretLaserPin;
 
 // The tracking is now working somewhat. It does seem to be consistently off to
 // the right by maybe 15 degrees. The distancing also is somewhat functional,
@@ -45,11 +44,6 @@ void QuarterbackTurret::turretEncoderISR()
     currentTurretEncoderCount--;
   else if (turretEncoderStateB == 0)
     currentTurretEncoderCount++;
-
-  // if(digitalRead(turretLaserPin) == HIGH){
-  //   currentTurretEncoderCount = 0; // reset the encoder count when the laser
-  //   is triggered
-  // }
 }
 
 #pragma region Constructor
@@ -65,9 +59,6 @@ QuarterbackTurret::QuarterbackTurret(
 )
 {
   // set all state variables to default values,
-  // except currentAssemblyAngle, currentRelativeHeading,
-  // currentRelativeTurretCount the positions of these mechanisms are initially
-  // unknown and assigned upon reset/homing
   // except currentAssemblyAngle, currentRelativeHeading,
   // currentRelativeTurretCount the positions of these mechanisms are initially
   // unknown and assigned upon reset/homing
@@ -178,10 +169,7 @@ void QuarterbackTurret::action()
   //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
   // above two inputs are registered in `testForDisableOrStop()` since this is
   // re-used in blocking routines
-  // above two inputs are registered in `testForDisableOrStop()` since this is
-  // re-used in blocking routines
   //! Ignore non-emergency inputs if running a macro
-  static uint32_t lastPrintTime = 0;
   static uint32_t lastStickActivity =
       0;  // ← NEW: tracks right-stick activity for 1-second timeout
 
@@ -210,8 +198,6 @@ void QuarterbackTurret::action()
     else
     {
       //* Right Trigger (R2): Fire (cradle/grabber forward)
-      // Do not fire unless moving forward (do not fire when intaking or
-      // stopped)
       // Do not fire unless moving forward (do not fire when intaking or
       // stopped)
       if (currentFlywheelSpeed > STICK_DEADZONE && ps5.R2())
@@ -420,25 +406,10 @@ void QuarterbackTurret::action()
         }
       }
     }
-
     updateReadMotorValues();
-
-    printDebug();
   }
-
   readTargetingInfo();
   delay(5);
-  printDebug();
-
-  if (millis() - lastPrintTime >= 1000)
-  {
-    Serial.print("QB Position: x=");
-    Serial.print(position[0]);
-    Serial.print(", y=");
-    Serial.println(position[1]);
-
-    lastPrintTime = millis();
-  }
 }
 #pragma endregion
 
@@ -497,10 +468,8 @@ void QuarterbackTurret::moveTurret(
       relativeToRobot);
   if (enabled)
   {
-    // todo
     if (relativeToRobot)
     {
-      // todo: use encoder + laser to determine position
       // targetRelativeHeading = heading;
       if (units == degrees)
       {
@@ -508,13 +477,11 @@ void QuarterbackTurret::moveTurret(
 
         targetTurretEncoderCount =
             (int)round((double)heading * QB_COUNTS_PER_TURRET_DEGREE);
-        targetTurretEncoderCount =
-            (int)round((double)heading * QB_COUNTS_PER_TURRET_DEGREE);
+
         turretMoving = true;
         // sign now used for target instead of current
         sign = 1;  // 1 when positive, -1 when negative
 
-        if (targetTurretEncoderCount < currentTurretEncoderCount) sign = -1;
         if (targetTurretEncoderCount < currentTurretEncoderCount) sign = -1;
 
         setTurretSpeed(
@@ -529,9 +496,7 @@ void QuarterbackTurret::moveTurret(
         setTurretSpeed(
             QB_HANDOFF * sign);  //! temp constant, implement P loop soon
 
-        // currentTurretEncoderCount = targetTurretEncoderCount; //
-        // currentTurretEncoderCount is updated by interrupt
-        // currentTurretEncoderCount = targetTurretEncoderCount; //
+        // currentTurretEncoderCount = targetTurretEncoderCount;
         // currentTurretEncoderCount is updated by interrupt
       }
       // currentRelativeHeading = targetRelativeHeading;
@@ -561,8 +526,6 @@ void QuarterbackTurret::moveTurretAndWait(
 
 void QuarterbackTurret::updateTurretMotionStatus()
 {
-  // if (utmsCtr >= UTMS_CTR_MAX) {
-  //   utmsCtr = 0;
   ESP_LOGI(
       TAG,
       "update called with ctec = %ld; ttec = %ld; error (ct) = %.2f",
@@ -572,9 +535,7 @@ void QuarterbackTurret::updateTurretMotionStatus()
       fabs(
           (currentTurretEncoderCount % QB_COUNTS_PER_TURRET_REV) -
           targetTurretEncoderCount));
-  // } else {
-  //   utmsCtr++;
-  // }
+
   // determines if encoder is within "spec"
   if (turretMoving &&
       fabs(
@@ -915,10 +876,6 @@ void QuarterbackTurret::readTargetingInfo()
     String packet = String(receivedChars);
     packet.trim();
 
-    // Debug: show raw incoming packet
-    // Serial.print("RAW PACKET: ");
-    // Serial.println(packet);
-
     // Clean up < > if present
     if (packet.startsWith("<")) packet = packet.substring(1);
     if (packet.endsWith(">")) packet = packet.substring(0, packet.length() - 1);
@@ -950,10 +907,6 @@ void QuarterbackTurret::readTargetingInfo()
         position[0] = newX;  // X coordinate
         position[1] = newY;  // Y coordinate
         qbPositionValid = true;
-        // Serial.print("Updated QB: X=");
-        // Serial.print(newX, 2);
-        // Serial.print(", Y=");
-        // Serial.println(newY, 2);
       }
     }
     else if (type == "RCV")
@@ -968,12 +921,6 @@ void QuarterbackTurret::readTargetingInfo()
         receivers[index].position[0] = newX;
         receivers[index].position[1] = newY;
         receivers[index].positionValid = true;
-        // Serial.print("Updated Receiver ");
-        // Serial.print(index);
-        // Serial.print(": X=");
-        // Serial.print(newX, 2);
-        // Serial.print(", Y=");
-        // Serial.println(newY, 2);
       }
     }
   }
@@ -1068,6 +1015,11 @@ float QuarterbackTurret::setAutoFlywheelSpeed(float distance)
 
 #pragma endregion
 
+/**
+ * @brief Old function to take ball from center
+ * @author Braylon Rieman
+ * @date 2026-11-12
+ */
 #pragma region Macros
 void QuarterbackTurret::loadFromCenter()
 {
@@ -1075,10 +1027,14 @@ void QuarterbackTurret::loadFromCenter()
   aimAssembly(straight);
   setFlywheelSpeedStage(slow_inwards);
   moveCradle(back);
-  // zeroTurret();
   this->runningMacro = false;
 }
 
+/**
+ * @brief Moves the turret 180 degrees and hands the ball to the running back
+ * @author Braylon Rieman
+ * @date 2026-11-12
+ */
 void QuarterbackTurret::handoff()
 {
   this->runningMacro = true;
@@ -1187,6 +1143,13 @@ void QuarterbackTurret::combineMoveLeft()
   }
 }
 
+/**
+ * @brief Zeroes the turret based on the laser sensor and encoder counts.  Since
+ * the laser is not exactly in the sensor, it moves back a specified number of
+ * degrees after hitting the laser then sets the relative zero there.
+ * @author Braylon Rieman
+ * @date 2026-11-12
+ */
 bool QuarterbackTurret::zeroTurret()
 {
   this->runningMacro = true;
@@ -1419,18 +1382,6 @@ void QuarterbackTurret::emergencyStop()
 }
 #pragma endregion
 
-void QuarterbackTurret::printDebug()
-{
-  /*
-  ESP_LOGI(TAG, "enabled: %d | stickTurret: %.3f | stickFlywheel: %.3f |
-  currentTurretSpeed: %.3f", enabled, stickTurret, stickFlywheel,
-           currentTurretSpeed);
-  */
-  if (enabled)
-  {
-  }
-}
-
 #pragma region PID
 float QuarterbackTurret::turretPIDController(
     float current, float target, float kp, float kd, float ki, float maxSpeed)
@@ -1503,7 +1454,6 @@ float QuarterbackTurret::turretPIDController(
       eIntegral = 0;
       ePrevious = 0;
     }
-    // Serial.print("\tCurrent [deg]: "); Serial.print(current, 0);
     target = (target - 180) + 360;
     if (target >= 360) target = target - 360;
 
