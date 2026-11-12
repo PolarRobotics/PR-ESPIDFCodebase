@@ -331,16 +331,17 @@ extern "C" void main_app(void)
       delay(5);
     }
 
-  /**
-   * @brief onConnection: Function to be called on controller connect
-   */
+    /**
+     * @brief onConnection: Function to be called on controller connect
+     */
 
-  /**
-   * @brief onDisconnect: Function to be called on controller disconnect
-   * Stops bots from driving off and ramming into a wall or someone's foot if
-   * they disconnect
-   */
+    /**
+     * @brief onDisconnect: Function to be called on controller disconnect
+     * Stops bots from driving off and ramming into a wall or someone's foot if
+     * they disconnect
+     */
 
-  // WARNING: if program reaches end of function app_main() the MCU will
-  // restart.
+    // WARNING: if program reaches end of function app_main() the MCU will
+    // restart.
+  }
 }
