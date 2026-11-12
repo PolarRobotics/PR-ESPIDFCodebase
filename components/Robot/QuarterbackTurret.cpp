@@ -167,7 +167,6 @@ QuarterbackTurret::QuarterbackTurret(
   currReceiver = 0;
 
   Uart_Turret.begin(115200, SERIAL_8N1, RX2, TX2);
-  // Serial2.begin(115200, SERIAL_8N1, RX2, TX2);
 }
 #pragma endregion
 
@@ -182,8 +181,8 @@ void QuarterbackTurret::action()
   // above two inputs are registered in `testForDisableOrStop()` since this is
   // re-used in blocking routines
   //! Ignore non-emergency inputs if running a macro
-  static unsigned long lastPrintTime = 0;
-  static unsigned long lastStickActivity =
+  static uint32_t lastPrintTime = 0;
+  static uint32_t lastStickActivity =
       0;  // ← NEW: tracks right-stick activity for 1-second timeout
 
   if (!testForDisableOrStop() && !runningMacro)
@@ -385,55 +384,6 @@ void QuarterbackTurret::action()
                 0.2);
             setTurretSpeed(turretPIDSpeed);
           }
-
-          /*
-          // D-Pad Left: Move left one position
-          if (dbDpadLeft->debounceAndPressed(ps5.Left()))
-          {
-            if (this->combinePosition == combineStraight)
-            {
-              this->combinePosition = combineLeft;
-              // moveTurretAndWait(-45);
-              targetRelativeHeading = -45;
-            }
-            else if (this->combinePosition == combineRight)
-            {
-              this->combinePosition = combineStraight;
-              // moveTurretAndWait(0);
-              targetRelativeHeading = 0;
-            }
-          }
-          // D-Pad Right: Move right one position
-          else if (dbDpadRight->debounceAndPressed(ps5.Right()))
-          {
-            if (this->combinePosition == combineStraight)
-            {
-              this->combinePosition = combineRight;
-              // moveTurretAndWait(45);
-              targetRelativeHeading = 45;
-            }
-            else if (this->combinePosition == combineLeft)
-            {
-              this->combinePosition = combineStraight;
-              // moveTurretAndWait(0);
-              targetRelativeHeading = 0;
-            }
-          } */
-
-          // Run the PID loop
-          /* turretPIDSpeed =
-               turretPIDController((float)getCurrentHeading(),
-                                   (float)targetRelativeHeading, kp, kd, ki,
-           .3); setTurretSpeed(turretPIDSpeed);
-
-           // if (utmsCtr <= UTMS_CTR_MAX) {
-           //   utmsCtr = 0;
-           ESP_LOGI(TAG, "combine mode -- ctec = %ld; ttec = %ld",
-                    (long)currentTurretEncoderCount,
-                    (long)targetTurretEncoderCount); */
-          // } else {
-          //   utmsCtr++;
-          // }
         }
         else
         {
@@ -1556,26 +1506,6 @@ float QuarterbackTurret::turretPIDController(
     // Serial.print("\tCurrent [deg]: "); Serial.print(current, 0);
     target = (target - 180) + 360;
     if (target >= 360) target = target - 360;
-
-    ESP_LOGI(
-        TAG,
-        "DeltaT: %.2f\tError: [deg]: %d\tP: %.4f\tI: %.4f\tD:\t%.4f\tPWM "
-        "Value: %.4f\tCurrent [deg]: %.0f\tTarget [deg]: %.2f",
-        deltaT,
-        e,
-        (kp * e),
-        (ki * eIntegral),
-        (kd * eDerivative),
-        u,
-        current,
-        target);
-
-    // Update variables for next iteration
-    // previousTime = currentTime;
-    // ePrevious = e;
-
-    // Removed asymmetric bias: if(u > 0){ u *= 1.1; } – this can cause
-    // directional preference
 
     ESP_LOGI(
         TAG,
