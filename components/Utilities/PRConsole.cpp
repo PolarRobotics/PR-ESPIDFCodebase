@@ -131,7 +131,7 @@ void startConsole(ConfigManager &config)
         return;
     }
 
-    BaseType_t taskCreated = xTaskCreate(console_task, "console_task", 4096, nullptr, 2, nullptr);
+    BaseType_t taskCreated = xTaskCreate(console_task, "console_task", 8192, nullptr, 2, nullptr);
     if (taskCreated != pdPASS)
     {
         ESP_LOGE(TAG, "Failed to create console task");

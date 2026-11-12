@@ -8,17 +8,22 @@ cmake_minimum_required(VERSION 3.5)
 set(SDKCONFIG "${CMAKE_BINARY_DIR}/sdkconfig")
 
 # Bluedroid HCI host task (hciT) defaults to 2048+EXTRA bytes. PS5 Classic BT HID
-# traffic overflows that stack (runtime-confirmed). Bump to 4096 before IDF builds.
+# traffic overflows that stack (runtime-confirmed). Keep it at 8192+EXTRA.
 if(DEFINED ENV{IDF_PATH})
     set(_PR_HCI_LAYER "$ENV{IDF_PATH}/components/bt/host/bluedroid/hci/hci_layer.c")
     if(EXISTS "${_PR_HCI_LAYER}")
         execute_process(
-            COMMAND sed -i
-                "s/#define HCI_HOST_TASK_STACK_SIZE        (2048 + BT_TASK_EXTRA_STACK_SIZE)/#define HCI_HOST_TASK_STACK_SIZE        (4096 + BT_TASK_EXTRA_STACK_SIZE)/"
+            COMMAND sed -i -E
+                "s/#define HCI_HOST_TASK_STACK_SIZE[[:space:]]+\\((2048|4096) \\+ BT_TASK_EXTRA_STACK_SIZE\\)/#define HCI_HOST_TASK_STACK_SIZE        (8192 + BT_TASK_EXTRA_STACK_SIZE)/"
                 "${_PR_HCI_LAYER}"
             RESULT_VARIABLE _PR_HCI_PATCH_RESULT
         )
-        message(STATUS "PR hciT stack patch applied to ${_PR_HCI_LAYER} (result=${_PR_HCI_PATCH_RESULT})")
+        file(READ "${_PR_HCI_LAYER}" _PR_HCI_CONTENTS)
+        if(_PR_HCI_CONTENTS MATCHES "#define HCI_HOST_TASK_STACK_SIZE[^\n]*\\(8192 \\+ BT_TASK_EXTRA_STACK_SIZE\\)")
+            message(STATUS "PR hciT stack patch OK (8192) in ${_PR_HCI_LAYER}")
+        else()
+            message(WARNING "PR hciT stack patch FAILED (result=${_PR_HCI_PATCH_RESULT}); check ${_PR_HCI_LAYER}")
+        endif()
     else()
         message(WARNING "PR hciT stack patch skipped; missing ${_PR_HCI_LAYER}")
     endif()
