@@ -124,7 +124,7 @@ QuarterbackTurret::QuarterbackTurret(
   attachInterrupt(turretEncoderPinA, turretEncoderISR, RISING);
 
   // initiate motor objects
-  // TODO: initiate assembly/tilter stepper motor with lib
+  // TODO(unknown): initiate assembly/tilter stepper motor with lib
   cradleActuator.setup(
       cradlePin,
       big_ampflow);  // TODO: change to MotorInterface when merged
@@ -177,8 +177,6 @@ void QuarterbackTurret::action()
   // above two inputs are registered in `testForDisableOrStop()` since this is
   // re-used in blocking routines
   //! Ignore non-emergency inputs if running a macro
-  static uint32_t lastStickActivity =
-      0;  // ← NEW: tracks right-stick activity for 1-second timeout
 
   if (!testForDisableOrStop() && !runningMacro)
   {
@@ -212,208 +210,23 @@ void QuarterbackTurret::action()
       }
     }
     else if (assemblyTriggerToggled && !ps5.L2())
-    {
       assemblyTriggerToggled = false;
-    }
     else
-    {
       aimAssembly(targetAssemblyAngle);
-    }
 
     //* Options: Cycle through manual, combine, and tracking modes
     if (dbOptions->debounceAndPressed(ps5.Options())) switchMode();
 
-    //==========================================//
-    //                MACROS                    //
-    //==========================================//
+    // run any macros being used
+    runMacros();
 
-    //* Circle: Startup and Home (Reset or Zero Turret)
-    if (dbCircle->debounceAndPressed(ps5.Circle()))
-    {
-      if (!initialized)
-        reset();
-      else
-        initialized = zeroTurret();
-    }
-    //* Triangle: Macro 1 - load from center
-    else if (dbTriangle->debounceAndPressed(ps5.Triangle()))
-    {
-      loadFromCenter();
-    }
-    //* Cross: Macro 2 - handoff to runningback
-    else if (dbCross->debounceAndPressed(ps5.Cross()))
-    {
-      handoff();
-    }
-
-    //==========================================//
-    //                MANUAL                    //
-    //==========================================//
-
-    else if (mode == manual)
-    {
-      // TODO: Make manual mode control using dpad so we can use joysticks for
-      // driving
-
-      stickFlywheel = (ps5.LStickY() / 127.5f);
-      stickTurret = (ps5.RStickX() / 127.5f);
-
-      //* Right Stick: Turret Control
-      if (fabs(stickTurret) > STICK_DEADZONE)
-        setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
-      else
-        setTurretSpeed(0);
-
-      //* Left Stick + D-Pad: Flywheel Control
-      if (fabs(stickFlywheel) > STICK_DEADZONE)
-        setFlywheelSpeed(stickFlywheel);
-      else if (dbDpadUp->debounceAndPressed(ps5.Up()))
-        setFlywheelSpeed(currentFlywheelSpeed + 0.025);
-      else if (dbDpadDown->debounceAndPressed(ps5.Down()))
-        setFlywheelSpeed(currentFlywheelSpeed - 0.025);
-    }
-
-    //==========================================//
-    //                COMBINE                   //
-    //==========================================//
-
+    // run the appropriate control scheme based on the current mode
+    if (mode == manual)
+      manualControl();
     else if (mode == combine)
-    {
-      // Overrides turret control
-      // Allows switching between 3 different angles (left, straight, right)
-
-      if (firstCombine)
-      {
-        firstCombine = false;
-        combineMoveRight();
-        aimAssembly(angled);
-      }
-
-      if (dbDpadLeft->debounceAndPressed(ps5.Left()))
-        combineMoveLeft();
-      else if (dbDpadRight->debounceAndPressed(ps5.Right()))
-        combineMoveRight();
-
-      // Distance Fix and Override Mode
-      // The distancing works better now. Also, the override mode allows the
-      // user to override using the right stick to make fine tune
-      // adjustments during a play.
-      if (abs(CalculateRotation(getCurrentHeading(), targetRelativeHeading)) >=
-          2)
-      {
-        turretPIDSpeed = turretPIDController(
-            (float)getCurrentHeading(),
-            (float)targetRelativeHeading,
-            kp,
-            kd,
-            ki,
-            0.2);
-        setTurretSpeed(turretPIDSpeed);
-      }
-
-      // set flywheel speeds
-      if (dbDpadUp->debounceAndPressed(ps5.Up()))
-        adjustFlywheelSpeedStage(INCREASE);
-      else if (dbDpadDown->debounceAndPressed(ps5.Down()))
-        setFlywheelSpeed(combineSpeeds[0], true);
-    }
-
-    //==========================================//
-    //                TRACKING                  //
-    //==========================================//
-
+      combineControl();
     else if (mode == tracking)
-    {
-      //* Left Button (L1): Switch Target to Receiver 1
-      if (ps5.L1())
-      {
-        if (currReceiver > 0)
-        {
-          currReceiver--;
-          posBufferCount = 0;
-        }
-        // switchTarget(receiver_1);
-      }
-      //* Right Button (R1): Switch Target to Receiver 2
-      else if (ps5.R1())
-      {
-        if (currReceiver < NUM_RECEIVERS - 1)
-        {
-          currReceiver++;
-          posBufferCount = 0;
-        }
-        // switchTarget(receiver_2);
-      }
-      //* Auto Mode
-
-      stickFlywheel = (ps5.LStickY() / 127.5f);
-      stickTurret = (ps5.RStickX() / 127.5f);
-
-      Receiver& receiver = receivers[currReceiver];
-      if (newData && qbPositionValid && receiver.positionValid)
-      {
-        if (posBufferCount == 0)
-        {
-          avgRx = receiver.position[0];
-          avgRy = receiver.position[1];
-        }
-        else
-        {
-          avgRx = emaAlpha * receiver.position[0] + (1 - emaAlpha) * avgRx;
-          avgRy = emaAlpha * receiver.position[1] + (1 - emaAlpha) * avgRy;
-        }
-        posBufferCount = 1;
-        newData = false;
-      }
-
-      if (qbPositionValid && receiver.positionValid)
-      {
-        if (posBufferCount == 0)
-        {
-          avgRx = receiver.position[0];
-          avgRy = receiver.position[1];
-          posBufferCount = 1;
-        }
-
-        if (fabs(stickTurret) > STICK_DEADZONE)
-        {
-          setTurretSpeed(stickTurret * 0.12);
-          lastStickActivity = millis();
-        }
-        else if (millis() - lastStickActivity < 2000)
-        {
-          setTurretSpeed(0);
-        }
-        else
-        {
-          currentRelativeHeading = getCurrentHeading();
-          Receiver smoothedReceiver = receiver;
-          smoothedReceiver.position[0] = avgRx;
-          smoothedReceiver.position[1] = avgRy;
-          targetRelativeHeading = angleToTarget(smoothedReceiver);
-          turretPIDSpeed = turretPIDController(
-              (float)currentRelativeHeading,
-              (float)targetRelativeHeading,
-              kp,
-              kd,
-              ki,
-              0.1);
-          setTurretSpeed(turretPIDSpeed);
-
-          unsigned long now = millis();
-          if (now - lastFlywheelUpdate >= 500)
-          {
-            setAutoFlywheelSpeed(0);
-            lastFlywheelUpdate = now;
-          }
-        }
-      }
-      else
-      {
-        setTurretSpeed(0);
-      }
-      readTargetingInfo();
-    }
+      trackingControl();
   }
   updateReadMotorValues();
   updateTurretMotionStatus();
@@ -445,6 +258,204 @@ void QuarterbackTurret::setTurretSpeed(
   {
     turretMotor.write(0);
   }
+}
+
+/**
+ * @brief Function to check for macro inputs and run them if needed
+ * @author Braylon Rieman
+ * @date 2026-11-12
+ */
+void QuarterbackTurret::runMacros()
+{
+  //* Circle: Startup and Home (Reset or Zero Turret)
+  if (dbCircle->debounceAndPressed(ps5.Circle()))
+    if (!initialized)
+      reset();
+    else
+      initialized = zeroTurret();
+
+  //* Triangle: Macro 1 - load from center
+  else if (dbTriangle->debounceAndPressed(ps5.Triangle()))
+    loadFromCenter();
+
+  //* Cross: Macro 2 - handoff to runningback
+  else if (dbCross->debounceAndPressed(ps5.Cross()))
+    handoff();
+}
+
+/**
+ * @brief Function to control the flywheel and turret manually using the PS5
+ * controller sticks
+ * @author Braylon Rieman
+ * @date 2026-11-12
+ */
+void QuarterbackTurret::manualControl()
+{
+  // TODO: Make manual mode control using dpad so we can use joysticks for
+  // driving
+
+  stickFlywheel = (ps5.LStickY() / 127.5F);
+  stickTurret = (ps5.RStickX() / 127.5F);
+
+  //* Right Stick: Turret Control
+  if (fabs(stickTurret) > STICK_DEADZONE)
+    setTurretSpeed(stickTurret * QB_TURRET_STICK_SCALE_FACTOR);
+  else
+    setTurretSpeed(0);
+
+  //* Left Stick + D-Pad: Flywheel Control
+  if (fabs(stickFlywheel) > STICK_DEADZONE)
+    setFlywheelSpeed(stickFlywheel);
+  else if (dbDpadUp->debounceAndPressed(ps5.Up()))
+    setFlywheelSpeed(currentFlywheelSpeed + 0.025);
+  else if (dbDpadDown->debounceAndPressed(ps5.Down()))
+    setFlywheelSpeed(currentFlywheelSpeed - 0.025);
+}
+
+/**
+ * @brief Function to control the turret in combine mode using the encoder
+ * @author Braylon Rieman
+ * @date 2026-11-12
+ */
+void QuarterbackTurret::combineControl()
+{
+  // Overrides turret control
+  // Allows switching between 3 different angles (left, straight, right)
+
+  if (firstCombine)
+  {
+    firstCombine = false;
+    combineMoveRight();
+    aimAssembly(angled);
+  }
+
+  if (dbDpadLeft->debounceAndPressed(ps5.Left()))
+    combineMoveLeft();
+  else if (dbDpadRight->debounceAndPressed(ps5.Right()))
+    combineMoveRight();
+
+  // Distance Fix and Override Mode
+  // The distancing works better now. Also, the override mode allows the
+  // user to override using the right stick to make fine tune
+  // adjustments during a play.
+  if (abs(CalculateRotation(getCurrentHeading(), targetRelativeHeading)) >= 2)
+  {
+    turretPIDSpeed = turretPIDController(
+        (float)getCurrentHeading(),
+        (float)targetRelativeHeading,
+        kp,
+        kd,
+        ki,
+        0.2);
+    setTurretSpeed(turretPIDSpeed);
+  }
+
+  // set flywheel speeds
+  if (dbDpadUp->debounceAndPressed(ps5.Up()))
+    adjustFlywheelSpeedStage(INCREASE);
+  else if (dbDpadDown->debounceAndPressed(ps5.Down()))
+    setFlywheelSpeed(combineSpeeds[0], true);
+}
+
+/**
+ * @brief Function to control the automated tracking system
+ * @author Grok
+ * @date 2026
+ */
+void QuarterbackTurret::trackingControl()
+{
+  // NEW: tracks right-stick activity for 1-second timeout
+  static uint32_t lastStickActivity = 0;
+
+  //* Left Button (L1): Switch Target to Receiver 1
+  if (ps5.L1())
+  {
+    if (currReceiver > 0)
+    {
+      currReceiver--;
+      posBufferCount = 0;
+    }
+    // switchTarget(receiver_1);
+  }
+  //* Right Button (R1): Switch Target to Receiver 2
+  else if (ps5.R1())
+  {
+    if (currReceiver < NUM_RECEIVERS - 1)
+    {
+      currReceiver++;
+      posBufferCount = 0;
+    }
+    // switchTarget(receiver_2);
+  }
+  //* Auto Mode
+
+  stickFlywheel = (ps5.LStickY() / 127.5F);
+  stickTurret = (ps5.RStickX() / 127.5F);
+
+  Receiver& receiver = receivers[currReceiver];
+  if (newData && qbPositionValid && receiver.positionValid)
+  {
+    if (posBufferCount == 0)
+    {
+      avgRx = receiver.position[0];
+      avgRy = receiver.position[1];
+    }
+    else
+    {
+      avgRx = emaAlpha * receiver.position[0] + (1 - emaAlpha) * avgRx;
+      avgRy = emaAlpha * receiver.position[1] + (1 - emaAlpha) * avgRy;
+    }
+    posBufferCount = 1;
+    newData = false;
+  }
+
+  if (qbPositionValid && receiver.positionValid)
+  {
+    if (posBufferCount == 0)
+    {
+      avgRx = receiver.position[0];
+      avgRy = receiver.position[1];
+      posBufferCount = 1;
+    }
+
+    if (fabs(stickTurret) > STICK_DEADZONE)
+    {
+      setTurretSpeed(stickTurret * 0.12);
+      lastStickActivity = millis();
+    }
+    else if (millis() - lastStickActivity < 2000)
+    {
+      setTurretSpeed(0);
+    }
+    else
+    {
+      currentRelativeHeading = getCurrentHeading();
+      Receiver smoothedReceiver = receiver;
+      smoothedReceiver.position[0] = avgRx;
+      smoothedReceiver.position[1] = avgRy;
+      targetRelativeHeading = angleToTarget(smoothedReceiver);
+      turretPIDSpeed = turretPIDController(
+          (float)currentRelativeHeading,
+          (float)targetRelativeHeading,
+          kp,
+          kd,
+          ki,
+          0.1);
+      setTurretSpeed(turretPIDSpeed);
+
+      unsigned long now = millis();
+      if (now - lastFlywheelUpdate >= 500)
+      {
+        setAutoFlywheelSpeed(0);
+        lastFlywheelUpdate = now;
+      }
+    }
+  }
+  else
+  {
+    setTurretSpeed(0);
+  }
+  readTargetingInfo();
 }
 
 #pragma region Old Rel Turret

@@ -429,6 +429,15 @@ class QuarterbackTurret : public Robot
   // action                   robot sublass must override action
   void action() override;
 
+  // run various macros
+  void runMacros();
+  // manual mode
+  void manualControl();
+  // combine mode
+  void combineControl();
+  // tracking mode
+  void trackingControl();
+
   // [Startup]
   // zeroTurret               Runs through the routine to zero the turret
   // reset                    zero turret, aim down (straight), and set
