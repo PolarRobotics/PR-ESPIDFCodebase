@@ -154,8 +154,6 @@ QuarterbackTurret::QuarterbackTurret(
   this->dbTriangle = new Debouncer(QB_TRIANGLE_HOLD_DELAY);
   this->dbCross = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
 
-  this->dbTurretInterpolator = new Debouncer(QB_TURRET_INTERPOLATION_DELAY);
-
   // Initialize receiver positions to safe defaults to avoid garbage math
   for (int i = 0; i < NUM_RECEIVERS; i++)
   {
