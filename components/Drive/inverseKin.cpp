@@ -92,59 +92,6 @@ void InverseKin::controllerDeadzone(double *normalized_vel, bool angular)
     *normalized_vel = *normalized_vel * scaled_velocity;
 }
 
-void InverseKin::debugPrint(int delay_time)
-{
-  // Print results to Serial
-  if (halt) Serial.println("HALT");
-
-  Serial.print("Right Stick X: ");
-  Serial.println(rightStickX);
-  Serial.print("Left Stick X: ");
-  Serial.println(leftStickX);
-  Serial.print("Left Stick Y: ");
-  Serial.println(leftStickY);
-
-  Serial.print("Normalized Stick X: ");
-  Serial.println(linear_vel_x);
-  Serial.print("Normalized Stick Y: ");
-  Serial.println(linear_vel_y);
-  Serial.print("Normalized Right Stick X (Omega): ");
-  Serial.println(angular_vel);
-
-  Serial.print("Wheel 1: magnitude=");
-  Serial.print(wA_velocity.magnitude);
-  Serial.print(", angle=");
-  Serial.print(wA_velocity.angle_degrees);
-  Serial.println("°");
-
-  Serial.print("Wheel 2: magnitude=");
-  Serial.print(wB_velocity.magnitude);
-  Serial.print(", angle=");
-  Serial.print(wB_velocity.angle_degrees);
-  Serial.println("°");
-
-  Serial.print("Wheel 3: magnitude=");
-  Serial.print(wC_velocity.magnitude);
-  Serial.print(", angle=");
-  Serial.print(wC_velocity.angle_degrees);
-  Serial.println("°");
-
-  Serial.print("Wheel 4: magnitude=");
-  Serial.print(wD_velocity.magnitude);
-  Serial.print(", angle=");
-  Serial.print(wD_velocity.angle_degrees);
-  Serial.println("°");
-
-  Serial.print("Baseplate: magnitude=");
-  Serial.print(baseplate_velocity.magnitude);
-  Serial.print(", angle=");
-  Serial.print(baseplate_velocity.angle_degrees);
-  Serial.println("°");
-  Serial.println();
-
-  delay(delay_time);
-}
-
 bool InverseKin::checkHalt() { return halt; }
 
 void InverseKin::setSpeedScalars()
