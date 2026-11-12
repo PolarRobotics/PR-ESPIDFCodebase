@@ -166,8 +166,6 @@ extern "C" void main_app(void)
     case swerve:
       robot =
           new Swerve(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3, SPECBOT_PIN4);
-      drive = new Drive(swerve, driveParams);
-      drive->setupMotors(DRIVE_M1, DRIVE_M2);
       break;
     case center_conversion:
       robot = new CenterConversion(SPECBOT_PIN1);
@@ -253,8 +251,8 @@ extern "C" void main_app(void)
       //* QBv3 Turret doesn't have drive, so this is a temporary measure to
       // avoid NPEs and chaos
       // TODO: find better solution
-      if (robotType != quarterback_turret)
-     {
+      if (robotType != quarterback_turret && robotType != swerve)
+      {
         // ESP_LOGI(TAG, "Setting stick power...");
         drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
 
@@ -300,7 +298,7 @@ extern "C" void main_app(void)
       }
       //! Performs all special robot actions depending on the instantiated Robot
       //! subclass
-      
+
       // ESP_LOGI(TAG, "Performing robot actions...");
       robot->action();
 
@@ -312,20 +310,26 @@ extern "C" void main_app(void)
     else
     {  // no response from PS5 controller within last 300 ms, so stop
       // ESP_LOGI(TAG, "Controller disconnected");
-      if (robotType != quarterback_turret)
+      if (robotType != quarterback_turret && robotType != swerve)
       {
         // Emergency stop if the controller disconnects
         // ESP_LOGI(TAG, "Emergency stop due to controller disconnect.");
         drive->emergencyStop();
       }
-      else
+      else if (robotType == quarterback_turret)
       {
-        // ESP_LOGI(TAG, "Emergency stop due to controller disconnect for quarterback turret.");
+        // ESP_LOGI(TAG, "Emergency stop due to controller disconnect for
+        // quarterback turret.");
         ((QuarterbackTurret *)robot)->emergencyStop();
       }
+      // else if (robotType == swerve)
+      // {
+      //   // ESP_LOGI(TAG, "Emergency stop due to controller disconnect for
+      //   // swerve.");
+      //   ((Swerve *)robot)->emergencyStop();
+      // }
+      delay(5);
     }
-    delay(5);
-  }
 
   /**
    * @brief onConnection: Function to be called on controller connect
