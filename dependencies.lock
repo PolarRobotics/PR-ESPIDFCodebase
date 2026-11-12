@@ -33,6 +33,18 @@ dependencies:
       path: components/adafruit_sensor
       type: git
     version: 635b6f50e57b6cb5da17a8286a377c021f85af67
+  autowp_mcp2515:
+    component_hash: a4e2e63b3ba73d199747e4e5bafcf34bd6b503904d8978b6c35f05c568383b57
+    dependencies:
+    - name: idf
+      version: '>=4.1.0'
+    - name: espressif/arduino-esp32
+      version: ^3.3.2
+    source:
+      git: https://github.com/PolarRobotics/PR-Lib.git
+      path: components/autowp_mcp2515
+      type: git
+    version: f29e52543cf176beaacb0cb814aa1efff20fe1ee
   chmorgan/esp-libhelix-mp3:
     component_hash: cbb76089dc2c5749f7b470e2e70aedc44c9da519e04eb9a67d4c7ec275229e53
     dependencies:
@@ -672,11 +684,12 @@ direct_dependencies:
 - adafruit_busio
 - adafruit_lis3mdl
 - adafruit_sensor
+- autowp_mcp2515
 - espressif/arduino-esp32
 - idf
 - pr-lib-motor
 - ps5-esp32
 - usbsabertooth
-manifest_hash: ce829d2b2c10c11a1396142106229c056ed98fcf288dc98dd87cba67e2d7ea79
+manifest_hash: fa2ee08d4259dd94e78464ee82aecc98b3f00abe669775b541b4887798fd2776
 target: esp32
 version: 2.0.0
