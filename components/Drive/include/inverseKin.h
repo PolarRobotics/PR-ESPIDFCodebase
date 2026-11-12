@@ -1,11 +1,9 @@
 #pragma once
 
-#include <Arduino.h>
+#include <stdint.h>
 
-#include <array>
 #include <cmath>
 #include <cstring>
-#include <iostream>
 #include <string>
 #include <unordered_map>
 
