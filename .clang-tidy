@@ -1,0 +1,18 @@
+# .clang-tidy
+# Filter for our source directories only
+HeaderFilterRegex: '.*/PR-ESPIDFCodebase/(main|components)/.*'
+
+Checks: >
+  -*,
+  clang-diagnostic-*,
+  bugprone-*,
+  cert-*,
+  performance-*,
+  readability-*,
+  -readability-braces-around-statements,
+  google-*,
+  -google-readability-braces-around-statements
+
+CheckOptions:
+  - key: readability-function-cognitive-complexity.IgnoreMacros
+    value: 'true'

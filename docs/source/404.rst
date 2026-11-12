@@ -1,0 +1,9 @@
+:orphan:
+
+=============
+404 Not Found
+=============
+
+Sorry, your documentation is in another castle.
+
+.. image:: _static/images/klondike-facepalm.png

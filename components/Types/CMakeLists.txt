@@ -5,8 +5,5 @@ idf_component_register(
         ${TYPES_SOURCES}
     INCLUDE_DIRS
         "include"
-        "../../main"
     REQUIRES 
-        espressif__arduino-esp32
-        usbsabertooth 
 )

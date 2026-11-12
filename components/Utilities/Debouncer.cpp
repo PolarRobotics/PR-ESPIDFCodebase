@@ -1,4 +1,7 @@
 #include <Debouncer.h>
+#include "esp_log.h"
+
+static const char *TAG = "Debouncer";
 
 // based on: https://arduinogetstarted.com/tutorials/arduino-button-debounce
 
@@ -28,12 +31,7 @@ Debouncer::Debouncer(unsigned long delay, bool activeLow)
 // @param inputState: "current" call to debounce
 uint8_t Debouncer::debounce(uint8_t inputState)
 {
-  // Serial.print(F("start: l_stab:"));
-  // Serial.print(lastStableState);
-  // Serial.print(F(", l_unst: "));
-  // Serial.print(lastUnstableState);
-  // Serial.print(F(", input: "));
-  // Serial.print(inputState);
+  // ESP_LOGV(TAG, "start: l_stab:%d, l_unst: %d, input: %d", lastStableState, lastUnstableState, inputState);
 
   // if the switch was toggled, update the last toggle time
   if (inputState != lastUnstableState)
@@ -42,8 +40,7 @@ uint8_t Debouncer::debounce(uint8_t inputState)
     lastUnstableState = inputState;
   }
 
-  // Serial.print(F(" | over delay?: "));
-  // Serial.print((millis() - lastToggleTime) > debounceDelay);
+  // ESP_LOGV(TAG, " | over delay?: %d", ((millis() - lastToggleTime) > debounceDelay));
 
   lastLastStableState = lastStableState;
 
@@ -51,25 +48,18 @@ uint8_t Debouncer::debounce(uint8_t inputState)
   if ((millis() - lastToggleTime) > debounceDelay)
   {
 
-    // Serial.print(F(" | stab_st changed?: "));
-    // Serial.print(lastStableState != inputState);
+    // ESP_LOGV(TAG, " | stab_st changed?: %d", (lastStableState != inputState));
 
     // if the state has changed, update it
     if (lastStableState != inputState)
     {
       lastStableState = inputState;
 
-      // Serial.print(F(" | inputState == ACTIVE_STATE: "));
-      // Serial.print(inputState == ACTIVE_STATE);
+      // ESP_LOGV(TAG, " | inputState == ACTIVE_STATE: %d", (inputState == ACTIVE_STATE));
     }
   }
 
-  // Serial.print(F(" | end: l_stab:"));
-  // Serial.print(lastStableState);
-  // Serial.print(F(", l_unst: "));
-  // Serial.print(lastUnstableState);
-  // Serial.print(F(", input: "));
-  // Serial.println(inputState);
+  // ESP_LOGV(TAG, " | end: l_stab:%d, l_unst: %d, input: %d", lastStableState, lastUnstableState, inputState);
 
   return lastStableState;
 }

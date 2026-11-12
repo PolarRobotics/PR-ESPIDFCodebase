@@ -1,7 +1,11 @@
 # THIS IS WHERE YOU UPDATE ESP-IDF!!!
-# Ensure version v5.5 to work with Arduino-ESP32 core (for now....)
-ARG DOCKER_TAG=release-v5.5
-FROM espressif/idf:${DOCKER_TAG}
+# Ensure version v5.5.5 to work with Arduino-ESP32 core (for now....)
+# Follow releases of arduino-esp32 core here: https://github.com/espressif/arduino-esp32/releases
+# sha256 hash of versions can be found here: https://hub.docker.com/r/espressif/idf/tags
+
+FROM espressif/idf:v5.5.5@sha256:642e9fb2f5acfb900ef67ddea82b825755d8ab7e939fc1c9a988c35c70c991a7
+# WARN: IF WE UPDATE TO v6.0 or later, READ THIS: https://developer.espressif.com/blog/2026/03/idf-v6-0-release/#build-system-and-tooling-improvements
+# We will need to migrate to their new build system
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
@@ -13,7 +17,16 @@ RUN apt-get update -y && apt-get install -y \
     picocom \
     zsh \
     git \
-    curl
+    curl \
+    ripgrep \
+    clang-format \
+    clang-tidy
+
+# Install clangd from Espressif's Xtensa-enabled LLVM distribution.
+RUN IDF_TOOLS_PATH=/opt/esp /opt/esp/idf/tools/idf_tools.py install esp-clang && \
+    clangd_path="$(find /opt/esp/tools/esp-clang -type f -path '*/esp-clang/bin/clangd' -print -quit)" && \
+    test -n "$clangd_path" && \
+    ln -s "$clangd_path" /usr/local/bin/clangd-esp
 
 # Install Starship prompt and zsh plugins (I promise this is important for productivity)
 RUN curl -sS https://starship.rs/install.sh | sh -s -- -y
