@@ -93,7 +93,7 @@ const float QB_DECLINATION = -6.5;
 #define QB_TRIANGLE_HOLD_DELAY 200L
 #define QB_CROSS_HOLD_DELAY 200L
 #define QB_TURRET_INTERPOLATION_DELAY 5L
-#define QB_TURRET_THRESHOLD 35
+#define QB_TURRET_THRESHOLD 15
 #define QB_TURRET_STICK_SCALE_FACTOR 0.15  // was 0.25, turned down for combine
 
 //================================//
@@ -103,6 +103,7 @@ const float QB_DECLINATION = -6.5;
 #define QB_HOME_PCT 0.05
 #define QB_HANDOFF 0.1
 #define QB_HOME_MAG 0.1
+#define QB_COMBINE_SPEED 0.1
 #define QB_ASM_SPEED 0.3
 
 //========================================//

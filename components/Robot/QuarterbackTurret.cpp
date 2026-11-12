@@ -1367,7 +1367,7 @@ void QuarterbackTurret::combineMoveLeft()
   {
     this->combinePosition = combineStraight;
     // moveTurretAndWait(0);
-    targetRelativeHeading = 0;
+    targetRelativeHeading = 2;  // ths direction is weird idk man i hate it here
     targetTurretEncoderCount =
         (int)round((double)targetRelativeHeading * QB_COUNTS_PER_TURRET_DEGREE);
     setTurretSpeed(
