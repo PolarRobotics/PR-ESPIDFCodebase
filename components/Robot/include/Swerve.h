@@ -1,9 +1,11 @@
 #pragma once
 #include <CAN.h>
 #include <Robot.h>
-#include <inverseKin.h>
+#include <ps5Controller.h>
 
 #include <cstdint>
+
+#include "inverseKin.h"
 
 class Swerve : public Robot
 {

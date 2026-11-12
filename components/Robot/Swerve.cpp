@@ -1,7 +1,4 @@
-#include <CAN.h>
-#include <Swerve.h>
-#include <inverseKin.h>
-#include <ps5controller.h>
+#include "Swerve.h"
 
 Swerve::Swerve(uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4)
 {
