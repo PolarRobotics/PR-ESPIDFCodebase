@@ -218,9 +218,7 @@ void QuarterbackTurret::action()
     {
       handoff();
     }
-    // else if (ps5.Left()) {
-    //   testRoutine();
-    // }
+
     //* Manual and Automatic Controls
     else
     {
@@ -521,11 +519,6 @@ void QuarterbackTurret::setTurretSpeed(
     turretMotor.write(
         -targetTurretSpeed);  // flip direction so that + is CW and - is CCW
 
-    // handle mechanical slop when changing directions
-    // if (!overrideEncoderTare) {
-    //   turretDirectionChanged();
-    // }
-
     currentTurretSpeed = targetTurretSpeed;  //! for now, will probably need to
                                              //! change later, like an interrupt
     currentTurretSpeed = targetTurretSpeed;  //! for now, will probably need to
@@ -573,13 +566,7 @@ void QuarterbackTurret::moveTurret(
       // targetRelativeHeading = heading;
       if (units == degrees)
       {
-        // old code that does not work well
-        //   moveTurret(heading, counts, power, relativeToRobot, ramp);
-        // } else if (units == counts) {
         int8_t sign = copysign(1, currentTurretEncoderCount);
-        // currentTurretEncoderCount = abs(currentTurretEncoderCount);
-        // currentTurretEncoderCount %= 360;
-        // currentTurretEncoderCount *= sign;
 
         targetTurretEncoderCount =
             (int)round((double)heading * QB_COUNTS_PER_TURRET_DEGREE);
@@ -588,27 +575,6 @@ void QuarterbackTurret::moveTurret(
         turretMoving = true;
         // sign now used for target instead of current
         sign = 1;  // 1 when positive, -1 when negative
-        // if the current turret encoder count is over halfway to a full
-        // rotation in either direction if (abs(currentTurretEncoderCount) >
-        // (QB_COUNTS_PER_TURRET_REV / 2)) {
-        //   // ensure that the target and current counts are as close as
-        //   possible
-        sign = 1;  // 1 when positive, -1 when negative
-        // if the current turret encoder count is over halfway to a full
-        // rotation in either direction if (abs(currentTurretEncoderCount) >
-        // (QB_COUNTS_PER_TURRET_REV / 2)) {
-        //   // ensure that the target and current counts are as close as
-        //   possible
-        //   // if adding one rotation's worth of counts would help, do so
-        //   if (currentTurretEncoderCount - (targetTurretEncoderCount +
-        //   QB_COUNTS_PER_TURRET_REV) < currentTurretEncoderCount -
-        //   targetTurretEncoderCount) {
-        //   if (currentTurretEncoderCount - (targetTurretEncoderCount +
-        //   QB_COUNTS_PER_TURRET_REV) < currentTurretEncoderCount -
-        //   targetTurretEncoderCount) {
-        //     targetTurretEncoderCount += QB_COUNTS_PER_TURRET_REV;
-        //   }
-        // }
 
         if (targetTurretEncoderCount < currentTurretEncoderCount) sign = -1;
         if (targetTurretEncoderCount < currentTurretEncoderCount) sign = -1;
@@ -682,21 +648,6 @@ void QuarterbackTurret::updateTurretMotionStatus()
   }
 }
 
-// deprecated
-void QuarterbackTurret::turretDirectionChanged()
-{
-  if (currentTurretSpeed > 0 && targetTurretSpeed < 0)
-  {
-    currentTurretEncoderCount -= slopError;
-    targetTurretEncoderCount -= slopError;
-  }
-  else if (currentTurretSpeed < 0 && targetTurretSpeed > 0)
-  {
-    currentTurretEncoderCount += slopError;
-    targetTurretEncoderCount += slopError;
-  }
-}
-
 //* get current heading in degrees
 int16_t QuarterbackTurret::getCurrentHeading()
 {
@@ -739,62 +690,6 @@ int QuarterbackTurret::CalculateRotation(float currentAngle, float targetAngle)
     return iter;
   else
     return iter * -1;
-}
-
-/*
-// Function to calculate the shortest rotation direction
-// Returns -1 for counterclockwise, 1 for clockwise, or 0 if no rotation
-needed int QuarterbackTurret::CalculateRotation(float currentAngle, float
-targetAngle)
-{
-  // Normalize inputs to [0,360)
-  int cur = NormalizeAngle((int)round(currentAngle));
-  int tgt = NormalizeAngle((int)round(targetAngle));
-
-  int delta = tgt - cur;
-  // Normalize to [-180, 180)
-  while (delta > 180) delta -= 360;
-  while (delta <= -180) delta += 360;
-
-  return delta; // signed shortest rotation in degrees (positive -> rotate
-CW, negative -> CCW)
-}
-
-*/
-
-// not currently used
-int16_t QuarterbackTurret::findNearestHeading(
-    int16_t targetHeading, int16_t currentHeading)
-{
-  // assuming targetHeading is positive
-  int16_t positiveHeading = targetHeading;
-
-  // if targetHeading is negative, convert to a positive heading
-  if (targetHeading < 0) positiveHeading = targetHeading + 360;
-
-  // properly constrain headings to be within (-360, +360)
-  positiveHeading %= 360;
-  int16_t negativeHeading = positiveHeading - 360;
-  if (negativeHeading == -360) negativeHeading = 0;
-
-  // calculate which heading is closer to the current heading
-  int16_t adjustedCurrentHeading = currentHeading % 360;
-
-  if (abs(adjustedCurrentHeading - positiveHeading) <
-      abs(adjustedCurrentHeading - negativeHeading))
-  {
-    return (adjustedCurrentHeading - positiveHeading);
-  }
-  else
-  {
-    return (adjustedCurrentHeading - negativeHeading);
-  }
-}
-
-// not currently used
-int16_t QuarterbackTurret::findNearestHeading(int16_t targetHeading)
-{
-  return findNearestHeading(targetHeading, currentRelativeHeading);
 }
 
 #pragma region Assembly
@@ -883,19 +778,6 @@ void QuarterbackTurret::moveCradle(CradleState state, bool force)
     {
       targetCradleState = state;
 
-      /* Serial.print(F("current state: "));
-      // if (currentCradleState == forward) {
-      //   Serial.print(F("forward | "));
-      // } else if (currentCradleState == back) {
-      //   Serial.print(F("backward | "));
-      // }
-      // Serial.print(F("target state: "));
-      // if (targetCradleState == forward) {
-      //   Serial.print(F("forward | "));
-      // } else if (targetCradleState == back) {
-         Serial.print(F("backward | "));
-       } */
-
       if (targetCradleState != currentCradleState || force)
         moveCradleSubroutine();
 
@@ -915,23 +797,18 @@ void QuarterbackTurret::moveCradle(CradleState state, bool force)
         cradleMoving = false;
         cradleActuator.write(0);
       }
-      // Serial.print(F("past delay? "));
-      // Serial.print((millis() - cradleStartTime) >
-      // QB_CRADLE_TRAVEL_DELAY); Serial.print(F(" | "));
     }
     else if ((millis() - cradleStartTime) > QB_CRADLE_TRAVEL_DELAY)
     {
       currentCradleState = targetCradleState;
       cradleMoving = false;
       cradleActuator.write(0);
-      // Serial.print(F("cradle stopped | "));
     }
   }
   else
   {
     cradleActuator.write(0);
   }
-  // Serial.println();
 }
 #pragma endregion
 
@@ -971,17 +848,8 @@ void QuarterbackTurret::setFlywheelSpeed(float absoluteSpeed, bool forceUpdate)
 
 void QuarterbackTurret::setFlywheelSpeedStage(FlywheelSpeed stage)
 {
-  // If in combine, use different preset flywheel speeds, which are set
-  // for combine distances if(mode == combine){
-  //   targetFlywheelStage = stage;
-  //   setFlywheelSpeed(combineSpeeds[static_cast<int>(targetFlywheelStage)]);
-  // currentFlywheelStage = targetFlywheelStage;
-  //} else{
-  //  targetFlywheelStage = stage;
-  // setFlywheelSpeed(flywheelSpeeds[static_cast<int>(targetFlywheelStage)]);
-  //  currentFlywheelStage = targetFlywheelStage;
-  //}
-  //} ugyuhijougyjhuiouighugycf
+  // If in combine, use different preset flywheel speeds, which are set for
+  // combine distances
   targetFlywheelStage = stage;
   setFlywheelSpeed(flywheelSpeeds[static_cast<uint8_t>(targetFlywheelStage)]);
   currentFlywheelStage = targetFlywheelStage;
@@ -1136,10 +1004,6 @@ void QuarterbackTurret::readTargetingInfo()
     // Find x, y (we ignore z and q for now, but parse them correctly)
     double newX = packet.substring(commaPos[0] + 1, commaPos[1]).toFloat();
     double newY = packet.substring(commaPos[1] + 1, commaPos[2]).toFloat();
-    // double newZ = packet.substring(commaPos[2] + 1,
-    // commaPos[3]).toFloat();
-    // // optional double newQ = packet.substring(commaPos[3] +
-    // 1).toFloat(); // optional
 
     if (type == "QB")
     {
@@ -1385,32 +1249,6 @@ void QuarterbackTurret::combineMoveLeft()
   }
 }
 
-void QuarterbackTurret::testRoutine()
-{
-  this->runningMacro = true;
-  ESP_LOGI(TAG, "test routine called");
-  ESP_LOGI(TAG, "initial ctec: %ld", (long)currentTurretEncoderCount);
-  moveTurretAndWait(90);
-  delay(500);
-  ESP_LOGI(
-      TAG,
-      "ctec after turn to 90 deg: %ld",
-      (long)currentTurretEncoderCount);
-  moveTurretAndWait(-90);
-  delay(500);
-  ESP_LOGI(
-      TAG,
-      "ctec after turn to -90 deg: %ld",
-      (long)currentTurretEncoderCount);
-  moveTurretAndWait(180);
-  delay(500);
-  ESP_LOGI(
-      TAG,
-      "ctec after turn to 180 deg: %ld",
-      (long)currentTurretEncoderCount);
-  this->runningMacro = false;
-}
-
 bool QuarterbackTurret::zeroTurret()
 {
   this->runningMacro = true;
@@ -1609,22 +1447,7 @@ bool QuarterbackTurret::testForDisableOrStop()
     ESP_LOGW(TAG, "emergency stopping");
     return true;
   }
-  //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
-  //   (Touchpad emergency stop has been disabled)
-  //  if (dbSquare->debounceAndPressed(ps5.Square())) {
-  /*if (!enabled) {
-    setEnabled(true);
-    Serial.println(F("setting enabled"));
-  } else {
-    setEnabled(false);
-    Serial.println(F("setting disabled"));
-  }
-  return true;
-} else {
-  // Serial.println(F("not disabling or stopping"));
-  return false;
-}
-}*/
+
   else if (dbSquare->debounceAndPressed(ps5.Square()))
   {
     if (!enabled)
@@ -1716,28 +1539,9 @@ float QuarterbackTurret::turretPIDController(
     // Serial.println(e);
     e = avgError;
 
-    // Add deadband: If error < 3 degrees, stop motor and zero integral to
-    // prevent sway
-    /*if (abs(e - 180) < 3) {
-      float u = 0.0f;  // Declare and set to zero here
-      eIntegral = 0;   // Prevent windup
-      // Optional: Log for debugging (comment out if too spammy)
-      Serial.println("Deadband applied: error < 3 deg, u=0");
-      Serial.println("e after:");
-      Serial.println(abs(e - 180));
-      return u;
-    }*/
-
     // Calculate the derivative and integral values
     float eDerivative = (e - ePrevious);
     eIntegral = eIntegral + e * .01;
-    // eIntegral += e * deltaT;
-
-    // Anti-windup: Clamp integral to prevent excessive buildup
-    // const float integralLimit = 10.0f;  // Adjust based on testing;
-    // prevents windup if (eIntegral > integralLimit) eIntegral =
-    // integralLimit; if (eIntegral < -integralLimit) eIntegral =
-    // -integralLimit;
 
     // Compute the PID control signal
     float u = (kp * e) + (ki * eIntegral) + (kd * eDerivative);
