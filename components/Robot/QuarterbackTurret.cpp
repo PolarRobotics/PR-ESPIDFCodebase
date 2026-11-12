@@ -146,6 +146,7 @@ QuarterbackTurret::QuarterbackTurret(
   this->dbCross = new Debouncer(QB_BASE_DEBOUNCE_DELAY);
 
   // Initialize receiver positions to safe defaults to avoid garbage math
+  // (tracking mode)
   for (int i = 0; i < NUM_RECEIVERS; i++)
   {
     receivers[i].position[0] = 1.0;  // 1 meter default X
@@ -170,6 +171,8 @@ QuarterbackTurret::QuarterbackTurret(
  */
 void QuarterbackTurret::action()
 {
+  // TODO: Complete rewrite of action.  It is a complete disaster of spagetti.
+
   //! Control Schema
   //* Touchpad: Emergency Stop
   //* Square: Toggle Flywheels/Turret On/Off (Safety Switch)
@@ -1046,7 +1049,7 @@ float QuarterbackTurret::setAutoFlywheelSpeed(float distance)
 #pragma endregion
 
 /**
- * @brief Old function to take ball from center
+ * @brief Old macro to take ball from center
  * @author Braylon Rieman
  * @date 2026-11-12
  */
@@ -1261,8 +1264,6 @@ bool QuarterbackTurret::zeroTurret()
       (long)fallingEdgeEncoderCount,
       (long)fallingEdgeTimestamp);
 
-  // Here lastTurretEncoderCount is used as the value of
-  // currentTurretEncoderCount in the previous iteration of the loop
   // Here lastTurretEncoderCount is used as the value of
   // currentTurretEncoderCount in the previous iteration of the loop
   int32_t lastTurretEncoderCount =
