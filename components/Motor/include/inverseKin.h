@@ -14,6 +14,8 @@
 #define MAX_OMEGA 20.0
 #define MAX_VELOCITY 2000
 
+#define PI 3.14159265358979323846
+
 // Wheel offsets from center of robot (x, y)
 constexpr double wheelB_offset[2] = {-4.55, 4.55};   // Front left wheel
 constexpr double wheelA_offset[2] = {4.55, 4.55};    // Front right wheel

@@ -24,7 +24,7 @@ WheelVelocity InverseKin::calculateWheelVelocity(const double offset[2])
   double viy = linear_vel_y - angular_vel * offset[0];
 
   // Calculate magnitude and angle using atan2 for proper quadrant handling
-  double velocity_magnitude = sqrt(vix * vix + viy * viy);
+  double velocity_magnitude = sqrt((vix * vix) + (viy * viy));
   double angle_radians = atan2(viy, vix);
   double angle_degrees = (angle_radians * 180.0 / PI);
 
@@ -44,15 +44,12 @@ void InverseKin::calculateVelocities()
 
   // Baseplate calculation
   baseplate_velocity.magnitude =
-      sqrt(linear_vel_x * linear_vel_x + linear_vel_y * linear_vel_y);
+      sqrt((linear_vel_x * linear_vel_x) + (linear_vel_y * linear_vel_y));
   baseplate_velocity.angle_degrees =
       (atan2(linear_vel_y, linear_vel_x) * 180.0 / PI);
 
   // Check for halt logic
-  if (fabs(baseplate_velocity.magnitude) <= 1 && fabs(angular_vel) <= 1)
-    halt = true;
-  else
-    halt = false;
+  halt = fabs(baseplate_velocity.magnitude) <= 1 && fabs(angular_vel) <= 1;
 }
 
 void InverseKin::normalizeInputs()
@@ -77,14 +74,10 @@ void InverseKin::controllerDeadzone(double *normalized_vel, bool angular)
     *normalized_vel = 0;
     return;
   }
-  else if (*normalized_vel > 0)
-  {
+  if (*normalized_vel > 0)
     *normalized_vel = (*normalized_vel - STICK_DEADZONE) / (1 - STICK_DEADZONE);
-  }
   else if (*normalized_vel < 0)
-  {
     *normalized_vel = (*normalized_vel + STICK_DEADZONE) / (1 - STICK_DEADZONE);
-  }
 
   if (angular)
     *normalized_vel = *normalized_vel * omega;
