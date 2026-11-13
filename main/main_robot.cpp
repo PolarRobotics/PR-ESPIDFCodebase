@@ -57,7 +57,6 @@ static const char *TAG = "MainRobot";
 
 // Primary Parent Component Pointers
 Robot *robot = nullptr;  // subclassed if needed
-Drive *drive = nullptr;  // subclassed if needed
 
 //* How to use subclasses: ((SubclassName*) robot)->function()
 //! You must downcast each time you use a special function
@@ -83,9 +82,9 @@ void onConnection()
   }
 
   // TODO: perm sln
-  if (robotType != quarterback_turret)
-    drive->emergencyStop();
-  else
+  if (robotType != quarterback_turret && driveIsInitialized())
+    emergencyStop();
+  else if (robotType == quarterback_turret)
     ((QuarterbackTurret *)robot)->emergencyStop();
 }
 
@@ -94,9 +93,9 @@ void onDisconnect()
   ESP_LOGI(TAG, "Controller Disconnected.");
 
   // TODO: perm sln
-  if (robotType != quarterback_turret)
-    drive->emergencyStop();
-  else
+  if (robotType != quarterback_turret && driveIsInitialized())
+    emergencyStop();
+  else if (robotType == quarterback_turret)
     ((QuarterbackTurret *)robot)->emergencyStop();
 }
 
@@ -145,69 +144,60 @@ extern "C" void main_app(void)
   {
     //* Each case should have the following:
     // An initialization of `robot` as a new Robot subclass
-    // An initialization of `drive` as a new Drive subclass
-    // A call to drive->setupMotors (or downcast and call to override)
+    // A call to driveInit + setupMotors (except bots without drivetrain)
     case kicker:
       robot = new Kicker(SPECBOT_PIN1, SPECBOT_PIN2, ENC1_CHA, ENC1_CHB);
-      drive = new Drive(kicker, driveParams);
-      drive->setupMotors(DRIVE_M1, DRIVE_M2);
+      driveInit(kicker, driveParams);
+      setupMotors(DRIVE_M1, DRIVE_M2);
       break;
     case quarterback_old:
       robot = new Quarterback(SPECBOT_PIN1, SPECBOT_PIN2, SPECBOT_PIN3);
-      drive = new Drive(quarterback_old, driveParams);
-      drive->setupMotors(DRIVE_M1, DRIVE_M2);
+      driveInit(quarterback_old, driveParams);
+      setupMotors(DRIVE_M1, DRIVE_M2);
       break;
     case center:
       robot = new Center(SPECBOT_PIN1, SPECBOT_PIN2);
-      drive = new Drive(center, driveParams);
-      drive->setupMotors(DRIVE_M1, DRIVE_M2);
+      driveInit(center, driveParams);
+      setupMotors(DRIVE_M1, DRIVE_M2);
       break;
     case center_conversion:
       robot = new CenterConversion(SPECBOT_PIN1);
-      drive = new Drive(center_conversion, driveParams);
-      drive->setupMotors(DRIVE_M1, DRIVE_M2);
+      driveInit(center_conversion, driveParams);
+      setupMotors(DRIVE_M1, DRIVE_M2);
       break;
     case runningback:
       robot = new Lineman();
-      drive = new Drive(runningback, driveParams);
-      drive->setupMotors(DRIVE_M1, DRIVE_M2);
+      driveInit(runningback, driveParams);
+      setupMotors(DRIVE_M1, DRIVE_M2);
       break;
     case quarterback_turret:
       robot = new QuarterbackTurret(
-        M1_IDX,        // left flywheel
-        M2_IDX,        // right flywheel
-        M3_PIN,        // cradle
-        M4_PIN,        // turret
-        SPECBOT_PIN1,  // assembly motor
-        SPECBOT_PIN3,  // magnetometer sda
-        SPECBOT_PIN4,  // magnetometer scl
-        ENC1_CHA,      // turret encoder
-        ENC1_CHB,      // turret encoder
-        ENC2_CHB       // zeroing laser
+          M1_IDX,        // left flywheel
+          M2_IDX,        // right flywheel
+          M3_PIN,        // cradle
+          M4_PIN,        // turret
+          SPECBOT_PIN1,  // assembly motor
+          SPECBOT_PIN3,  // magnetometer sda
+          SPECBOT_PIN4,  // magnetometer scl
+          ENC1_CHA,      // turret encoder
+          ENC1_CHB,      // turret encoder
+          ENC2_CHB       // zeroing laser
       );
       break;
     case quarterback_base:
-      drive = new Drive(quarterback_base, driveParams);
-      drive->setupMotors(DRIVE_M1, DRIVE_M2);
-      robot = new QuarterbackBase(drive);
+      driveInit(quarterback_base, driveParams);
+      setupMotors(DRIVE_M1, DRIVE_M2);
+      robot = new QuarterbackBase();
       break;
     case receiver:
     case lineman:
     default:  // Assume lineman
       robot = new Lineman();
-      {
-        String debugMsg = "01: Instantiating Drive Class";
-        ESP_LOGI(TAG, "%s", debugMsg.c_str());
-      }
-      drive = new Drive(lineman, driveParams);
-      {
-        String debugMsg2 = "03: Call setupMotors";
-        ESP_LOGI(TAG, "%s", debugMsg2.c_str());
-      }
-      drive->setupMotors(DRIVE_M1, DRIVE_M2);
+      driveInit(lineman, driveParams);
+      setupMotors(DRIVE_M1, DRIVE_M2);
   }
 
-  drive->printSetup();
+  if (driveIsInitialized()) printSetup();
 
   //! Activate Pairing Process: this code is BLOCKING, not instantaneous
   activatePairing();
@@ -217,8 +207,11 @@ extern "C" void main_app(void)
   ps5.attachOnDisconnect(onDisconnect);
 
   ESP_LOGI(TAG, "Initializing hardware serial...");
-  HWSerial.begin(115200, SERIAL_8N1, 16,
-                 17);  // 9600 baudrate default for USBSabertooth
+  HWSerial.begin(
+      115200,
+      SERIAL_8N1,
+      16,
+      17);  // 9600 baudrate default for USBSabertooth
   {
     ;  // wait for serial port to connect
   }
@@ -244,39 +237,39 @@ extern "C" void main_app(void)
       // ps5.setLed(255, 0, 0);   // set LED red
 
       //* QBv3 Turret doesn't have drive, so this is a temporary measure to
-      // avoid NPEs and chaos
+      // avoid chaos when drive was never initialized
       // TODO: find better solution
-      if (robotType != quarterback_turret)
-     {
+      if (driveIsInitialized())
+      {
         // ESP_LOGI(TAG, "Setting stick power...");
-        drive->setStickPwr(ps5.LStickY(), ps5.RStickX());
+        setStickPwr(ps5.LStickY(), ps5.RStickX());
 
         // determine BSN percentage (boost, slow, or normal)
         // ESP_LOGI(TAG, "Determining BSN (Boost, Slow, Normal) percentage...");
         if (ps5.Touchpad())
         {
-          drive->emergencyStop();
-          drive->setSpeedScalar(Drive::BRAKE);
+          emergencyStop();
+          setSpeedScalar(BRAKE);
         }
         // Order matters here: should be
         // Slow -> Superboost -> Boost -> Normal, since the first two are
         // overrides of the last two
         else if (ps5.L1())
         {
-          drive->setSpeedScalar(Drive::SLOW);
+          setSpeedScalar(SLOW);
         }
         else if (ps5.R2())
         {
-          drive->setSpeedValue(SUPERBOOST);
+          setSpeedValue(SUPERBOOST);
         }
         else if (ps5.R1())
         {
-          drive->setSpeedScalar(Drive::BOOST);
+          setSpeedScalar(BOOST);
           // ps5.setLed(0, 255, 0);   // set LED red
         }
         else
         {
-          drive->setSpeedScalar(Drive::NORMAL);
+          setSpeedScalar(NORMAL);
         }
 
         // Manual Home / Away Position Setting
@@ -286,34 +279,35 @@ extern "C" void main_app(void)
         //* Update the motors based on the inputs from the controller
         //* Can change functionality depending on subclass, like robot.action()
         // ESP_LOGI(TAG, "Updating motors based on controller inputs...");
-        drive->update();
-        // drive->printDebugInfo(); // comment this line out to reduce compile
-        // time and memory usage drive->printCsvInfo(); // prints info to serial
+        driveUpdate();
+        // printDebugInfo(); // comment this line out to reduce compile
+        // time and memory usage printCsvInfo(); // prints info to serial
         // monitor in a csv (comma separated value) format
       }
       //! Performs all special robot actions depending on the instantiated Robot
       //! subclass
-      
+
       // ESP_LOGI(TAG, "Performing robot actions...");
       robot->action();
 
       // DEBUGGING:
-      // drive->printDebugInfo(); // comment this line out to reduce compile
-      // time and memory usage drive->printCsvInfo(); // prints info to serial
+      // printDebugInfo(); // comment this line out to reduce compile
+      // time and memory usage printCsvInfo(); // prints info to serial
       // monitor in a csv (comma separated value) format
     }
     else
     {  // no response from PS5 controller within last 300 ms, so stop
       // ESP_LOGI(TAG, "Controller disconnected");
-      if (robotType != quarterback_turret)
+      if (driveIsInitialized())
       {
         // Emergency stop if the controller disconnects
         // ESP_LOGI(TAG, "Emergency stop due to controller disconnect.");
-        drive->emergencyStop();
+        emergencyStop();
       }
-      else
+      else if (robotType == quarterback_turret)
       {
-        // ESP_LOGI(TAG, "Emergency stop due to controller disconnect for quarterback turret.");
+        // ESP_LOGI(TAG, "Emergency stop due to controller disconnect for
+        // quarterback turret.");
         ((QuarterbackTurret *)robot)->emergencyStop();
       }
     }

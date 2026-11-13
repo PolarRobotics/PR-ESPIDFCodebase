@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 #include <PolarRobotics.h>
-#include <Drive.h>
 
 /**
  * @brief Robot Base Class Header File
@@ -15,8 +14,8 @@
  * This will allow main to perform runtime polymorphism, effectively simplifying the main
  * code while still allowing individual robot types to have their own special actions.
  *
- * Each class inheriting from Robot must implement the two virtual functions.
- * It should also set its own drive to a derived class of Drive if necessary.
+ * Each class inheriting from Robot must implement the virtual action() function.
+ * Drive is a separate imperative module and should remain decoupled from Robot.
  **/
 
 class Robot
@@ -38,4 +37,4 @@ public:
   virtual void action() = 0;
 };
 
-#endif // ROBOT_H
+#endif

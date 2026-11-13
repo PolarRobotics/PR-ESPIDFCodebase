@@ -11,6 +11,7 @@
 #ifndef QUARTERBACK_TURRET_H
 #define QUARTERBACK_TURRET_H
 
+#include <Drive.h>
 #include <Robot.h>
 #include <PWMMotor.h>
 #include <MotorEnums.h>

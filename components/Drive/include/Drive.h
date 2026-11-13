@@ -1,13 +1,9 @@
 #pragma once
 
-#include <esp_log.h>
 #include <stdint.h>
 
 #include "BotTypes.h"
 #include "DriveParameters.h"
-#include "MotorTypes.h"
-#include "PWMMotor.h"
-#include "SerialMotor.h"
 
 #ifndef NUM_MOTORS
 #define NUM_MOTORS 2
@@ -82,79 +78,38 @@
 // Max power value accepted via USBSabertooth Packetized Serial Protocol
 #define SABERTOOTH_MAX_POWER 2047
 
-class Drive
+enum DriveSpeed : uint8_t
 {
- private:
-  BotType botType;
-  MotorType motorType;
-  MotorInterfaceType motorInterfaceType;
-  float gearRatio;
-  bool hasEncoders;
-
-  float speedScalar;
-  float wheelBase;
-  int omega;
-  int omega_L, omega_R;
-  float R, R_Max, R_Min;
-  int max_RPM;
-  int enableTurnSensitivity;
-  // Turn sensitivity variables
-  float scaledSensitiveTurn = 0.0F;
-  float turnSensitivityScalar = 0.0F;
-  float domainAdjustment = 0.0F;
-
-  void calcTurning(float stickTrn, float fwdLinPwr);
-
- protected:
-  // Drive can be either PWM or Packet Serial depending on `motorInterfaceType`.
-  PWMMotor pwmM1, pwmM2;
-  SerialMotor serialM1, serialM2;
-  float stickForwardRev, stickTurn;
-  float lastTurnPwr;
-  float turnPower;
-
-  float requestedMotorPower[NUM_MOTORS];
-  int requestedMotorPowerSerial[NUM_MOTORS];
-  // Always tracked as normalized percent [-1, 1] for telemetry.
-  float trackingMotorPower[NUM_MOTORS];
-  float lastRampPower[NUM_MOTORS];
-  float turnMotorValues[NUM_MOTORS];
-
- public:
-  enum Speed : uint8_t
-  {
-    BOOST,
-    NORMAL,
-    SLOW,
-    BRAKE
-  };
-
-  Drive();
-  Drive(BotType botType, MotorType motorType);
-  Drive(
-      BotType botType,
-      drive_param_t driveParams,
-      bool hasEncoders = false,
-      int turnFunction = 2);
-  void setupMotors(uint8_t lpin, uint8_t rpin);
-  void setupMotors(
-      uint8_t lpin,
-      uint8_t rpin,
-      uint8_t left_enc_a_pin,
-      uint8_t left_enc_b_pin,
-      uint8_t right_enc_a_pin,
-      uint8_t right_enc_b_pin);
-  void setStickPwr(int8_t leftY, int8_t rightX);
-  float getForwardPower() const;
-  float getTurnPower() const;
-  void setSpeedScalar(Speed bns);
-  void setSpeedValue(float speed_pct);
-  float getSpeedScalar() const;
-  void emergencyStop();
-  void generateMotionValues(float tankModePct = TANK_MODE_PCT);
-  virtual void update();
-  void printSetup();
-  virtual void printDebugInfo();
-  virtual void printCsvInfo();
-  int getMotorWifiValue(int motorRequested);
+  BOOST,
+  NORMAL,
+  SLOW,
+  BRAKE
 };
+
+void driveInit(
+    BotType botType,
+    drive_param_t driveParams,
+    bool hasEncoders = false,
+    int turnFunction = 2);
+bool driveIsInitialized();
+void setupMotors(uint8_t lpin, uint8_t rpin);
+void setupMotors(
+    uint8_t lpin,
+    uint8_t rpin,
+    uint8_t left_enc_a_pin,
+    uint8_t left_enc_b_pin,
+    uint8_t right_enc_a_pin,
+    uint8_t right_enc_b_pin);
+void setStickPwr(int8_t leftY, int8_t rightX);
+float getForwardPower();
+float getTurnPower();
+void setSpeedScalar(DriveSpeed bns);
+void setSpeedValue(float speed_pct);
+float getSpeedScalar();
+void emergencyStop();
+void generateMotionValues(float tankModePct = TANK_MODE_PCT);
+void driveUpdate();
+void printSetup();
+void printDebugInfo();
+void printCsvInfo();
+int getMotorWifiValue(int motorRequested);
