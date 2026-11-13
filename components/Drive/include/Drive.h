@@ -1,11 +1,13 @@
 #pragma once
 
-#include <BotTypes.h>
-#include <DriveParameters.h>
-#include <MotorTypes.h>
-#include <PWMMotor.h>
-#include <SerialMotor.h>
+#include <esp_log.h>
 #include <stdint.h>
+
+#include "BotTypes.h"
+#include "DriveParameters.h"
+#include "MotorTypes.h"
+#include "PWMMotor.h"
+#include "SerialMotor.h"
 
 #ifndef NUM_MOTORS
 #define NUM_MOTORS 2
@@ -69,16 +71,16 @@
 #define BRAKE_BUTTON_PCT 0
 
 // Turn model / telemetry constants
-constexpr int MIN_DRIVE_RPM = 200;
-constexpr float TURN_SENSITIVITY_SCALAR = 0.49F;
-constexpr float TURN_SENSITIVITY_HALF = 0.5F;
-constexpr float TURN_SENSITIVITY_CUBIC_EXPONENT = 3.0F;
-constexpr int WIFI_MOTOR_PERCENT_SCALE = 100;
+#define MIN_DRIVE_RPM 200
+#define TURN_SENSITIVITY_SCALAR 0.49F
+#define TURN_SENSITIVITY_HALF 0.5F
+#define TURN_SENSITIVITY_CUBIC_EXPONENT 3.0F
+#define WIFI_MOTOR_PERCENT_SCALE 100
 
 // !TODO: not sure if this is the correct location for this array
 // This array must follow the same order as MotorType to be used effectively
 // Max power value accepted via USBSabertooth Packetized Serial Protocol
-constexpr int SABERTOOTH_MAX_POWER = 2047;
+#define SABERTOOTH_MAX_POWER 2047
 
 class Drive
 {
