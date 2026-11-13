@@ -22,8 +22,6 @@
 class QuarterbackBase : public Robot
 {
 private:
-  Drive *drive;
-
   /* VARIABLES FOR WIFI CONNECTIVITY
       - motor1Value motor2Value:    The current drive motor values
       - UARTMessage:                The string version of the message to send from the base of the QB to it's server ESP also mounted on the base
@@ -33,7 +31,7 @@ private:
   String UARTMessage = "";
 
 public:
-  QuarterbackBase(Drive *drive);
+  QuarterbackBase();
   void action() override; //! robot subclass must override action
   void updateWriteMotorValues();
   void bottomQBSetup();
