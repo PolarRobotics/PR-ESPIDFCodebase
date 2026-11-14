@@ -1,17 +1,20 @@
-#include <Drive.h>
+#include "Drive.h"
 
-#include "esp_log.h"
+#include <MotorTypes.h>
+#include <PWMMotor.h>
+#include <SerialMotor.h>
+#include <esp_log.h>
+#include <math.h>
 
 static const char *TAG = "Drive";
 
 /**
- * @brief Drive Class, base class for specialized drive classes, this
- * configuration is intended for the standard linemen. this class takes the
- * stick input, scales the turning value for each motor and ramps that value
- * over time, then sets the ramped value to the motors
+ * @brief Drive module, base drive configuration intended for the standard
+ * linemen. this module takes the stick input, scales the turning value for each
+ * motor and ramps that value over time, then sets the ramped value to the
+ * motors
  * @authors Rhys Davies (@rdavies02), Max Phillips (@RyzenFromFire)
  *
- * @class
  *    2 motor configuration shown below
  *
  *               ^
@@ -36,29 +39,55 @@ static const char *TAG = "Drive";
  *  - add a turning radius parameter, needed for the kicker
  *  - add mechanium driving code, for the new center, needed next semester
  * (Spring 2023)
- *
- * Default configuration:
- * @param leftmotoridx the arduino pin needed for the left motor, needed for
- * servo
- * @param rightmotoridx the arduino pin needed for the right motor, needed for
- * servo
  */
 
-Drive::Drive(
-    BotType botType,
+// Module state (former Drive class members)
+static bool driveInitialized = false;
+static BotType botType;
+static MotorType motorType;
+static MotorInterfaceType motorInterfaceType;
+static float gearRatio;
+static bool hasEncoders;
+
+static float speedScalar;
+static float wheelBase;
+static int omega;
+static int omega_L, omega_R;
+static float turningRadius, turningRadiusMax, turningRadiusMin;
+static int enableTurnSensitivity;
+// Turn sensitivity variables
+static float scaledSensitiveTurn = 0.0F;
+static float turnSensitivityScalar = 0.0F;
+static float domainAdjustment = 0.0F;
+
+// Drive can be either PWM or Packet Serial depending on `motorInterfaceType`.
+static PWMMotor pwmM1, pwmM2;
+static SerialMotor serialM1, serialM2;
+static float stickForwardRev, stickTurn;
+
+static float requestedMotorPower[NUM_MOTORS];
+static int requestedMotorPowerSerial[NUM_MOTORS];
+// Always tracked as normalized percent [-1, 1] for telemetry.
+static float trackingMotorPower[NUM_MOTORS];
+static float lastRampPower[NUM_MOTORS];
+static float turnMotorValues[NUM_MOTORS];
+
+static void calcTurning(float stickTrn, float fwdLinPwr);
+
+void driveInit(
+    BotType botTypeIn,
     drive_param_t driveParams,
-    bool hasEncoders,
+    bool hasEncodersIn,
     int turnFunction)
 {
-  this->botType = botType;
-  this->motorType = driveParams.motor_type;
-  this->motorInterfaceType = MOTORTYPE_INTERFACE_ARRAY[driveParams.motor_type];
-  this->hasEncoders = hasEncoders;
-  this->motorType = driveParams.motor_type;
-  this->gearRatio = driveParams.gear_ratio;
-  this->wheelBase = driveParams.wheel_base;
-  this->R_Min = driveParams.r_min;
-  this->R_Max = driveParams.r_max;
+  botType = botTypeIn;
+  motorType = driveParams.motor_type;
+  motorInterfaceType = MOTORTYPE_INTERFACE_ARRAY[driveParams.motor_type];
+  hasEncoders = hasEncodersIn;
+  gearRatio = driveParams.gear_ratio;
+  wheelBase = driveParams.wheel_base;
+  turningRadiusMin = driveParams.r_min;
+  turningRadiusMax = driveParams.r_max;
 
   // initialize arrays
   for (int i = 0; i < NUM_MOTORS; i++)
@@ -72,7 +101,7 @@ Drive::Drive(
   omega = 0;
   omega_L = 0;
   omega_R = 0;
-  R = 0.0F;
+  turningRadius = 0.0F;
 
   // initialize turn sensitivity variables
   // 0 for linear, 1 for Rhys's function, 2 for cubic
@@ -84,26 +113,25 @@ Drive::Drive(
       1.0F / logf(
                  (1.0F - (turnSensitivityScalar + TURN_SENSITIVITY_HALF)) /
                  (turnSensitivityScalar + TURN_SENSITIVITY_HALF));
+
+  driveInitialized = true;
 }
+
+bool driveIsInitialized() { return driveInitialized; }
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters) -- intentional L/R pin
 // pair
-void Drive::setupMotors(uint8_t lpin, uint8_t rpin)
+void setupMotors(uint8_t lpin, uint8_t rpin)
 {
-  // this->motoridxs[0] = lpin, this->motoridxs[1] = rpin;
-  //  this->M1 = new MotorControl(motorType, false, this->gearRatio);
-  //  this->M2 = new MotorControl(motorType, false, this->gearRatio);
-
-  // M1->setup(lpin), M2->setup(rpin);
   if (motorInterfaceType == pwm)
   {
-    pwmM1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio);
-    pwmM2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio);
+    pwmM1.setup(lpin, motorType, hasEncoders, gearRatio);
+    pwmM2.setup(rpin, motorType, hasEncoders, gearRatio);
   }
   else
   {
-    serialM1.setup(lpin, this->motorType, this->hasEncoders, this->gearRatio);
-    serialM2.setup(rpin, this->motorType, this->hasEncoders, this->gearRatio);
+    serialM1.setup(lpin, motorType, hasEncoders, gearRatio);
+    serialM2.setup(rpin, motorType, hasEncoders, gearRatio);
   }
 }
 
@@ -111,8 +139,8 @@ void Drive::setupMotors(uint8_t lpin, uint8_t rpin)
  * setupMotors
  * @brief to be called when setting up a motor with an encoder
  */
-void Drive::setupMotors(  // NOLINT(bugprone-easily-swappable-parameters) --
-                          // intentional pin/encoder args
+void setupMotors(  // NOLINT(bugprone-easily-swappable-parameters) --
+                   // intentional pin/encoder args
     uint8_t lpin,
     uint8_t rpin,  // NOLINT(bugprone-easily-swappable-parameters)
     uint8_t left_enc_a_pin,
@@ -120,24 +148,20 @@ void Drive::setupMotors(  // NOLINT(bugprone-easily-swappable-parameters) --
     uint8_t right_enc_a_pin,
     uint8_t right_enc_b_pin)
 {
-  // this->motoridxs[0] = lpin, this->motoridxs[1] = rpin;
-  //  this->M1 = new MotorControl(motorType, true, this->gearRatio);
-  //  this->M2 = new MotorControl(motorType, true, this->gearRatio);
-
   if (motorInterfaceType == pwm)
   {
     pwmM1.setup(
         lpin,
-        this->motorType,
-        this->hasEncoders,
-        this->gearRatio,
+        motorType,
+        hasEncoders,
+        gearRatio,
         left_enc_a_pin,
         left_enc_b_pin);
     pwmM2.setup(
         rpin,
-        this->motorType,
-        this->hasEncoders,
-        this->gearRatio,
+        motorType,
+        hasEncoders,
+        gearRatio,
         right_enc_a_pin,
         right_enc_b_pin);
   }
@@ -145,16 +169,16 @@ void Drive::setupMotors(  // NOLINT(bugprone-easily-swappable-parameters) --
   {
     serialM1.setup(
         lpin,
-        this->motorType,
-        this->hasEncoders,
-        this->gearRatio,
+        motorType,
+        hasEncoders,
+        gearRatio,
         left_enc_a_pin,
         left_enc_b_pin);
     serialM2.setup(
         rpin,
-        this->motorType,
-        this->hasEncoders,
-        this->gearRatio,
+        motorType,
+        hasEncoders,
+        gearRatio,
         right_enc_a_pin,
         right_enc_b_pin);
   }
@@ -173,7 +197,7 @@ void Drive::setupMotors(  // NOLINT(bugprone-easily-swappable-parameters) --
  * float (0 to 255)
  */
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters) -- intentional stick
-void Drive::setStickPwr(int8_t leftY, int8_t rightX)
+void setStickPwr(int8_t leftY, int8_t rightX)
 {
   // left stick all the way forward is 0, backward is 255
   // +: forward, -: backward. needs to be negated so that forward is forward and
@@ -201,9 +225,9 @@ void Drive::setStickPwr(int8_t leftY, int8_t rightX)
     stickTurn = (stickTurn + STICK_DEADZONE) / (1.0F - STICK_DEADZONE);
 }
 
-float Drive::getForwardPower() const { return stickForwardRev; }
+float getForwardPower() { return stickForwardRev; }
 
-float Drive::getTurnPower() const { return stickTurn; }
+float getTurnPower() { return stickTurn; }
 
 /**
  * @brief setSpeedScalar sets the internal variable to the requested percent
@@ -212,13 +236,13 @@ float Drive::getTurnPower() const { return stickTurn; }
  * @author Rhys Davies
  * Created: 9-12-2022
  *
- * @param bns input speed choice Drive::Boost, Drive::Normal, Drive::Slow
+ * @param bns input speed choice BOOST, NORMAL, SLOW, BRAKE
  */
-void Drive::setSpeedScalar(Speed bns)
+void setSpeedScalar(DriveSpeed bns)
 {
   // set the scalar to zero if the requested value is greater than 1, this is
   // not entirely necessary, but is a safety
-  if (bns == Speed::BRAKE)
+  if (bns == BRAKE)
     speedScalar = BRAKE_BUTTON_PCT;
   else
     // Grab the predefined bns values from the
@@ -230,12 +254,12 @@ void Drive::setSpeedScalar(Speed bns)
  * @brief setSpeedValue overrides the default predefined values from
  * MOTORTYPE_BNS_ARRAY
  */
-void Drive::setSpeedValue(float speed_pct)
+void setSpeedValue(float speed_pct)
 {
-  this->speedScalar = constrain(speed_pct, 0.0F, 1.0F);
+  speedScalar = constrain(speed_pct, 0.0F, 1.0F);
 }
 
-float Drive::getSpeedScalar() const { return this->speedScalar; }
+float getSpeedScalar() { return speedScalar; }
 
 /**
  * generateTurnScalar takes the input stick power and scales the max turning
@@ -243,7 +267,7 @@ float Drive::getSpeedScalar() const { return this->speedScalar; }
  * @authors Grant Brautigam, Rhys Davies, Max Phillips
  * Created: 9-12-2022
  */
-void Drive::generateMotionValues(float tankModePct)
+void generateMotionValues(float tankModePct)
 {
   if (fabsf(stickForwardRev) < STICK_DEADZONE)
   {  // fwd stick is zero
@@ -288,12 +312,6 @@ void Drive::generateMotionValues(float tankModePct)
       */
       if (stickTurn > STICK_DEADZONE)
       {  // turn Right
-        // switch(abs((speedScalar * stickForwardRev)) > abs(lastRampPower[0]))
-        // {
-        //     case true: calcTurning(stickTurn, abs(lastRampPower[0])); break;
-        //     case false: calcTurning(stickTurn, abs(speedScalar *
-        //     stickForwardRev)); break;
-        // }
         calcTurning(abs(stickTurn), abs(speedScalar * stickForwardRev));
 
         requestedMotorPower[0] = copysign(turnMotorValues[0], stickForwardRev);
@@ -301,13 +319,6 @@ void Drive::generateMotionValues(float tankModePct)
       }
       else if (stickTurn < -STICK_DEADZONE)
       {  // turn Left
-        // switch(abs((speedScalar * stickForwardRev)) > abs(lastRampPower[1]))
-        // {
-        //     case true: calcTurning(stickTurn, abs(lastRampPower[1])); break;
-        //     case false: calcTurning(stickTurn, abs(speedScalar *
-        //     stickForwardRev)); break;
-        // }
-
         calcTurning(abs(stickTurn), abs(speedScalar * stickForwardRev));
 
         requestedMotorPower[0] = copysign(turnMotorValues[1], stickForwardRev);
@@ -330,21 +341,21 @@ void Drive::generateMotionValues(float tankModePct)
  *
  * Differential drive turning model
  *
- * omega_R = (omega/R)*(R + l/2)
- * omega_L = (omega/R)*(R - l/2)
+ * omega_R = (omega/turningRadius)*(turningRadius + l/2)
+ * omega_L = (omega/turningRadius)*(turningRadius - l/2)
  *
  * omega_R: right wheel angular velocity
- * omega_R: left wheel angular velocity
+ * omega_L: left wheel angular velocity
  * omega: the rate of rotation around the ICC (Instantaneous Center of
- * Curvature) l: distance between each wheel (wheelbase) R: distance the ICC
- * from the center of the wheelbase (l/2)
+ * Curvature) l: distance between each wheel (wheelbase) turningRadius:
+ * distance from the ICC to the center of the wheelbase
  *
  * @param stickTrn the absoulte value of the current turning stick input
  * @param fwdLinPwr the non-turning motor value from the previous loop, which
  * was actually sent to the motor
  */
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters) -- intentional turn
-void Drive::calcTurning(float stickTrn, float fwdLinPwr)
+static void calcTurning(float stickTrn, float fwdLinPwr)
 {
   MotorControlCommon *leftMotor =
       (motorInterfaceType == pwm)
@@ -355,8 +366,8 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr)
           ? static_cast<MotorControlCommon *>(&pwmM2)
           : static_cast<MotorControlCommon *>(&serialM2);
 
-  // R_Min = R_Min + abs(stickForwardRev)*(R_High_Min - R_Min);
-  // // start of turn scaling
+  // turningRadiusMin = turningRadiusMin + abs(stickForwardRev)*(R_High_Min -
+  // turningRadiusMin); // start of turn scaling
   if (enableTurnSensitivity == 0)  // linear
     scaledSensitiveTurn = stickTrn;
   else if (enableTurnSensitivity == 1)  // rhys's function
@@ -369,8 +380,10 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr)
   else  // cubic
     scaledSensitiveTurn = powf(stickTrn, TURN_SENSITIVITY_CUBIC_EXPONENT);
 
-  // Calculate the R value from the stick turn input
-  R = (1.0F - scaledSensitiveTurn) * (R_Max - R_Min) + R_Min;
+  // Calculate turning radius (ICC distance) from the stick turn input
+  turningRadius =
+      (1.0F - scaledSensitiveTurn) * (turningRadiusMax - turningRadiusMin) +
+      turningRadiusMin;
 
   // calculate the requested angular velocity for the robot
   omega = abs(leftMotor->Percent2RPM(fwdLinPwr));
@@ -378,8 +391,10 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr)
   // calculate the rpm for the left/right wheels in float, then store as int
   const float halfWheelBase = wheelBase / 2.0F;
   const float omegaF = static_cast<float>(omega);
-  omega_L = static_cast<int>((omegaF / R) * (R + halfWheelBase));
-  omega_R = static_cast<int>((omegaF / R) * (R - halfWheelBase));
+  omega_L = static_cast<int>(
+      (omegaF / turningRadius) * (turningRadius + halfWheelBase));
+  omega_R = static_cast<int>(
+      (omegaF / turningRadius) * (turningRadius - halfWheelBase));
 
   // ensure the left wheel RPM doesnt go below the min or above the max RPM
   omega_L = constrain(omega_L, MIN_DRIVE_RPM, leftMotor->getMaxRPM());
@@ -390,11 +405,8 @@ void Drive::calcTurning(float stickTrn, float fwdLinPwr)
   turnMotorValues[1] = rightMotor->RPM2Percent(omega_R);
 }
 
-void Drive::emergencyStop()
+void emergencyStop()
 {
-  // M1->writelow(), M2->writelow();
-  // M1.writelow(), M2.writelow();
-
   if (motorInterfaceType == pwm)
   {
     pwmM1.write(0.0F);
@@ -407,21 +419,21 @@ void Drive::emergencyStop()
   }
 }
 
-void Drive::printSetup()
+void printSetup()
 {
   const int maxRpm =
       (motorInterfaceType == pwm) ? pwmM1.getMaxRPM() : serialM1.getMaxRPM();
 
-  ESP_LOGI(TAG, "Drive::printSetup():");
-  ESP_LOGI(TAG, "MotorType: %s", getMotorTypeString(this->motorType));
-  ESP_LOGI(TAG, "GearRatio: %f", (double)this->gearRatio);
-  ESP_LOGI(TAG, "R_Min: %f", (double)this->R_Min);
-  ESP_LOGI(TAG, "R_Max: %f", (double)this->R_Max);
+  ESP_LOGI(TAG, "printSetup():");
+  ESP_LOGI(TAG, "MotorType: %s", getMotorTypeString(motorType));
+  ESP_LOGI(TAG, "GearRatio: %f", (double)gearRatio);
+  ESP_LOGI(TAG, "turningRadiusMin: %f", (double)turningRadiusMin);
+  ESP_LOGI(TAG, "turningRadiusMax: %f", (double)turningRadiusMax);
   ESP_LOGI(TAG, "Min RPM: %d", MIN_DRIVE_RPM);
   ESP_LOGI(TAG, "MAX RPM: %d", maxRpm);
   ESP_LOGI(TAG, "TurnSensitivityMode: %d", enableTurnSensitivity);
   ESP_LOGI(TAG, "Encoders: ");
-  ESP_LOGI(TAG, "Has Encoders? %s", this->hasEncoders ? "True" : "False");
+  ESP_LOGI(TAG, "Has Encoders? %s", hasEncoders ? "True" : "False");
 }
 
 /**
@@ -431,7 +443,7 @@ void Drive::printSetup()
  * @author
  * Updated:
  */
-void Drive::printDebugInfo()
+void printDebugInfo()
 {
   ESP_LOGI(
       TAG,
@@ -446,25 +458,6 @@ void Drive::printDebugInfo()
       requestedMotorPowerSerial[1]);
 }
 /**
- * @brief Prints variables to the serial monitor in a csv format
- * This function is important for data acquisition
- * The options below are configurable, change them as you need
- * Remember to adhere to printing guidelines under PR-Docs
- * @author Corbin Hibler
- * Updated: 2023-10-30
- */
-void Drive::printCsvInfo()
-{
-  ESP_LOGI(
-      TAG,
-      "header1,%d,header2,%d,header3,%d,header4,%d,header5,%d",
-      1,
-      2,
-      3,
-      4,
-      5);  // last line is -ALWAYS- println or else the python script will break
-}
-/**
  * @brief updates the motors after calling all the functions to generate
  * turning and scaling motor values, the intention of this is so the
  * programmer doesnt have to call all the functions, this just handles it,
@@ -474,7 +467,7 @@ void Drive::printCsvInfo()
  * @author Rhys Davies
  * Created: 9-12-2022
  */
-void Drive::update()
+void driveUpdate()
 {
   const bool isRunningback = (botType == runningback);
   const bool isStrengthLineman = (botType == strength_lineman);
@@ -558,7 +551,7 @@ void Drive::update()
   trackingMotorPower[1] = requestedMotorPower[1];
 }
 
-int Drive::getMotorWifiValue(int motorRequested)
+int getMotorWifiValue(int motorRequested)
 {
   int valueToReturn = 0;
   if (motorRequested >= 0 && motorRequested < NUM_MOTORS)
