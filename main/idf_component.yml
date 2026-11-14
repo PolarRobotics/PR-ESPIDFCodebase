@@ -14,12 +14,6 @@ dependencies:
   # the IDF version used for that release. 
   espressif/arduino-esp32: "==3.3.12"
 
-  # PR-Lib Motor Library
-  pr-lib-motor:
-    version: '*'
-    git: https://github.com/PolarRobotics/PR-Lib.git
-    path: components/motor
-
   # PR-Lib version of Adafruit LIS3MDL
   adafruit_lis3mdl:
     version: '*'
