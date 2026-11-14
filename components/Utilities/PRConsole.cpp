@@ -1,4 +1,5 @@
 #include <PRConsole.h>
+#include <pairing.h>
 
 static const char *TAG = "Console";
 static ConfigManager *sConfig = nullptr;
@@ -35,6 +36,27 @@ int console_write_bot_config(int argc, char **argv)
     return 0;
 }
 
+int console_connect_mac(int argc, char **argv)
+{
+    if (argc != 2)
+    {
+        printf("Usage: connect <MAC_ADDRESS>\\n");
+        return 1;
+    }
+
+    const char *mac = argv[1];
+    printf("Connecting to %s...\\n", mac);
+
+    if (!connectToMac(mac))
+    {
+        printf("Failed to connect to %s.\\n", mac);
+        return 1;
+    }
+
+    printf("Connected to %s.\\n", mac);
+    return 0;
+}
+
 esp_err_t register_console_commands(void)
 {
     esp_console_cmd_t writeCmd = {};
@@ -44,7 +66,20 @@ esp_err_t register_console_commands(void)
     writeCmd.func = &console_write_bot_config;
     writeCmd.argtable = nullptr;
 
-    return esp_console_cmd_register(&writeCmd);
+    const esp_err_t writeErr = esp_console_cmd_register(&writeCmd);
+    if (writeErr != ESP_OK)
+    {
+        return writeErr;
+    }
+
+    esp_console_cmd_t connectCmd = {};
+    connectCmd.command = "connect";
+    connectCmd.help = "Connect to PS5 controller by MAC: connect <MAC_ADDRESS>";
+    connectCmd.hint = nullptr;
+    connectCmd.func = &console_connect_mac;
+    connectCmd.argtable = nullptr;
+
+    return esp_console_cmd_register(&connectCmd);
 }
 
 void console_task(void *pvParameters)
@@ -83,7 +118,7 @@ void console_task(void *pvParameters)
     linenoiseSetMultiLine(true);
     linenoiseAllowEmpty(false);
 
-    ESP_LOGI(TAG, "Console ready on UART%d. Run 'help' or 'write <index>'.", CONFIG_ESP_CONSOLE_UART_NUM);
+    ESP_LOGI(TAG, "Console ready on UART%d. Run 'help', 'write <index>', or 'connect <MAC>'.", CONFIG_ESP_CONSOLE_UART_NUM);
     while (true)
     {
         char *line = linenoise("robot> ");

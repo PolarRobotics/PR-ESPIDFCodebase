@@ -165,6 +165,50 @@ void getAddress(const char *&addr)
     addr = storedAddress.c_str();
 }
 
+/// @brief Persist a MAC address and attempt an immediate PS5 connection
+/// @param mac controller MAC address string (e.g. "bc:c7:46:00:7b:bb")
+/// @param timeoutMs how long to wait for connection before giving up
+/// @return true if connected within timeout, false otherwise
+bool connectToMac(const char *mac, int timeoutMs)
+{
+  if (mac == nullptr || mac[0] == '\0')
+  {
+    ESP_LOGE(TAG, "connectToMac: MAC address is empty");
+    return false;
+  }
+
+  storeAddress(mac, true);
+
+  ESP_LOGI(TAG, "Connecting to PS5 Controller @ %s", mac);
+  if (!ps5.begin(mac))
+  {
+    ESP_LOGE(TAG, "connectToMac: invalid MAC address '%s'", mac);
+    return false;
+  }
+
+  int timer = 0;
+  while (timer < timeoutMs && !ps5.isConnected())
+  {
+    delay(LOOP_DELAY);
+    timer += LOOP_DELAY;
+
+    if (timer % (5 * LOOP_DELAY) == 0)
+    {
+      toggleBuiltInLED();
+    }
+  }
+
+  if (ps5.isConnected())
+  {
+    ESP_LOGI(TAG, "PS5 Controller Connected!");
+    setBuiltInLED(true);
+    return true;
+  }
+
+  ESP_LOGW(TAG, "connectToMac: timed out waiting for %s", mac);
+  return false;
+}
+
 /// @brief Search for PS5 Controllers and pair to the first one found
 /// @param doRePair whether or not to search for the controller whose MAC address is stored in non-volatile memory, default true
 /// @param discoverTime the time limit to repair to existing devices, or search for new devices, in milliseconds
