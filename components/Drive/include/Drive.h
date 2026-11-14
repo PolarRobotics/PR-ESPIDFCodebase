@@ -1,9 +1,8 @@
 #pragma once
 
+#include <BotTypes.h>
+#include <DriveParameters.h>
 #include <stdint.h>
-
-#include "BotTypes.h"
-#include "DriveParameters.h"
 
 #ifndef NUM_MOTORS
 #define NUM_MOTORS 2
