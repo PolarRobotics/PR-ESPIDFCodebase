@@ -54,7 +54,7 @@ static float speedScalar;
 static float wheelBase;
 static int omega;
 static int omega_L, omega_R;
-static float R, R_Max, R_Min;
+static float turningRadius, turningRadiusMax, turningRadiusMin;
 static int enableTurnSensitivity;
 // Turn sensitivity variables
 static float scaledSensitiveTurn = 0.0F;
@@ -87,8 +87,8 @@ void driveInit(
   hasEncoders = hasEncodersIn;
   gearRatio = driveParams.gear_ratio;
   wheelBase = driveParams.wheel_base;
-  R_Min = driveParams.r_min;
-  R_Max = driveParams.r_max;
+  turningRadiusMin = driveParams.r_min;
+  turningRadiusMax = driveParams.r_max;
 
   // initialize arrays
   for (int i = 0; i < NUM_MOTORS; i++)
@@ -102,7 +102,7 @@ void driveInit(
   omega = 0;
   omega_L = 0;
   omega_R = 0;
-  R = 0.0F;
+  turningRadius = 0.0F;
 
   // initialize turn sensitivity variables
   // 0 for linear, 1 for Rhys's function, 2 for cubic
@@ -342,14 +342,14 @@ void generateMotionValues(float tankModePct)
  *
  * Differential drive turning model
  *
- * omega_R = (omega/R)*(R + l/2)
- * omega_L = (omega/R)*(R - l/2)
+ * omega_R = (omega/turningRadius)*(turningRadius + l/2)
+ * omega_L = (omega/turningRadius)*(turningRadius - l/2)
  *
  * omega_R: right wheel angular velocity
- * omega_R: left wheel angular velocity
+ * omega_L: left wheel angular velocity
  * omega: the rate of rotation around the ICC (Instantaneous Center of
- * Curvature) l: distance between each wheel (wheelbase) R: distance the ICC
- * from the center of the wheelbase (l/2)
+ * Curvature) l: distance between each wheel (wheelbase) turningRadius:
+ * distance from the ICC to the center of the wheelbase
  *
  * @param stickTrn the absoulte value of the current turning stick input
  * @param fwdLinPwr the non-turning motor value from the previous loop, which
@@ -367,8 +367,8 @@ static void calcTurning(float stickTrn, float fwdLinPwr)
           ? static_cast<MotorControlCommon *>(&pwmM2)
           : static_cast<MotorControlCommon *>(&serialM2);
 
-  // R_Min = R_Min + abs(stickForwardRev)*(R_High_Min - R_Min);
-  // // start of turn scaling
+  // turningRadiusMin = turningRadiusMin + abs(stickForwardRev)*(R_High_Min -
+  // turningRadiusMin); // start of turn scaling
   if (enableTurnSensitivity == 0)  // linear
     scaledSensitiveTurn = stickTrn;
   else if (enableTurnSensitivity == 1)  // rhys's function
@@ -381,8 +381,10 @@ static void calcTurning(float stickTrn, float fwdLinPwr)
   else  // cubic
     scaledSensitiveTurn = powf(stickTrn, TURN_SENSITIVITY_CUBIC_EXPONENT);
 
-  // Calculate the R value from the stick turn input
-  R = (1.0F - scaledSensitiveTurn) * (R_Max - R_Min) + R_Min;
+  // Calculate turning radius (ICC distance) from the stick turn input
+  turningRadius =
+      (1.0F - scaledSensitiveTurn) * (turningRadiusMax - turningRadiusMin) +
+      turningRadiusMin;
 
   // calculate the requested angular velocity for the robot
   omega = abs(leftMotor->Percent2RPM(fwdLinPwr));
@@ -390,8 +392,10 @@ static void calcTurning(float stickTrn, float fwdLinPwr)
   // calculate the rpm for the left/right wheels in float, then store as int
   const float halfWheelBase = wheelBase / 2.0F;
   const float omegaF = static_cast<float>(omega);
-  omega_L = static_cast<int>((omegaF / R) * (R + halfWheelBase));
-  omega_R = static_cast<int>((omegaF / R) * (R - halfWheelBase));
+  omega_L = static_cast<int>(
+      (omegaF / turningRadius) * (turningRadius + halfWheelBase));
+  omega_R = static_cast<int>(
+      (omegaF / turningRadius) * (turningRadius - halfWheelBase));
 
   // ensure the left wheel RPM doesnt go below the min or above the max RPM
   omega_L = constrain(omega_L, MIN_DRIVE_RPM, leftMotor->getMaxRPM());
@@ -424,8 +428,8 @@ void printSetup()
   ESP_LOGI(TAG, "printSetup():");
   ESP_LOGI(TAG, "MotorType: %s", getMotorTypeString(motorType));
   ESP_LOGI(TAG, "GearRatio: %f", (double)gearRatio);
-  ESP_LOGI(TAG, "R_Min: %f", (double)R_Min);
-  ESP_LOGI(TAG, "R_Max: %f", (double)R_Max);
+  ESP_LOGI(TAG, "turningRadiusMin: %f", (double)turningRadiusMin);
+  ESP_LOGI(TAG, "turningRadiusMax: %f", (double)turningRadiusMax);
   ESP_LOGI(TAG, "Min RPM: %d", MIN_DRIVE_RPM);
   ESP_LOGI(TAG, "MAX RPM: %d", maxRpm);
   ESP_LOGI(TAG, "TurnSensitivityMode: %d", enableTurnSensitivity);
