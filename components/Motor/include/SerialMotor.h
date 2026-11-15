@@ -1,8 +1,5 @@
 #pragma once
 
-#include <Arduino.h>
-#include <USBSabertooth.h>
-
 #include "MotorControlCommon.h"
 
 /**
@@ -24,19 +21,11 @@ class SerialMotor : public MotorControlCommon
       bool hasEncoder = false,
       float gearRatio = 1.0F,
       int encAChanPin = -1,
-      int encBChanPin = -1)
-  {
-    mot_idx = motorIndex;
-    configureCommon(motorType, hasEncoder, gearRatio, encAChanPin, encBChanPin);
-  }
+      int encBChanPin = -1);
 
   void writeRaw(int pwr);
 
-  void writePercent(float pct)
-  {
-    pct = constrain(pct, -1.0F, 1.0F);
-    writeRaw(int(pct * 2047.0F));
-  }
+  void writePercent(float pct);
 
-  int motorIndex() const { return mot_idx; }
+  int motorIndex() const;
 };
