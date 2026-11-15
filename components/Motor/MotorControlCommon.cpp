@@ -1,5 +1,7 @@
 #include "MotorControlCommon.h"
 
+#include <Arduino.h>
+
 void MotorControlCommon::configureCommon(
     MotorType type, bool hasEnc, float gearRatio, int encA, int encB)
 {
