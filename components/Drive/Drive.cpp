@@ -6,6 +6,8 @@
 #include <esp_log.h>
 #include <math.h>
 
+#include <algorithm>
+
 static const char *TAG = "Drive";
 
 /**
@@ -256,7 +258,7 @@ void setSpeedScalar(DriveSpeed bns)
  */
 void setSpeedValue(float speed_pct)
 {
-  speedScalar = constrain(speed_pct, 0.0F, 1.0F);
+  speedScalar = std::clamp(speed_pct, 0.0F, 1.0F);
 }
 
 float getSpeedScalar() { return speedScalar; }
@@ -397,9 +399,9 @@ static void calcTurning(float stickTrn, float fwdLinPwr)
       (omegaF / turningRadius) * (turningRadius - halfWheelBase));
 
   // ensure the left wheel RPM doesnt go below the min or above the max RPM
-  omega_L = constrain(omega_L, MIN_DRIVE_RPM, leftMotor->getMaxRPM());
+  omega_L = std::clamp(omega_L, MIN_DRIVE_RPM, leftMotor->getMaxRPM());
   // ensure the left wheel RPM doesnt go below the min or above the max RPM
-  omega_R = constrain(omega_R, MIN_DRIVE_RPM, leftMotor->getMaxRPM());
+  omega_R = std::clamp(omega_R, MIN_DRIVE_RPM, leftMotor->getMaxRPM());
 
   turnMotorValues[0] = leftMotor->RPM2Percent(omega_L);
   turnMotorValues[1] = rightMotor->RPM2Percent(omega_R);
